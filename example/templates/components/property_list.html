@@ -1,0 +1,132 @@
+<div class="space-y-8">
+
+    <!-- Messages Area -->
+    <div class="fixed top-4 right-4 z-50 space-y-2" style="max-width: 400px;">
+        <template x-for="(msg, index) in messages" :key="index">
+            <div
+                x-show="msg"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform translate-x-8"
+                x-transition:enter-end="opacity-100 transform translate-x-0"
+                class="rounded-lg shadow-lg p-4 border"
+                :class="{
+                    'bg-green-50 border-green-200': msg.level === 'success',
+                    'bg-red-50 border-red-200': msg.level === 'error',
+                    'bg-blue-50 border-blue-200': msg.level === 'info'
+                }"
+            >
+                <div class="flex items-center gap-2">
+                    <span
+                        class="font-semibold"
+                        :class="{
+                            'text-green-800': msg.level === 'success',
+                            'text-red-800': msg.level === 'error',
+                            'text-blue-800': msg.level === 'info'
+                        }"
+                        x-text="msg.level === 'success' ? '✅' : msg.level === 'error' ? '❌' : 'ℹ️'"
+                    ></span>
+                    <span
+                        class="text-sm"
+                        :class="{
+                            'text-green-800': msg.level === 'success',
+                            'text-red-800': msg.level === 'error',
+                            'text-blue-800': msg.level === 'info'
+                        }"
+                        x-text="msg.text"
+                    ></span>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div class="flex flex-col lg:flex-row gap-6 justify-between items-start">
+            
+            <div class="w-full lg:w-1/2">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Nueva Propiedad</h3>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" x-model="create_buffer.name" placeholder="Ej: Torre Azul" 
+                           class="flex-1 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    
+                    <input type="text" x-model="create_buffer.address" placeholder="Dirección..." 
+                           class="flex-1 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    
+                    <button @click="call('create_item')" 
+                            :disabled="isLoading"
+                            class="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                        Crear
+                    </button>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-1/3">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Filtrar</h3>
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        x-model="search_query" 
+                        @input.debounce.300ms="call('search')" 
+                        placeholder="Buscar propiedad..." 
+                        class="w-full pl-10 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    >
+                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <template x-for="prop in properties" :key="prop.id">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow h-full flex flex-col">
+                
+                <template x-if="editing_id !== prop.id">
+                    <div class="p-6 flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-4">
+                            <a :href="'/property/' + prop.id + '/'" class="p-2 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer group">
+                                <svg class="w-8 h-8 text-blue-600 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                            </a>
+                            <div class="flex gap-1">
+                                <button @click="call('start_edit', {id: prop.id})" class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-gray-100 rounded">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button @click="if(confirm('¿Seguro?')) call('delete_item', {id: prop.id})" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex-1">
+                            <a :href="'/property/' + prop.id + '/'" class="block">
+                                <h3 class="text-xl font-bold text-gray-900 hover:text-blue-600 mb-1" x-text="prop.name"></h3>
+                                <p class="text-sm text-gray-500 flex items-center gap-1">
+                                    <span x-text="prop.address"></span>
+                                </p>
+                            </a>
+                        </div>
+                    </div>
+                </template>
+
+                <template x-if="editing_id === prop.id && edit_buffer">
+                    <div class="p-6 flex flex-col h-full bg-blue-50 border-2 border-blue-200 rounded-xl">
+                        <h3 class="text-xs font-bold text-blue-600 uppercase mb-3">Editando Propiedad</h3>
+                        <div class="space-y-3 flex-1">
+                            <div>
+                                <label class="text-xs text-gray-500">Nombre</label>
+                                <input type="text" x-model="edit_buffer.name" class="w-full text-sm border-blue-300 rounded focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">Dirección</label>
+                                <input type="text" x-model="edit_buffer.address" class="w-full text-sm border-blue-300 rounded focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="mt-4 flex gap-2 justify-end">
+                            <button @click="call('cancel_edit')" class="px-3 py-1.5 text-sm text-gray-600 bg-white border rounded shadow-sm">Cancelar</button>
+                            <button @click="call('save_edit')" class="px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded shadow-sm">Guardar</button>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+        </template>
+    </div>
+</div>

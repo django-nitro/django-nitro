@@ -1,0 +1,9 @@
+# Django Nitro Example Project Requirements
+
+# Core dependencies (also required by django-nitro)
+Django>=5.0
+django-ninja>=1.0.0
+pydantic>=2.0.0
+
+# Additional dependencies for the example
+python-dotenv>=1.0.0  # For .env file support

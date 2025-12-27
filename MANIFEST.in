@@ -1,0 +1,28 @@
+include README.md
+include LICENSE
+include pyproject.toml
+
+# Include nitro package files
+recursive-include nitro/static *
+recursive-include nitro/templates *
+recursive-include nitro/templatetags *.py
+
+# Exclude compiled Python files and caches
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so
+global-exclude .DS_Store
+
+# Exclude test and development files
+exclude .env
+exclude .env.example
+exclude db.sqlite3
+prune env
+prune venv
+prune .git
+prune .vscode
+prune .idea
+
+# Exclude the example project
+prune example
+prune tests

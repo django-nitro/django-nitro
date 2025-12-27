@@ -1,0 +1,104 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-nitro"
+version = "0.1.0"
+description = "Reactive Django components using AlpineJS and Django Ninja"
+readme = "README.md"
+authors = [
+    {name = "Jearel Alcantara", email = "jeasoft@gmail.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 5.2",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+]
+keywords = ["django", "alpinejs", "reactive", "components", "django-ninja"]
+requires-python = ">=3.12"
+dependencies = [
+    "Django>=5.2",
+    "django-ninja>=1.4.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-django>=4.5.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+    "django-stubs>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/django-nitro"
+Documentation = "https://github.com/yourusername/django-nitro#readme"
+Repository = "https://github.com/yourusername/django-nitro"
+Issues = "https://github.com/django-nitro/django-nitro/issues"
+
+[tool.setuptools]
+packages = ["nitro"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+nitro = [
+    "static/**/*",
+    "templates/**/*",
+    "templatetags/**/*",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py312', 'py313']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_gitignore = true
+known_first_party = ["nitro"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "example.app.settings"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "example.app.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+pythonpath = ["example"]
+addopts = "-v --tb=short"
