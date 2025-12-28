@@ -1,69 +1,62 @@
 # properties/components/property_list.py
-from django.db.models import Count, Q
-from nitro.base import CrudNitroComponent
+from django.db.models import Count
+from nitro.list import BaseListComponent
 from nitro.registry import register_component
 from properties.models import Property
-from properties.schemas import PropertyListState, PropertySchema
+from properties.schemas import PropertyListState
 
 
 @register_component
-class PropertyList(CrudNitroComponent[PropertyListState]):
+class PropertyList(BaseListComponent[PropertyListState]):
     """
-    Property listing component with search and CRUD operations.
+    Property listing component with pagination, search, and CRUD operations.
 
-    Displays a list of properties with tenant counts, supports searching,
-    and provides inline create/edit/delete functionality.
+    Demonstrates BaseListComponent with:
+    - Automatic pagination (20 items per page)
+    - Search across 'name' and 'address' fields
+    - Inline create/edit/delete functionality
+    - Optimized queries with prefetch_related
 
     Note: This is a demo component. In production, you should:
     - Add permission checks (e.g., check if request.user is authenticated)
-    - Implement pagination for large datasets
     - Add rate limiting for search queries
+    - Implement proper error handling
     """
     template_name = "components/property_list.html"
     state_class = PropertyListState
     model = Property
 
-    def get_initial_state(self, **kwargs):
-        return self._build_list_state("")
+    # Configure search and pagination
+    search_fields = ['name', 'address']
+    per_page = 20
+    order_by = '-created_at'
 
-    def refresh(self):
-        self.state = self._build_list_state(self.state.search_query)
-
-    def _build_list_state(self, query):
+    def get_base_queryset(self, search='', filters=None):
         """
-        Build the state with filtered properties and tenant counts.
+        Override to add tenant_count annotation and optimize queries.
 
-        Optimizes queries using prefetch_related to avoid N+1 problems.
-        Validates search query length to prevent abuse.
+        This is called automatically by BaseListComponent for both
+        initial load and refresh operations.
         """
-        # Validate search query length
-        if query and len(query) > 100:
-            query = query[:100]
-
-        # Optimize query with prefetch to avoid N+1
-        qs = Property.objects.prefetch_related('tenants').annotate(
+        # Start with base queryset
+        qs = self.model.objects.prefetch_related('tenants').annotate(
             tenant_count=Count('tenants')
-        ).order_by('-created_at')
-
-        if query:
-            qs = qs.filter(Q(name__icontains=query) | Q(address__icontains=query))
-
-        # Preserve UI buffers
-        create_buffer = self.state.create_buffer if hasattr(self, 'state') else None
-        edit_buffer = self.state.edit_buffer if hasattr(self, 'state') else None
-        editing_id = self.state.editing_id if hasattr(self, 'state') else None
-
-        new_state = PropertyListState(
-            search_query=query,
-            properties=[PropertySchema.model_validate(p) for p in qs]
         )
 
-        if create_buffer: new_state.create_buffer = create_buffer
-        if edit_buffer: new_state.edit_buffer = edit_buffer
-        if editing_id: new_state.editing_id = editing_id
+        # Apply search (handled by SearchMixin)
+        if search:
+            qs = self.apply_search(qs, search)
 
-        return new_state
+        # Apply filters (handled by FilterMixin)
+        if filters:
+            qs = self.apply_filters(qs, filters)
 
-    def search(self):
-        """Perform search with the current query."""
-        self.refresh()
+        # Apply ordering
+        return qs.order_by(self.order_by)
+
+    # All these methods are inherited from BaseListComponent:
+    # - Pagination: next_page(), previous_page(), go_to_page(), set_per_page()
+    # - Search: search_items(search)
+    # - Filters: set_filters(**filters), clear_filters()
+    # - CRUD: create_item(), delete_item(), start_edit(), save_edit(), cancel_edit()
+    # - Refresh: refresh()

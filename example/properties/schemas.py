@@ -1,6 +1,7 @@
 # properties/schemas.py
 from pydantic import BaseModel, Field
 from typing import List, Optional
+from nitro.list import BaseListState
 
 # --- SCHEMAS DE FORMULARIOS (Aquí faltaba el Config) ---
 
@@ -47,10 +48,16 @@ class TenantManagerState(BaseModel):
     edit_buffer: Optional[TenantFormSchema] = None
     editing_id: Optional[int] = None
 
-class PropertyListState(BaseModel):
-    properties: List[PropertySchema] = []
-    search_query: str = ""
-    
+class PropertyListState(BaseListState):
+    """
+    State for PropertyList component.
+
+    Extends BaseListState to get pagination, search, and filters automatically.
+    Renamed 'properties' to 'items' to match BaseListState convention.
+    """
+    items: List[PropertySchema] = []
+    # search, page, per_page, filters, etc. inherited from BaseListState
+
+    # Must specify buffer types explicitly (BaseListState uses Any)
     create_buffer: PropertyFormSchema = Field(default_factory=PropertyFormSchema)
     edit_buffer: Optional[PropertyFormSchema] = None
-    editing_id: Optional[int] = None

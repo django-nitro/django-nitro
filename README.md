@@ -25,6 +25,7 @@ Django Nitro is a modern library for building reactive, stateful components in D
   - [NitroComponent (Basic)](#nitrocomponent-basic)
   - [ModelNitroComponent (ORM Integration)](#modelnitrocomponent-orm-integration)
   - [CrudNitroComponent (Full CRUD)](#crudnitrocomponent-full-crud)
+  - [BaseListComponent (Pagination + Search + Filters)](#baselistcomponent-pagination--search--filters)
 - [State Management](#state-management)
 - [Actions & Methods](#actions--methods)
 - [Template Integration](#template-integration)
@@ -496,6 +497,192 @@ class TaskList(CrudNitroComponent[TaskListState]):
         <div :class="'alert-' + msg.level" x-text="msg.text"></div>
     </template>
 </div>
+```
+
+---
+
+### BaseListComponent (Pagination + Search + Filters)
+
+**Use when:** You need a list view with pagination, search, and filters.
+
+**Best for:** Admin panels, data tables, dashboards, any paginated list.
+
+**Features:**
+- Pre-built pagination with Django Paginator
+- Full-text search across configurable fields
+- Dynamic filtering
+- All CRUD operations (inherited from CrudNitroComponent)
+- Navigation methods: `next_page()`, `previous_page()`, `go_to_page()`, `set_per_page()`
+- Search and filter methods: `search_items()`, `set_filters()`, `clear_filters()`
+- Rich metadata: `total_count`, `showing_start`, `showing_end` for UX
+
+```python
+from pydantic import BaseModel
+from nitro.list import BaseListComponent, BaseListState
+from nitro.registry import register_component
+from myapp.models import Company
+
+
+# Schema for a single company
+class CompanySchema(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone: str
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+
+# Schema for creating/editing (no id)
+class CompanyFormSchema(BaseModel):
+    name: str = ""
+    email: str = ""
+    phone: str = ""
+
+
+# State schema for the list
+class CompanyListState(BaseListState):
+    items: list[CompanySchema] = []
+    # search, page, per_page, filters, etc. inherited from BaseListState
+
+    # IMPORTANT: Must specify buffer types explicitly
+    # (BaseListState uses Any, which causes inference issues)
+    create_buffer: CompanyFormSchema = Field(default_factory=CompanyFormSchema)
+    edit_buffer: Optional[CompanyFormSchema] = None
+
+
+@register_component
+class CompanyList(BaseListComponent[CompanyListState]):
+    template_name = "components/company_list.html"
+    state_class = CompanyListState
+    model = Company
+
+    # Configure search and pagination
+    search_fields = ['name', 'email', 'phone']
+    per_page = 25
+    order_by = '-created_at'
+
+    # All these methods are pre-built:
+    # - Pagination: next_page(), previous_page(), go_to_page(), set_per_page()
+    # - Search: search_items(search)
+    # - Filters: set_filters(**filters), clear_filters()
+    # - CRUD: create_item(), delete_item(), start_edit(), save_edit(), cancel_edit()
+```
+
+**Template:**
+
+```html
+<!-- templates/components/company_list.html -->
+<div class="company-list">
+
+    <!-- Search bar -->
+    <div class="search-bar">
+        <input
+            type="text"
+            x-model="search"
+            @input.debounce.300ms="call('search_items', {search: $el.value})"
+            placeholder="Search companies..."
+        >
+        <button @click="call('clear_filters')">Clear</button>
+    </div>
+
+    <!-- Results info -->
+    <div class="results-info" x-show="total_count > 0">
+        Showing <strong x-text="showing_start"></strong>
+        - <strong x-text="showing_end"></strong>
+        of <strong x-text="total_count"></strong> results
+    </div>
+
+    <!-- Items table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <template x-for="company in items" :key="company.id">
+                <tr>
+                    <td x-text="company.name"></td>
+                    <td x-text="company.email"></td>
+                    <td x-text="company.phone"></td>
+                    <td>
+                        <button @click="call('start_edit', {id: company.id})">Edit</button>
+                        <button @click="call('delete_item', {id: company.id})">Delete</button>
+                    </td>
+                </tr>
+            </template>
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        <button
+            @click="call('previous_page')"
+            :disabled="!has_previous || isLoading"
+        >
+            Previous
+        </button>
+
+        <span>
+            Page <strong x-text="page"></strong> of <strong x-text="num_pages"></strong>
+        </span>
+
+        <button
+            @click="call('next_page')"
+            :disabled="!has_next || isLoading"
+        >
+            Next
+        </button>
+
+        <!-- Items per page selector -->
+        <select
+            x-model="per_page"
+            @change="call('set_per_page', {per_page: parseInt($el.value)})"
+        >
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </div>
+
+</div>
+```
+
+**Advanced: Custom Filtering**
+
+Override `get_base_queryset()` for custom logic:
+
+```python
+class CompanyList(BaseListComponent[CompanyListState]):
+    def get_base_queryset(self, search='', filters=None):
+        # Only show companies owned by current user
+        qs = self.model.objects.filter(owner=self.request.user)
+
+        # Apply standard search
+        if search:
+            qs = self.apply_search(qs, search)
+
+        # Apply filters
+        if filters:
+            qs = self.apply_filters(qs, filters)
+
+        # Custom ordering
+        return qs.select_related('owner').order_by(self.order_by)
+```
+
+**Usage in view:**
+
+```python
+def company_list_page(request):
+    component = CompanyList(request=request)
+    return render(request, 'company_list_page.html', {'companies': component})
 ```
 
 ---

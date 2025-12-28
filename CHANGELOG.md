@@ -27,6 +27,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic protection for `id` fields and foreign keys
 - CSRF token integration with Django
 
+## [0.2.0] - 2025-12-27
+
+### Added
+- `BaseListComponent` for CRUD list views with pagination, search, and filters
+- `PaginationMixin` for Django queryset pagination
+- `SearchMixin` for full-text search across configurable fields
+- `FilterMixin` for dynamic queryset filtering
+- `BaseListState` with complete pagination metadata (total_count, showing_start, showing_end, etc.)
+- Navigation methods: `next_page()`, `previous_page()`, `go_to_page()`, `set_per_page()`
+- Search and filter management: `search_items()`, `set_filters()`, `clear_filters()`
+- Automatic page reset when search/filters change
+- Full integration with existing `CrudNitroComponent` functionality
+
 ## [0.1.0] - 2024-XX-XX
 
 ### Added
