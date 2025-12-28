@@ -1521,7 +1521,7 @@ This repository includes a complete example app in the `example/` folder:
 **Run the example:**
 
 ```bash
-git clone https://github.com/yourusername/django-nitro.git
+git clone https://github.com/django-nitro/django-nitro.git
 cd django-nitro
 python -m venv env
 source env/bin/activate  # Windows: env\Scripts\activate
@@ -1595,7 +1595,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - 📖 [Documentation](https://github.com/django-nitro/django-nitro/wiki)
 - 🐛 [Report Issues](https://github.com/django-nitro/django-nitro/issues)
 - 💬 [Discussions](https://github.com/django-nitro/django-nitro/discussions)
-- ⭐ Star us on [GitHub](https://github.com/yourusername/django-nitro)
+- ⭐ Star us on [GitHub](https://github.com/django-nitro/django-nitro)
 
 ---
 

@@ -45,9 +45,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/django-nitro"
-Documentation = "https://github.com/yourusername/django-nitro#readme"
-Repository = "https://github.com/yourusername/django-nitro"
+Homepage = "https://github.com/django-nitro/django-nitro"
+Documentation = "https://github.com/django-nitro/django-nitro#readme"
+Repository = "https://github.com/django-nitro/django-nitro"
 Issues = "https://github.com/django-nitro/django-nitro/issues"
 
 [tool.setuptools]
