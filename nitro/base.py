@@ -74,6 +74,65 @@ class NitroComponent(Generic[S]):
         """
         raise NotImplementedError
 
+    @property
+    def current_user(self):
+        """
+        Shortcut to request.user with authentication check.
+
+        Returns:
+            The authenticated user object, or None if user is not authenticated.
+
+        Example:
+            def create_item(self):
+                if self.current_user:
+                    item.owner = self.current_user
+                    item.save()
+        """
+        if self.request and self.request.user.is_authenticated:
+            return self.request.user
+        return None
+
+    @property
+    def is_authenticated(self):
+        """
+        Check if current user is authenticated.
+
+        Returns:
+            True if user is authenticated, False otherwise
+
+        Example:
+            def get_base_queryset(self, search='', filters=None):
+                if not self.is_authenticated:
+                    return queryset.none()
+                return queryset.filter(owner=self.current_user)
+        """
+        return self.request and self.request.user.is_authenticated
+
+    def require_auth(self, message: str = "Authentication required") -> bool:
+        """
+        Enforce authentication requirement.
+
+        Shows error message and returns False if user is not authenticated.
+
+        Args:
+            message: Custom error message. Default: "Authentication required"
+
+        Returns:
+            True if user is authenticated, False otherwise
+
+        Example:
+            def delete_item(self, id: int):
+                if not self.require_auth("You must be logged in to delete"):
+                    return  # User not authenticated, error shown
+
+                # Proceed with deletion
+                super().delete_item(id)
+        """
+        if not self.is_authenticated:
+            self.error(message)
+            return False
+        return True
+
     def _compute_integrity(self) -> str:
         """
         Compute an integrity token for secure fields.

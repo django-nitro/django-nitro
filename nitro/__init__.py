@@ -7,7 +7,7 @@ from nitro.base import (
     CrudNitroComponent,
 )
 
-# List components (v0.2.1)
+# List components (v0.2.0)
 from nitro.list import (
     PaginationMixin,
     SearchMixin,
@@ -16,10 +16,17 @@ from nitro.list import (
     BaseListComponent,
 )
 
+# Security mixins (v0.3.0)
+from nitro.security import (
+    OwnershipMixin,
+    TenantScopedMixin,
+    PermissionMixin,
+)
+
 # Registry
 from nitro.registry import register_component
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 __all__ = [
     # Base
@@ -32,6 +39,10 @@ __all__ = [
     "FilterMixin",
     "BaseListState",
     "BaseListComponent",
+    # Security
+    "OwnershipMixin",
+    "TenantScopedMixin",
+    "PermissionMixin",
     # Registry
     "register_component",
 ]

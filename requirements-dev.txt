@@ -20,3 +20,7 @@ django-extensions>=3.2.0
 # Build and distribution
 build>=0.10.0
 twine>=4.0.0
+
+# Documentation
+mkdocs-material>=9.0.0
+mkdocs-git-revision-date-localized-plugin>=1.2.0

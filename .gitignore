@@ -116,3 +116,6 @@ example/db.sqlite3-journal
 
 # Claude plans
 .claude/
+
+# MkDocs
+site/

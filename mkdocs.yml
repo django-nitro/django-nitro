@@ -1,0 +1,98 @@
+site_name: Django Nitro
+site_description: Reactive Django components with AlpineJS and Django Ninja
+site_author: Jearel Alcantara
+site_url: https://django-nitro.github.io/django-nitro
+
+repo_name: django-nitro/django-nitro
+repo_url: https://github.com/django-nitro/django-nitro
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - git-revision-date-localized:
+      enable_creation_date: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
+  - Core Concepts:
+    - Components: core-concepts/components.md
+    - State Management: core-concepts/state-management.md
+    - Actions: core-concepts/actions.md
+  - Components:
+    - NitroComponent: components/nitro-component.md
+    - ModelNitroComponent: components/model-nitro-component.md
+    - CrudNitroComponent: components/crud-nitro-component.md
+    - BaseListComponent: components/base-list-component.md
+  - Security:
+    - Overview: security/overview.md
+    - OwnershipMixin: security/ownership-mixin.md
+    - TenantScopedMixin: security/tenant-scoped-mixin.md
+    - PermissionMixin: security/permission-mixin.md
+  - Examples:
+    - Counter: examples/counter.md
+    - Property Manager: examples/property-manager.md
+  - API Reference: api-reference.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/django-nitro/django-nitro
+  version:
+    provider: mike
