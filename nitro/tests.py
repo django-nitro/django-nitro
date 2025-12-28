@@ -3,7 +3,7 @@ from django.test import RequestFactory, TestCase
 from pydantic import BaseModel
 
 from nitro.base import ModelNitroComponent, NitroComponent
-from nitro.registry import _component_registry, get_component_class, register_component
+from nitro.registry import _components_registry, get_component_class, register_component
 
 
 class SimpleState(BaseModel):
@@ -134,11 +134,11 @@ class TestComponentRegistry(TestCase):
 
     def setUp(self):
         # Clear registry before each test
-        _component_registry.clear()
+        _components_registry.clear()
 
     def tearDown(self):
         # Clear registry after each test
-        _component_registry.clear()
+        _components_registry.clear()
 
     def test_register_component(self):
         """Test component registration."""
@@ -151,7 +151,7 @@ class TestComponentRegistry(TestCase):
             def get_initial_state(self, **kwargs):
                 return SimpleState()
 
-        self.assertIn("TestComp", _component_registry)
+        self.assertIn("TestComp", _components_registry)
         self.assertEqual(get_component_class("TestComp"), TestComp)
 
     def test_get_component_class_not_found(self):
