@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% load nitro_tags %} {% block content %}
+    <h1>{{ property.name }}</h1>
+    
+    {% nitro_component "TenantManager" property_id=property.id %}
+    
+{% endblock %}

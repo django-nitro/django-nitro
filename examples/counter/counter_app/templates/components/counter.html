@@ -1,0 +1,24 @@
+<div class="counter-widget">
+    <h2>Counter: <span x-text="count"></span></h2>
+
+    <div class="controls">
+        <button @click="call('decrement')" :disabled="isLoading">-</button>
+        <button @click="call('reset')" :disabled="isLoading">Reset</button>
+        <button @click="call('increment')" :disabled="isLoading">+</button>
+    </div>
+
+    <div class="step-control">
+        <label>
+            Step:
+            <input type="number" x-model.number="step" min="1" max="100">
+        </label>
+    </div>
+
+    <div x-show="isLoading" class="loading">Processing...</div>
+
+    <div class="messages">
+        <template x-for="msg in messages" :key="msg.text">
+            <div :class="'alert-' + msg.level" x-text="msg.text"></div>
+        </template>
+    </div>
+</div>
