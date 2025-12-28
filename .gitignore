@@ -110,9 +110,9 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# Example project database
-example/db.sqlite3
-example/db.sqlite3-journal
+# Example projects databases
+examples/*/db.sqlite3
+examples/*/db.sqlite3-journal
 
 # Claude plans
 .claude/

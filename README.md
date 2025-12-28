@@ -1738,26 +1738,34 @@ def get_initial_state(self, **kwargs):
 
 ---
 
-## Example Project
+## Example Projects
 
-This repository includes a complete example app in the `example/` folder:
+This repository includes two complete example applications in the `examples/` folder:
 
-**Features:**
-- ✅ Property CRUD with search
+### 1. Counter Example (`examples/counter/`)
+Simple beginner-friendly example demonstrating basic Nitro concepts:
+- ✅ Component state management
+- ✅ Action methods (increment, decrement, reset)
+- ✅ AlpineJS template bindings
+- ✅ Success messages
+
+### 2. Property Manager (`examples/property-manager/`)
+Comprehensive real-world example with advanced features:
+- ✅ Property CRUD with search and pagination
 - ✅ Tenant management (nested component)
 - ✅ Inline editing
 - ✅ Real-time validation
 - ✅ Success/error messages
 - ✅ File uploads (PDF documents for tenants)
 
-**Run the example:**
+**Run an example:**
 
 ```bash
 git clone https://github.com/django-nitro/django-nitro.git
-cd django-nitro
+cd django-nitro/examples/counter  # or examples/property-manager
 python -m venv env
 source env/bin/activate  # Windows: env\Scripts\activate
-pip install -e ".[dev]"
+pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
 ```

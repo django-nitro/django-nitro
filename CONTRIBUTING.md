@@ -120,7 +120,7 @@ django-nitro/
 │   ├── api.py         # Django Ninja API
 │   ├── registry.py    # Component registration
 │   └── static/        # JavaScript files
-├── example/            # Example project (modify if improving examples)
+├── examples/           # Example projects (modify if improving examples)
 ├── tests/             # Test suite (DO add tests here)
 └── docs/              # Documentation (DO update)
 ```
