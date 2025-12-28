@@ -40,10 +40,13 @@ jobs:
       - name: Build documentation
         run: mkdocs build --strict
 
+      - name: Add .nojekyll file
+        run: touch ./site/.nojekyll
+
       - name: Deploy to GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
-          cname: django-nitro.dev  # Optional: if you have custom domain
+          # cname: django-nitro.dev  # Uncomment if you have custom domain

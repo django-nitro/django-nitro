@@ -26,6 +26,11 @@ Django Nitro is a modern library for building reactive, stateful components in D
   - [ModelNitroComponent (ORM Integration)](#modelnitrocomponent-orm-integration)
   - [CrudNitroComponent (Full CRUD)](#crudnitrocomponent-full-crud)
   - [BaseListComponent (Pagination + Search + Filters)](#baselistcomponent-pagination--search--filters)
+- [Security Mixins & Authentication](#security-mixins--authentication)
+  - [Request User Helpers](#request-user-helpers)
+  - [OwnershipMixin](#ownershipmixin)
+  - [TenantScopedMixin](#tenantscopedmixin)
+  - [PermissionMixin](#permissionmixin)
 - [State Management](#state-management)
 - [Actions & Methods](#actions--methods)
 - [Template Integration](#template-integration)
@@ -684,6 +689,233 @@ def company_list_page(request):
     component = CompanyList(request=request)
     return render(request, 'company_list_page.html', {'companies': component})
 ```
+
+---
+
+## Security Mixins & Authentication
+
+Django Nitro v0.3.0+ provides powerful security mixins and authentication helpers for common authorization patterns. These mixins help you implement **ownership-based access control**, **multi-tenant data isolation**, and **custom permissions** with minimal code.
+
+> **📚 Full Documentation:** For complete guides and examples, visit the [Security Documentation](https://django-nitro.github.io/django-nitro/security/overview/)
+
+### Request User Helpers
+
+Every `NitroComponent` has built-in properties and methods for working with authenticated users:
+
+```python
+@register_component
+class MyComponent(NitroComponent[MyState]):
+    def my_action(self):
+        # ✅ Shortcut to request.user (returns None if not authenticated)
+        user = self.current_user
+
+        # ✅ Check if user is authenticated
+        if self.is_authenticated:
+            user.profile.increment_action_count()
+
+        # ✅ Enforce authentication requirement
+        if not self.require_auth("You must be logged in"):
+            return  # Stops execution and shows error message
+
+        # Continue with authenticated user...
+```
+
+**Properties:**
+- `current_user` - Returns `request.user` if authenticated, otherwise `None`
+- `is_authenticated` - Returns `True` if user is authenticated
+
+**Methods:**
+- `require_auth(message="Authentication required")` - Enforces auth, shows error if not authenticated
+
+---
+
+### OwnershipMixin
+
+**Use when:** You need to filter data to show only items owned by the current user.
+
+**Best for:** User dashboards, personal data management, user-owned resources.
+
+```python
+from nitro.security import OwnershipMixin
+from nitro.list import BaseListComponent
+
+@register_component
+class MyDocuments(OwnershipMixin, BaseListComponent[DocumentListState]):
+    model = Document
+    owner_field = 'user'  # Field name linking to user (default: 'user')
+
+    # Automatically filters queryset to current user's documents only
+```
+
+**How it works:**
+- Automatically adds a filter: `queryset.filter(user=request.user)`
+- Returns empty queryset if user is not authenticated
+- Override `owner_field` to customize the field name (e.g., `'author'`, `'created_by'`)
+
+**Example:**
+```python
+class MyTasksState(BaseListState):
+    items: list[TaskSchema] = []
+
+@register_component
+class MyTasks(OwnershipMixin, BaseListComponent[MyTasksState]):
+    model = Task
+    owner_field = 'owner'
+    search_fields = ['title', 'description']
+
+    # Users can only see/edit their own tasks
+```
+
+---
+
+### TenantScopedMixin
+
+**Use when:** Building multi-tenant SaaS applications where data must be isolated by organization/tenant.
+
+**Best for:** SaaS apps, team workspaces, organization-based access control.
+
+```python
+from nitro.security import TenantScopedMixin
+from nitro.list import BaseListComponent
+
+@register_component
+class CompanyProjects(TenantScopedMixin, BaseListComponent[ProjectListState]):
+    model = Project
+    tenant_field = 'organization'  # Field linking to tenant (default: 'organization')
+
+    def get_user_tenant(self):
+        """Override to return current user's tenant/organization."""
+        return self.request.user.current_organization
+
+    # Automatically filters: queryset.filter(organization=current_organization)
+```
+
+**Required:** You must override `get_user_tenant()` to return the current user's tenant.
+
+**Example with profile-based tenancy:**
+```python
+@register_component
+class TeamDocuments(TenantScopedMixin, BaseListComponent[DocumentListState]):
+    model = Document
+    tenant_field = 'team'
+
+    def get_user_tenant(self):
+        # Get tenant from user profile
+        if hasattr(self.request.user, 'profile'):
+            return self.request.user.profile.current_team
+        return None
+```
+
+---
+
+### PermissionMixin
+
+**Use when:** You need custom permission logic beyond Django's built-in permissions.
+
+**Best for:** Complex authorization rules, role-based access control (RBAC), custom business logic.
+
+```python
+from nitro.security import PermissionMixin
+from nitro.base import CrudNitroComponent
+
+@register_component
+class AdminPanel(PermissionMixin, CrudNitroComponent[AdminState]):
+    model = Settings
+
+    def check_permission(self, action: str) -> bool:
+        """Override with custom permission logic."""
+        user = self.current_user
+
+        if not user or not user.is_authenticated:
+            return False
+
+        # Custom role-based logic
+        if action == 'delete':
+            return user.is_superuser
+
+        if action in ['create', 'edit']:
+            return user.has_perm('settings.change_settings')
+
+        return True  # Allow read by default
+
+    def delete_item(self, id: int):
+        # Enforce permission before deletion
+        if not self.enforce_permission('delete', "Only admins can delete"):
+            return
+
+        super().delete_item(id)
+```
+
+**Methods:**
+- `check_permission(action: str) -> bool` - Override with your logic
+- `enforce_permission(action: str, error_message: str = None) -> bool` - Check and show error if denied
+
+**Example with subscription-based permissions:**
+```python
+class ProjectManager(PermissionMixin, CrudNitroComponent[ProjectState]):
+    def check_permission(self, action: str) -> bool:
+        user = self.current_user
+        if not user:
+            return False
+
+        # Check subscription tier
+        if action == 'create':
+            if user.subscription_tier == 'free':
+                # Check project count limit
+                return user.projects.count() < 3
+            return True  # Paid users unlimited
+
+        return True
+
+    def create_item(self):
+        if not self.enforce_permission('create',
+            "Free tier limited to 3 projects. Upgrade to create more."):
+            return
+
+        super().create_item()
+```
+
+---
+
+### Combining Mixins
+
+You can combine multiple security mixins for powerful authorization:
+
+```python
+@register_component
+class TeamDocuments(
+    OwnershipMixin,      # Filter by current user
+    TenantScopedMixin,   # Filter by user's organization
+    PermissionMixin,     # Custom permission logic
+    BaseListComponent[DocumentListState]
+):
+    model = Document
+    owner_field = 'created_by'
+    tenant_field = 'organization'
+
+    def get_user_tenant(self):
+        return self.request.user.profile.organization
+
+    def check_permission(self, action: str) -> bool:
+        user = self.current_user
+        if not user:
+            return False
+
+        # Managers can do everything
+        if user.role == 'manager':
+            return True
+
+        # Members can read and create, but not delete
+        if action == 'delete':
+            return False
+
+        return True
+```
+
+**MRO (Method Resolution Order) matters:**
+- Mixins are applied **left to right**
+- `OwnershipMixin` filters first, then `TenantScopedMixin`, then your component
+- Both filters are combined (AND logic)
 
 ---
 
