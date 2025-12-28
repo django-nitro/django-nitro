@@ -1,17 +1,19 @@
 import json
 import logging
-from typing import TypeVar, Generic, Type, Dict, List, Optional, get_args
+from typing import Generic, TypeVar, get_args
+
+from django.core.signing import BadSignature, Signer
+from django.db import models
+from django.http import HttpRequest
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
-from django.shortcuts import get_object_or_404
-from django.core.signing import Signer, BadSignature
-from django.http import HttpRequest
-from django.db import models
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
 S = TypeVar("S", bound=BaseModel)
+
 
 class NitroComponent(Generic[S]):
     """
@@ -27,13 +29,14 @@ class NitroComponent(Generic[S]):
         state_class: Pydantic model class for state validation and type safety
         secure_fields: List of field names that require integrity verification
     """
+
     template_name: str = ""
     component_id: str = ""
-    state_class: Optional[Type[S]] = None
+    state_class: type[S] | None = None
     state: S
-    secure_fields: List[str] = [] 
+    secure_fields: list[str] = []
 
-    def __init__(self, request: Optional[HttpRequest] = None, initial_state: dict = None, **kwargs):
+    def __init__(self, request: HttpRequest | None = None, initial_state: dict = None, **kwargs):
         """
         Initialize a Nitro component.
 
@@ -45,14 +48,14 @@ class NitroComponent(Generic[S]):
         self.request = request
         self.component_id = f"{self.__class__.__name__.lower()}-{id(self)}"
         self._signer = Signer()
-        self._pending_errors: Dict[str, str] = {}
-        self._pending_messages: List[Dict[str, str]] = []
+        self._pending_errors: dict[str, str] = {}
+        self._pending_messages: list[dict[str, str]] = []
 
         if initial_state is not None:
             if self.state_class:
                 self.state = self.state_class(**initial_state)
             else:
-                self.state = initial_state # type: ignore
+                self.state = initial_state  # type: ignore
         else:
             self.state = self.get_initial_state(**kwargs)
 
@@ -143,12 +146,13 @@ class NitroComponent(Generic[S]):
         Returns:
             A signed token string, or empty string if no secure fields are defined
         """
-        if not self.secure_fields: return ""
-        state_dump = self.state.model_dump() if hasattr(self.state, 'model_dump') else self.state
+        if not self.secure_fields:
+            return ""
+        state_dump = self.state.model_dump() if hasattr(self.state, "model_dump") else self.state
         data_to_sign = "|".join([f"{k}:{state_dump.get(k)}" for k in self.secure_fields])
         return self._signer.sign(data_to_sign)
 
-    def verify_integrity(self, token: Optional[str]) -> bool:
+    def verify_integrity(self, token: str | None) -> bool:
         """
         Verify that secure fields haven't been tampered with.
 
@@ -161,11 +165,15 @@ class NitroComponent(Generic[S]):
         Returns:
             True if verification passes or no secure fields exist, False otherwise
         """
-        if not self.secure_fields: return True
-        if not token: return False
+        if not self.secure_fields:
+            return True
+        if not token:
+            return False
         try:
             original_data = self._signer.unsign(token)
-            state_dump = self.state.model_dump() if hasattr(self.state, 'model_dump') else self.state
+            state_dump = (
+                self.state.model_dump() if hasattr(self.state, "model_dump") else self.state
+            )
             current_data = "|".join([f"{k}:{state_dump.get(k)}" for k in self.secure_fields])
             return original_data == current_data
         except BadSignature:
@@ -194,18 +202,19 @@ class NitroComponent(Generic[S]):
         Returns:
             SafeString containing the complete HTML for the component
         """
-        state_dict = self.state.model_dump() if hasattr(self.state, 'model_dump') else self.state
+        state_dict = self.state.model_dump() if hasattr(self.state, "model_dump") else self.state
 
         # Package everything for the JavaScript layer
         full_payload = {
             "state": state_dict,
             "errors": {},
             "messages": [],
-            "integrity": self._compute_integrity()
+            "integrity": self._compute_integrity(),
         }
 
         context = {"state": state_dict, "component": self}
-        if self.request: context['request'] = self.request
+        if self.request:
+            context["request"] = self.request
 
         html_content = render_to_string(self.template_name, context)
 
@@ -221,7 +230,9 @@ class NitroComponent(Generic[S]):
         """
         return mark_safe(wrapper)
 
-    def process_action(self, action_name: str, payload: dict, current_state_dict: dict, uploaded_file=None):
+    def process_action(
+        self, action_name: str, payload: dict, current_state_dict: dict, uploaded_file=None
+    ):
         """
         Process an action call from the client.
 
@@ -252,7 +263,7 @@ class NitroComponent(Generic[S]):
                 self.__class__.__name__,
                 current_state_dict,
                 str(e),
-                exc_info=True
+                exc_info=True,
             )
             raise
 
@@ -261,19 +272,23 @@ class NitroComponent(Generic[S]):
 
             # Check if action accepts uploaded_file parameter
             import inspect
+
             sig = inspect.signature(action_method)
-            if 'uploaded_file' in sig.parameters:
+            if "uploaded_file" in sig.parameters:
                 action_method(**payload, uploaded_file=uploaded_file)
             else:
                 action_method(**payload)
 
             return {
-                "state": self.state.model_dump() if hasattr(self.state, 'model_dump') else self.state,
+                "state": (
+                    self.state.model_dump() if hasattr(self.state, "model_dump") else self.state
+                ),
                 "errors": self._pending_errors,
                 "messages": self._pending_messages,
-                "integrity": self._compute_integrity()
+                "integrity": self._compute_integrity(),
             }
         raise ValueError(f"Action {action_name} not found")
+
 
 class ModelNitroComponent(NitroComponent[S]):
     """
@@ -285,15 +300,17 @@ class ModelNitroComponent(NitroComponent[S]):
     Attributes:
         model: Django model class associated with this component
     """
-    model: Optional[Type[models.Model]] = None
+
+    model: type[models.Model] | None = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.model:
-            if 'id' in self.state_class.model_fields: self.secure_fields.append('id')
+            if "id" in self.state_class.model_fields:
+                self.secure_fields.append("id")
             for field in self.state_class.model_fields:
                 if field.endswith("_id") and field not in self.secure_fields:
-                     self.secure_fields.append(field)
+                    self.secure_fields.append(field)
 
     def get_queryset(self):
         return self.model.objects.all()
@@ -302,39 +319,41 @@ class ModelNitroComponent(NitroComponent[S]):
         return get_object_or_404(self.get_queryset(), pk=pk)
 
     def get_initial_state(self, **kwargs) -> S:
-        pk = kwargs.get('pk') or kwargs.get('id')
+        pk = kwargs.get("pk") or kwargs.get("id")
         if not pk and self.model:
             pk = kwargs.get(f"{self.model.__name__.lower()}_id")
 
         if pk:
             obj = self.get_object(pk)
             return self.state_class.model_validate(obj)
-        
-        if hasattr(self, 'state') and hasattr(self.state, 'id'):
-             obj = self.get_object(self.state.id)
-             return self.state_class.model_validate(obj)
+
+        if hasattr(self, "state") and hasattr(self.state, "id"):
+            obj = self.get_object(self.state.id)
+            return self.state_class.model_validate(obj)
 
         raise ValueError(f"No ID found for {self.model}")
 
     def refresh(self):
         pk = None
-        if hasattr(self.state, 'id'): pk = self.state.id
+        if hasattr(self.state, "id"):
+            pk = self.state.id
         elif hasattr(self.state, f"{self.model.__name__.lower()}_id"):
             pk = getattr(self.state, f"{self.model.__name__.lower()}_id")
-            
+
         if pk:
             obj = self.get_object(pk)
             new_state = self.state_class.model_validate(obj)
             state_data = self.state.model_dump()
             new_data = new_state.model_dump()
             for key, value in state_data.items():
-                if key not in new_data or new_data[key] is None: 
-                     setattr(new_state, key, value)
-                if key in ['editing_id', 'edit_buffer', 'create_buffer']:
+                if key not in new_data or new_data[key] is None:
+                    setattr(new_state, key, value)
+                if key in ["editing_id", "edit_buffer", "create_buffer"]:
                     setattr(new_state, key, value)
             self.state = new_state
         else:
             raise ValueError("No ID in state for refresh")
+
 
 class CrudNitroComponent(ModelNitroComponent[S]):
     """
@@ -357,22 +376,20 @@ class CrudNitroComponent(ModelNitroComponent[S]):
         Note: This method does not add success/error messages automatically.
         Override this method in your component to add custom messages.
         """
-        if not hasattr(self.state, 'create_buffer') or not self.state.create_buffer:
+        if not hasattr(self.state, "create_buffer") or not self.state.create_buffer:
             return
 
         # Get data from buffer, excluding id but including all other fields
-        data = self.state.create_buffer.model_dump(exclude={'id'})
+        data = self.state.create_buffer.model_dump(exclude={"id"})
 
         # Log what we received for debugging
-        logger.debug(
-            "create_item called on %s with data: %s",
-            self.__class__.__name__,
-            data
-        )
+        logger.debug("create_item called on %s with data: %s", self.__class__.__name__, data)
 
         # Validate that at least one non-empty string field exists
         # (more lenient validation - just check for non-empty strings)
-        string_fields = {k: v for k, v in data.items() if isinstance(v, str) and not k.endswith('_id')}
+        string_fields = {
+            k: v for k, v in data.items() if isinstance(v, str) and not k.endswith("_id")
+        }
         has_content = any(v.strip() for v in string_fields.values() if v)
 
         if not has_content and string_fields:
@@ -380,16 +397,12 @@ class CrudNitroComponent(ModelNitroComponent[S]):
             return
 
         # Add property_id if this is a related model
-        if hasattr(self.state, 'property_id'):
-            data['property_id'] = self.state.property_id
+        if hasattr(self.state, "property_id"):
+            data["property_id"] = self.state.property_id
 
         try:
             created_obj = self.model.objects.create(**data)
-            logger.info(
-                "Successfully created %s with id %s",
-                self.model.__name__,
-                created_obj.pk
-            )
+            logger.info("Successfully created %s with id %s", self.model.__name__, created_obj.pk)
             self.state.create_buffer = self.state.create_buffer.__class__()
             self.refresh()
         except Exception as e:
@@ -424,7 +437,7 @@ class CrudNitroComponent(ModelNitroComponent[S]):
 
         # Try to infer buffer type from edit_buffer field annotation
         buffer_type = None
-        field = self.state_class.model_fields.get('edit_buffer')
+        field = self.state_class.model_fields.get("edit_buffer")
 
         if field and field.annotation:
             try:
@@ -432,19 +445,24 @@ class CrudNitroComponent(ModelNitroComponent[S]):
                 args = get_args(field.annotation)
                 if args:
                     # Get first arg (the actual type, not None)
-                    buffer_type = args[0] if args[0] is not type(None) else (args[1] if len(args) > 1 else None)
+                    buffer_type = (
+                        args[0]
+                        if args[0] is not type(None)
+                        else (args[1] if len(args) > 1 else None)
+                    )
             except (TypeError, AttributeError, IndexError) as e:
                 logger.debug(
                     "Could not infer edit_buffer type from annotation for %s: %s",
-                    self.__class__.__name__, str(e)
+                    self.__class__.__name__,
+                    str(e),
                 )
 
         # Fallback: try to use create_buffer's type if available
-        if not buffer_type and hasattr(self.state, 'create_buffer'):
+        if not buffer_type and hasattr(self.state, "create_buffer"):
             buffer_type = type(self.state.create_buffer)
             logger.debug(
                 "Using create_buffer type as fallback for edit_buffer in %s",
-                self.__class__.__name__
+                self.__class__.__name__,
             )
 
         if buffer_type:
@@ -452,12 +470,12 @@ class CrudNitroComponent(ModelNitroComponent[S]):
                 self.state.edit_buffer = buffer_type.model_validate(obj)
                 logger.debug(
                     "Successfully created edit_buffer for %s with type %s",
-                    self.__class__.__name__, buffer_type.__name__
+                    self.__class__.__name__,
+                    buffer_type.__name__,
                 )
             except Exception as e:
                 logger.error(
-                    "Failed to create edit_buffer for %s: %s",
-                    self.__class__.__name__, str(e)
+                    "Failed to create edit_buffer for %s: %s", self.__class__.__name__, str(e)
                 )
                 self.state.editing_id = None
                 raise
@@ -465,7 +483,7 @@ class CrudNitroComponent(ModelNitroComponent[S]):
             logger.error(
                 "Could not infer edit_buffer type for component %s. "
                 "Please override start_edit() method to set the buffer type explicitly.",
-                self.__class__.__name__
+                self.__class__.__name__,
             )
             self.state.editing_id = None
             raise ValueError("Could not infer edit_buffer type")
@@ -481,7 +499,7 @@ class CrudNitroComponent(ModelNitroComponent[S]):
         Override this method in your component to add custom messages.
         """
         if self.state.editing_id and self.state.edit_buffer:
-            data = self.state.edit_buffer.model_dump(exclude={'id'}, exclude_unset=True)
+            data = self.state.edit_buffer.model_dump(exclude={"id"}, exclude_unset=True)
             self.model.objects.filter(id=self.state.editing_id).update(**data)
             self.state.editing_id = None
             self.state.edit_buffer = None

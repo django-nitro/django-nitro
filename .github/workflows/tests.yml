@@ -38,8 +38,8 @@ jobs:
 
     - name: Run linters
       run: |
-        black --check nitro/
-        isort --check-only nitro/
+        ruff check nitro/
+        ruff format --check nitro/
 
     - name: Run type checking
       run: |

@@ -3,6 +3,7 @@
 # Global registry for components: "ClassName" -> Class
 _components_registry = {}
 
+
 def register_component(cls):
     """
     Decorator to register a Nitro component.
@@ -10,6 +11,7 @@ def register_component(cls):
     """
     _components_registry[cls.__name__] = cls
     return cls
+
 
 def get_component_class(name: str):
     return _components_registry.get(name)

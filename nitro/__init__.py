@@ -2,29 +2,29 @@
 
 # Base components
 from nitro.base import (
-    NitroComponent,
-    ModelNitroComponent,
     CrudNitroComponent,
+    ModelNitroComponent,
+    NitroComponent,
 )
 
 # List components (v0.2.0)
 from nitro.list import (
+    BaseListComponent,
+    BaseListState,
+    FilterMixin,
     PaginationMixin,
     SearchMixin,
-    FilterMixin,
-    BaseListState,
-    BaseListComponent,
-)
-
-# Security mixins (v0.3.0)
-from nitro.security import (
-    OwnershipMixin,
-    TenantScopedMixin,
-    PermissionMixin,
 )
 
 # Registry
 from nitro.registry import register_component
+
+# Security mixins (v0.3.0)
+from nitro.security import (
+    OwnershipMixin,
+    PermissionMixin,
+    TenantScopedMixin,
+)
 
 __version__ = "0.3.0"
 

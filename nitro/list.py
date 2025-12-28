@@ -1,10 +1,12 @@
 """List components with pagination, search, and filtering for Django Nitro."""
-from typing import Optional, TypeVar, Generic, Any
+
+from typing import Any, Generic, TypeVar
+
 from pydantic import BaseModel, Field
+
 from nitro.base import CrudNitroComponent
 
-
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
 
 
 class PaginationMixin:
@@ -29,7 +31,7 @@ class PaginationMixin:
             - previous_page_number: Previous page number or None
             - next_page_number: Next page number or None
         """
-        from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+        from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
         paginator = Paginator(queryset, per_page)
 
@@ -41,13 +43,15 @@ class PaginationMixin:
             page_obj = paginator.page(paginator.num_pages)
 
         return {
-            'items': list(page_obj),
-            'page': page_obj.number,
-            'num_pages': paginator.num_pages,
-            'has_previous': page_obj.has_previous(),
-            'has_next': page_obj.has_next(),
-            'previous_page_number': page_obj.previous_page_number() if page_obj.has_previous() else None,
-            'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None,
+            "items": list(page_obj),
+            "page": page_obj.number,
+            "num_pages": paginator.num_pages,
+            "has_previous": page_obj.has_previous(),
+            "has_next": page_obj.has_next(),
+            "previous_page_number": (
+                page_obj.previous_page_number() if page_obj.has_previous() else None
+            ),
+            "next_page_number": page_obj.next_page_number() if page_obj.has_next() else None,
         }
 
 
@@ -108,7 +112,7 @@ class FilterMixin:
             return queryset
 
         # Remove empty values
-        filters = {k: v for k, v in filters.items() if v not in [None, '', []]}
+        filters = {k: v for k, v in filters.items() if v not in [None, "", []]}
 
         return queryset.filter(**filters)
 
@@ -135,6 +139,7 @@ class BaseListState(BaseModel):
             create_buffer: CompanyFormSchema = Field(default_factory=CompanyFormSchema)
             edit_buffer: Optional[CompanyFormSchema] = None
     """
+
     # Items
     items: list[Any] = []
 
@@ -147,29 +152,25 @@ class BaseListState(BaseModel):
     num_pages: int = 1
     has_previous: bool = False
     has_next: bool = False
-    previous_page_number: Optional[int] = None
-    next_page_number: Optional[int] = None
+    previous_page_number: int | None = None
+    next_page_number: int | None = None
 
     # Metadata for UX
-    total_count: int = 0        # Total number of results (before pagination)
-    showing_start: int = 0      # First item number on current page (e.g., 21)
-    showing_end: int = 0        # Last item number on current page (e.g., 40)
+    total_count: int = 0  # Total number of results (before pagination)
+    showing_start: int = 0  # First item number on current page (e.g., 21)
+    showing_end: int = 0  # Last item number on current page (e.g., 40)
 
     # Filters
     filters: dict = Field(default_factory=dict)
 
     # CRUD buffers (inherited from CrudNitroComponent)
-    create_buffer: Optional[Any] = None
-    edit_buffer: Optional[Any] = None
-    editing_id: Optional[int] = None
+    create_buffer: Any | None = None
+    edit_buffer: Any | None = None
+    editing_id: int | None = None
 
 
 class BaseListComponent(
-    Generic[T],
-    PaginationMixin,
-    SearchMixin,
-    FilterMixin,
-    CrudNitroComponent[T]
+    Generic[T], PaginationMixin, SearchMixin, FilterMixin, CrudNitroComponent[T]
 ):
     """
     Base component for CRUD list views with pagination, search, and filters.
@@ -213,7 +214,7 @@ class BaseListComponent(
     """
 
     per_page: int = 20
-    order_by: str = '-id'
+    order_by: str = "-id"
 
     def get_initial_state(self, **kwargs):
         """
@@ -225,10 +226,10 @@ class BaseListComponent(
             - filters: Filter dict (default: {})
             - per_page: Items per page (default: self.per_page)
         """
-        page = kwargs.get('page', 1)
-        search = kwargs.get('search', '')
-        filters = kwargs.get('filters', {})
-        per_page = kwargs.get('per_page', self.per_page)
+        page = kwargs.get("page", 1)
+        search = kwargs.get("search", "")
+        filters = kwargs.get("filters", {})
+        per_page = kwargs.get("per_page", self.per_page)
 
         queryset = self.get_base_queryset(search=search, filters=filters)
         total_count = queryset.count()
@@ -236,33 +237,38 @@ class BaseListComponent(
 
         # Convert items to Pydantic schemas
         from pydantic import TypeAdapter
-        schema_list = TypeAdapter(list[self.state_class.model_fields['items'].annotation.__args__[0]])
-        items = schema_list.validate_python([
-            item.__dict__ if hasattr(item, '__dict__') else item
-            for item in pagination_data['items']
-        ])
+
+        schema_list = TypeAdapter(
+            list[self.state_class.model_fields["items"].annotation.__args__[0]]
+        )
+        items = schema_list.validate_python(
+            [
+                item.__dict__ if hasattr(item, "__dict__") else item
+                for item in pagination_data["items"]
+            ]
+        )
 
         # Calculate showing range for UX (e.g., "Showing 21-40 of 150")
-        showing_start = (pagination_data['page'] - 1) * per_page + 1 if items else 0
+        showing_start = (pagination_data["page"] - 1) * per_page + 1 if items else 0
         showing_end = showing_start + len(items) - 1 if items else 0
 
         return self.state_class(
             items=items,
             search=search,
             filters=filters,
-            page=pagination_data['page'],
+            page=pagination_data["page"],
             per_page=per_page,
-            num_pages=pagination_data['num_pages'],
-            has_previous=pagination_data['has_previous'],
-            has_next=pagination_data['has_next'],
-            previous_page_number=pagination_data['previous_page_number'],
-            next_page_number=pagination_data['next_page_number'],
+            num_pages=pagination_data["num_pages"],
+            has_previous=pagination_data["has_previous"],
+            has_next=pagination_data["has_next"],
+            previous_page_number=pagination_data["previous_page_number"],
+            next_page_number=pagination_data["next_page_number"],
             total_count=total_count,
             showing_start=showing_start,
             showing_end=showing_end,
         )
 
-    def get_base_queryset(self, search: str = '', filters: dict = None):
+    def get_base_queryset(self, search: str = "", filters: dict = None):
         """
         Get base queryset with filters applied.
 
@@ -310,10 +316,7 @@ class BaseListComponent(
 
         Used after initialization to get the current queryset.
         """
-        return self.get_base_queryset(
-            search=self.state.search,
-            filters=self.state.filters
-        )
+        return self.get_base_queryset(search=self.state.search, filters=self.state.filters)
 
     def refresh(self):
         """
@@ -326,23 +329,28 @@ class BaseListComponent(
         pagination_data = self.paginate_queryset(queryset, self.state.page, self.state.per_page)
 
         from pydantic import TypeAdapter
-        schema_list = TypeAdapter(list[self.state_class.model_fields['items'].annotation.__args__[0]])
-        items = schema_list.validate_python([
-            item.__dict__ if hasattr(item, '__dict__') else item
-            for item in pagination_data['items']
-        ])
+
+        schema_list = TypeAdapter(
+            list[self.state_class.model_fields["items"].annotation.__args__[0]]
+        )
+        items = schema_list.validate_python(
+            [
+                item.__dict__ if hasattr(item, "__dict__") else item
+                for item in pagination_data["items"]
+            ]
+        )
 
         # Calculate showing range
-        showing_start = (pagination_data['page'] - 1) * self.state.per_page + 1 if items else 0
+        showing_start = (pagination_data["page"] - 1) * self.state.per_page + 1 if items else 0
         showing_end = showing_start + len(items) - 1 if items else 0
 
         self.state.items = items
-        self.state.page = pagination_data['page']
-        self.state.num_pages = pagination_data['num_pages']
-        self.state.has_previous = pagination_data['has_previous']
-        self.state.has_next = pagination_data['has_next']
-        self.state.previous_page_number = pagination_data['previous_page_number']
-        self.state.next_page_number = pagination_data['next_page_number']
+        self.state.page = pagination_data["page"]
+        self.state.num_pages = pagination_data["num_pages"]
+        self.state.has_previous = pagination_data["has_previous"]
+        self.state.has_next = pagination_data["has_next"]
+        self.state.previous_page_number = pagination_data["previous_page_number"]
+        self.state.next_page_number = pagination_data["next_page_number"]
         self.state.total_count = total_count
         self.state.showing_start = showing_start
         self.state.showing_end = showing_end

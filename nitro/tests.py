@@ -1,18 +1,21 @@
-from django.test import TestCase, RequestFactory
 from django.db import models
+from django.test import RequestFactory, TestCase
 from pydantic import BaseModel
-from nitro.base import NitroComponent, ModelNitroComponent
-from nitro.registry import register_component, get_component_class, _component_registry
+
+from nitro.base import ModelNitroComponent, NitroComponent
+from nitro.registry import _component_registry, get_component_class, register_component
 
 
 class SimpleState(BaseModel):
     """Test state schema."""
+
     count: int = 0
     message: str = ""
 
 
 class SimpleComponent(NitroComponent[SimpleState]):
     """Test component for basic functionality."""
+
     template_name = "test.html"
     state_class = SimpleState
 
@@ -31,7 +34,7 @@ class TestNitroComponent(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
-        self.request = self.factory.get('/')
+        self.request = self.factory.get("/")
 
     def test_component_initialization(self):
         """Test that a component initializes with correct state."""
@@ -51,9 +54,7 @@ class TestNitroComponent(TestCase):
         """Test that actions can be processed and state updates correctly."""
         component = SimpleComponent(request=self.request)
         result = component.process_action(
-            action_name="increment",
-            payload={},
-            current_state_dict={"count": 0, "message": ""}
+            action_name="increment", payload={}, current_state_dict={"count": 0, "message": ""}
         )
         self.assertEqual(result["state"]["count"], 1)
 
@@ -63,7 +64,7 @@ class TestNitroComponent(TestCase):
         result = component.process_action(
             action_name="set_message",
             payload={"text": "test message"},
-            current_state_dict={"count": 0, "message": ""}
+            current_state_dict={"count": 0, "message": ""},
         )
         self.assertEqual(result["state"]["message"], "test message")
 
@@ -74,7 +75,7 @@ class TestNitroComponent(TestCase):
             component.process_action(
                 action_name="nonexistent_action",
                 payload={},
-                current_state_dict={"count": 0, "message": ""}
+                current_state_dict={"count": 0, "message": ""},
             )
 
     def test_integrity_computation(self):
@@ -141,10 +142,12 @@ class TestComponentRegistry(TestCase):
 
     def test_register_component(self):
         """Test component registration."""
+
         @register_component
         class TestComp(NitroComponent[SimpleState]):
             template_name = "test.html"
             state_class = SimpleState
+
             def get_initial_state(self, **kwargs):
                 return SimpleState()
 
@@ -161,11 +164,13 @@ class TestModelNitroComponent(TestCase):
 
     def test_secure_fields_auto_detection(self):
         """Test that id and foreign key fields are automatically marked as secure."""
+
         # Create a test model and component
         class TestModel(models.Model):
             name = models.CharField(max_length=100)
+
             class Meta:
-                app_label = 'nitro'
+                app_label = "nitro"
 
         class TestModelState(BaseModel):
             id: int
@@ -181,5 +186,5 @@ class TestModelNitroComponent(TestCase):
                 return TestModelState(id=1, name="Test", property_id=1)
 
         component = TestModelComponent()
-        self.assertIn('id', component.secure_fields)
-        self.assertIn('property_id', component.secure_fields)
+        self.assertIn("id", component.secure_fields)
+        self.assertIn("property_id", component.secure_fields)

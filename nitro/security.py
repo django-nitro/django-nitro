@@ -5,7 +5,6 @@ This module provides reusable mixins for common security patterns:
 - TenantScopedMixin: Multi-tenant data isolation
 - PermissionMixin: Permission checking framework
 """
-from typing import Optional
 
 
 class OwnershipMixin:
@@ -36,7 +35,7 @@ class OwnershipMixin:
                 return qs.order_by(self.order_by)
     """
 
-    owner_field: str = 'user'  # Override in subclass if needed
+    owner_field: str = "user"  # Override in subclass if needed
 
     def filter_by_owner(self, queryset):
         """
@@ -89,7 +88,7 @@ class TenantScopedMixin:
                 return qs.order_by(self.order_by)
     """
 
-    tenant_field: str = 'organization'  # Override in subclass
+    tenant_field: str = "organization"  # Override in subclass
 
     def get_user_tenant(self):
         """
@@ -222,7 +221,7 @@ class PermissionMixin:
             "with your permission logic"
         )
 
-    def enforce_permission(self, action: str, error_message: Optional[str] = None) -> bool:
+    def enforce_permission(self, action: str, error_message: str | None = None) -> bool:
         """
         Enforce permission check with user feedback.
 
