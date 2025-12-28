@@ -5,7 +5,27 @@ All notable changes to Django Nitro will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.1] - 2025-12-28
+
+### Added
+- Support for Django 6.0 and Python 3.14
+### Fixed
+- Fix the Github reference in pyproject.toml file
+
+## [0.2.0] - 2025-12-27
+
+### Added
+- `BaseListComponent` for CRUD list views with pagination, search, and filters
+- `PaginationMixin` for Django queryset pagination
+- `SearchMixin` for full-text search across configurable fields
+- `FilterMixin` for dynamic queryset filtering
+- `BaseListState` with complete pagination metadata (total_count, showing_start, showing_end, etc.)
+- Navigation methods: `next_page()`, `previous_page()`, `go_to_page()`, `set_per_page()`
+- Search and filter management: `search_items()`, `set_filters()`, `clear_filters()`
+- Automatic page reset when search/filters change
+- Full integration with existing `CrudNitroComponent` functionality
+
+## [0.1.0] - 2024-XX-XX
 
 ### Added
 - Initial release of Django Nitro
@@ -27,23 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic protection for `id` fields and foreign keys
 - CSRF token integration with Django
 
-## [0.2.0] - 2025-12-27
 
-### Added
-- `BaseListComponent` for CRUD list views with pagination, search, and filters
-- `PaginationMixin` for Django queryset pagination
-- `SearchMixin` for full-text search across configurable fields
-- `FilterMixin` for dynamic queryset filtering
-- `BaseListState` with complete pagination metadata (total_count, showing_start, showing_end, etc.)
-- Navigation methods: `next_page()`, `previous_page()`, `go_to_page()`, `set_per_page()`
-- Search and filter management: `search_items()`, `set_filters()`, `clear_filters()`
-- Automatic page reset when search/filters change
-- Full integration with existing `CrudNitroComponent` functionality
 
-## [0.1.0] - 2024-XX-XX
 
-### Added
-- Initial public release
 
-[Unreleased]: https://github.com/django-nitro/django-nitro/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/django-nitro/django-nitro/releases/tag/v0.1.0

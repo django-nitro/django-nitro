@@ -7,7 +7,7 @@ from nitro.base import (
     CrudNitroComponent,
 )
 
-# List components (v0.2.0)
+# List components (v0.2.1)
 from nitro.list import (
     PaginationMixin,
     SearchMixin,
@@ -19,7 +19,7 @@ from nitro.list import (
 # Registry
 from nitro.registry import register_component
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __all__ = [
     # Base
