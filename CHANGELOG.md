@@ -5,6 +5,147 @@ All notable changes to Django Nitro will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-12-29
+
+### Added
+
+#### Advanced Zero JavaScript Mode Template Tags
+- **`{% nitro_attr %}`** - Dynamic attribute binding for any HTML attribute
+  - Usage: `<img {% nitro_attr 'src' 'product.image_url' %}>`
+  - Supports src, href, placeholder, and any custom attribute
+- **`{% nitro_if %}`** - Conditional rendering wrapper (x-if equivalent)
+  - Usage: `{% nitro_if 'user.is_authenticated' %} ... {% end_nitro_if %}`
+  - Completely removes/adds DOM elements based on condition
+- **`{% nitro_disabled %}`** - Dynamic disabled state binding
+  - Usage: `<button {% nitro_disabled 'isProcessing || !isValid' %}>`
+  - Supports complex boolean expressions
+- **`{% nitro_file %}`** - File upload with progress tracking and validation
+  - Usage: `<input type="file" {% nitro_file 'avatar' accept='image/*' preview=True %}>`
+  - Features: file size validation, image preview, progress tracking
+  - Client-side validation before upload
+  - Custom events: `nitro:file-upload-start`, `nitro:file-upload-complete`, `nitro:file-error`, `nitro:file-preview`
+
+#### Nested Field Support
+- **Dot Notation in `nitro_model`** - Support for nested state fields
+  - Usage: `<input {% nitro_model 'user.profile.email' %}>`
+  - Works with deeply nested objects (3+ levels)
+  - Automatic path validation in DEBUG mode
+  - Server-side `_sync_field()` method handles nested updates
+
+#### File Upload System
+- **`_handle_file_upload()` Method** - Override to handle file uploads
+  - Automatically called by `{% nitro_file %}` template tag
+  - Receives field name and Django UploadedFile object
+  - Default implementation provides helpful warnings
+- **Client-side File Handling** in `nitro.js`:
+  - `handleFileUpload()` function with validation and preview
+  - File size validation with human-readable messages
+  - Image preview generation for image files
+  - Upload progress tracking with state updates
+  - Automatic error handling and user feedback
+
+### Enhanced
+
+#### Template Tags System
+- All Zero JS Mode tags now support more complex expressions
+- Better error messages in DEBUG mode
+- Consistent API across all template tags
+
+#### JavaScript Client (`nitro.js`)
+- File upload support with progress tracking
+- File size parsing utilities (`_parseFileSize`, `_formatFileSize`)
+- New DOM events for file operations
+- Enhanced error handling for uploads
+
+### Testing
+- Added comprehensive test suite for v0.5.0 features
+- Tests for all new template tags (`nitro_attr`, `nitro_if`, `nitro_disabled`, `nitro_file`)
+- Tests for nested field support in `_sync_field()`
+- Tests for file upload handler default implementation
+
+### Debugging Tools
+- **NITRO_DEBUG Mode** - HTML debug attributes on all template tags
+  - Shows field names, parameters, and configuration
+  - Enabled via `NITRO = {'DEBUG': True}` in settings
+  - `data-nitro-debug` attributes visible in browser DevTools
+- **Django Debug Toolbar Panel** - Server-side debugging
+  - Shows all components rendered in a request
+  - Tracks action calls with payloads
+  - Monitors events emitted
+  - Displays full component state
+  - Installation: Add `nitro.debug_toolbar_panel.NitroDebugPanel` to `DEBUG_TOOLBAR_PANELS`
+- **Client-Side Debug Logging** - Browser console debugging
+  - Set `window.NITRO_DEBUG = true` for detailed logs
+  - Logs component initialization, action calls, state updates
+  - Event tracking in browser console
+
+### Documentation
+- Added examples for all new template tags
+- Documented nested field syntax and limitations
+- File upload guide with examples
+- Complete debugging guide (debugging.md)
+- Updated API reference with new methods
+
+## [0.4.0] - 2025-12-29
+
+### Added
+
+#### Configuration System
+- **Global Configuration** via Django settings (`NITRO` dict)
+- `get_setting()` and `get_all_settings()` functions for centralized config
+- Configurable toast notifications (enabled, position, duration, style)
+- Component-level configuration overrides
+
+#### Toast Notifications
+- **Native Toast System** without external dependencies
+- Professional toast styles with `nitro.css` (6 positions, 3 styles, animations)
+- **Custom Toast Adapter** support via `window.NitroToastAdapter`
+- Automatic toast display for `success()` and `error()` messages
+- Component-level toast configuration (position, duration, style)
+
+#### Event System
+- **Inter-component Communication** via DOM events
+- `emit(event_name, data)` method for custom events
+- `refresh_component(component_id)` helper for triggering refreshes
+- Built-in events: `nitro:message`, `nitro:action-complete`, `nitro:error`
+- Custom events dispatched from server with full data payloads
+
+#### Smart State Updates (Opt-in)
+- **State Diffing** for efficient updates with `smart_updates = True`
+- Intelligent list operations (added/removed/updated) for items with `id` field
+- Client-side diff application reduces payload size
+- Optimized for components with large lists (500+ items)
+
+#### CLI Scaffolding
+- **`startnitro` Management Command** for rapid component generation
+- `python manage.py startnitro ComponentName --app myapp`
+- Support for simple, list, and CRUD components with `--list` and `--crud` flags
+- Auto-generates component files, templates, and state schemas
+- Follows project conventions and best practices
+
+#### SEO-Friendly Template Tags
+- **`{% nitro_scripts %}`** tag for including CSS and JS
+- **`{% nitro_for %}`** for SEO-optimized loops with Alpine.js hydration
+- **`{% nitro_text %}`** for static content with reactive bindings
+- Hybrid rendering: static HTML (SEO) + Alpine.js (reactivity)
+- Fully optional - traditional `x-for` and `x-text` still work
+
+### Changed
+- `render()` now includes `toast_config` in initial payload
+- `process_action()` now returns `events`, `toast_config`, and optional `partial` flag
+- `nitro.js` completely rewritten with toast system, event dispatching, and diff application
+- Enhanced debug mode with detailed console logging for events and state changes
+
+### Fixed
+- Created missing `nitro/templatetags/__init__.py` for proper Django template tag recognition
+- Added documentation about `from_attributes=True` requirement in model schemas
+
+### Documentation
+- New `TOAST_ADAPTERS.md` with integration examples (SweetAlert2, Toastify, Notyf)
+- Updated API reference with new methods and configuration options
+- Added examples for event system and smart updates
+- CLI command usage documentation
+
 ## [0.3.0] - 2025-12-28
 
 ### Added

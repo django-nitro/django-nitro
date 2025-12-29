@@ -61,11 +61,20 @@ class Counter(NitroComponent[CounterState]):
 - **[CrudNitroComponent](components/crud-nitro-component.md)** - Pre-built CRUD operations
 - **[BaseListComponent](components/base-list-component.md)** - Pagination, search, and filters
 
-### Security Mixins (v0.3.0)
+### Security & Authentication
 
 - **[OwnershipMixin](security/ownership-mixin.md)** - Filter to current user's data
 - **[TenantScopedMixin](security/tenant-scoped-mixin.md)** - Multi-tenant isolation
 - **[PermissionMixin](security/permission-mixin.md)** - Custom permission framework
+
+### New in v0.4.0
+
+- **[Toast Notifications](core-concepts/TOAST_ADAPTERS.md)** - Native toasts or integrate your favorite library
+- **[Events System](core-concepts/events.md)** - Component-to-component communication with `emit()` and `refresh_component()`
+- **[CLI Scaffolding](core-concepts/cli-tools.md)** - Generate components with `python manage.py startnitro`
+- **[SEO Template Tags](core-concepts/template-tags.md)** - Server-side rendering with `{% nitro_for %}` and `{% nitro_text %}`
+- **[Smart State Updates](core-concepts/smart-updates.md)** - Performance optimization with state diffing for large lists
+- **Configuration System** - Centralized NITRO settings with fallbacks
 
 ## Getting Started
 

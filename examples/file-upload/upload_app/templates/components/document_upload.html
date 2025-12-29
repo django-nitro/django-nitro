@@ -1,0 +1,149 @@
+<!-- Document Upload Component -->
+<div class="document-upload-container">
+    <h3>Document Upload</h3>
+    <p>Upload PDF or DOCX files (max 10MB)</p>
+
+    <!-- Upload Form -->
+    <div class="upload-section">
+        <input
+            type="file"
+            {% nitro_file 'document' accept='.pdf,.docx' max_size='10MB' %}
+        />
+    </div>
+
+    <!-- Document List -->
+    <div {% nitro_show 'documents.length > 0' %}>
+        <h4>Uploaded Documents (<span x-text="documents.length"></span>)</h4>
+
+        <div class="document-list">
+            {% nitro_for 'documents' as 'doc' %}
+                <div class="document-item">
+                    <div class="document-icon">
+                        📄
+                    </div>
+                    <div class="document-details">
+                        <strong>{% nitro_text 'doc.name' %}</strong>
+                        <span class="document-size">
+                            <span x-text="(doc.size / 1024).toFixed(2)"></span> KB
+                        </span>
+                    </div>
+                    <div class="document-actions">
+                        <a :href="doc.url" download class="btn-download" target="_blank">
+                            Download
+                        </a>
+                        <button
+                            {% nitro_action 'delete_document' doc_id='doc.id' %}
+                            class="btn-delete"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            {% end_nitro_for %}
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div {% nitro_show 'documents.length === 0' %} class="empty-state">
+        <p>No documents uploaded yet</p>
+    </div>
+</div>
+
+<style>
+    .document-upload-container {
+        max-width: 700px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+
+    .upload-section {
+        margin: 20px 0;
+    }
+
+    .upload-section input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .document-list {
+        margin-top: 20px;
+    }
+
+    .document-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        background: #fafafa;
+    }
+
+    .document-icon {
+        font-size: 32px;
+    }
+
+    .document-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .document-size {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .document-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-download,
+    .btn-delete {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+    }
+
+    .btn-download {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .btn-download:hover {
+        background: #45a049;
+    }
+
+    .btn-delete {
+        background: #f44336;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #d32f2f;
+    }
+
+    .btn-delete:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-style: italic;
+    }
+</style>

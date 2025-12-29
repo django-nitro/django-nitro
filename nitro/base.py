@@ -1,14 +1,15 @@
 import json
 import logging
-from typing import Generic, TypeVar, get_args
+from typing import Any, Generic, TypeVar, get_args
 
+from django.conf import settings
 from django.core.signing import BadSignature, Signer
 from django.db import models
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,11 @@ class NitroComponent(Generic[S]):
         template_name: Path to the Django template for rendering this component
         state_class: Pydantic model class for state validation and type safety
         secure_fields: List of field names that require integrity verification
+        toast_enabled: Enable/disable toasts for this component (None = use global setting)
+        toast_position: Toast position (None = use global setting)
+        toast_duration: Toast duration in ms (None = use global setting)
+        toast_style: Toast style (None = use global setting)
+        smart_updates: Enable smart state diffing for large lists (default: False)
     """
 
     template_name: str = ""
@@ -35,6 +41,15 @@ class NitroComponent(Generic[S]):
     state_class: type[S] | None = None
     state: S
     secure_fields: list[str] = []
+
+    # Toast configuration (None = use global settings)
+    toast_enabled: bool | None = None
+    toast_position: str | None = None
+    toast_duration: int | None = None
+    toast_style: str | None = None
+
+    # Smart updates configuration
+    smart_updates: bool = False
 
     def __init__(self, request: HttpRequest | None = None, initial_state: dict = None, **kwargs):
         """
@@ -50,6 +65,7 @@ class NitroComponent(Generic[S]):
         self._signer = Signer()
         self._pending_errors: dict[str, str] = {}
         self._pending_messages: list[dict[str, str]] = []
+        self._pending_events: list[dict[str, Any]] = []
 
         if initial_state is not None:
             if self.state_class:
@@ -136,6 +152,36 @@ class NitroComponent(Generic[S]):
             return False
         return True
 
+    def _get_toast_config(self) -> dict[str, Any]:
+        """
+        Get toast configuration for this component.
+
+        Component-level settings override global settings from Django settings.
+
+        Returns:
+            Dictionary with toast configuration:
+            - enabled: bool
+            - position: str
+            - duration: int
+            - style: str
+        """
+        from nitro.conf import get_setting
+
+        return {
+            "enabled": (
+                self.toast_enabled
+                if self.toast_enabled is not None
+                else get_setting("TOAST_ENABLED")
+            ),
+            "position": self.toast_position or get_setting("TOAST_POSITION"),
+            "duration": (
+                self.toast_duration
+                if self.toast_duration is not None
+                else get_setting("TOAST_DURATION")
+            ),
+            "style": self.toast_style or get_setting("TOAST_STYLE"),
+        }
+
     def _compute_integrity(self) -> str:
         """
         Compute an integrity token for secure fields.
@@ -179,6 +225,77 @@ class NitroComponent(Generic[S]):
         except BadSignature:
             return False
 
+    def _compute_diff(self, old_state: dict, new_state: dict) -> dict:
+        """
+        Compute diff between old and new state.
+
+        Only includes changed fields in the diff. For lists with items
+        that have 'id' fields, computes added/removed/updated operations.
+
+        Args:
+            old_state: Previous state dictionary
+            new_state: Current state dictionary
+
+        Returns:
+            Dictionary with only changed fields. List fields with 'id'
+            items are returned as {"diff": {"added": [], "removed": [], "updated": []}}
+        """
+        diff = {}
+
+        for key, new_value in new_state.items():
+            old_value = old_state.get(key)
+
+            # Skip if values are equal
+            if old_value == new_value:
+                continue
+
+            # Check if it's a list with items that have 'id'
+            if isinstance(new_value, list) and isinstance(old_value, list):
+                if new_value and isinstance(new_value[0], dict) and "id" in new_value[0]:
+                    # Compute list diff
+                    list_diff = self._diff_list(old_value, new_value)
+                    if list_diff["added"] or list_diff["removed"] or list_diff["updated"]:
+                        diff[key] = {"diff": list_diff}
+                    continue
+
+            # Regular field change
+            diff[key] = new_value
+
+        return diff
+
+    def _diff_list(self, old_list: list, new_list: list) -> dict:
+        """
+        Compute diff for lists with items that have 'id' field.
+
+        Args:
+            old_list: Previous list of items
+            new_list: Current list of items
+
+        Returns:
+            Dictionary with:
+            - added: List of new items
+            - removed: List of removed item IDs
+            - updated: List of updated items (full item dict)
+        """
+        # Build ID mappings
+        old_ids = {
+            item.get("id"): item
+            for item in old_list
+            if isinstance(item, dict) and "id" in item
+        }
+        new_ids = {
+            item.get("id"): item
+            for item in new_list
+            if isinstance(item, dict) and "id" in item
+        }
+
+        # Detect changes
+        added = [item for id, item in new_ids.items() if id not in old_ids]
+        removed = [id for id in old_ids if id not in new_ids]
+        updated = [item for id, item in new_ids.items() if id in old_ids and item != old_ids[id]]
+
+        return {"added": added, "removed": removed, "updated": updated}
+
     def add_error(self, field: str, message: str):
         """Add a field-specific validation error to be sent to the client."""
         self._pending_errors[field] = message
@@ -190,6 +307,188 @@ class NitroComponent(Generic[S]):
     def error(self, message: str):
         """Add an error message to be displayed to the user."""
         self._pending_messages.append({"level": "error", "text": message})
+
+    def warning(self, message: str):
+        """Add a warning message to be displayed to the user."""
+        self._pending_messages.append({"level": "warning", "text": message})
+
+    def info(self, message: str):
+        """Add an info message to be displayed to the user."""
+        self._pending_messages.append({"level": "info", "text": message})
+
+    def _sync_field(self, field: str, value: Any):
+        """
+        Internal method for auto-syncing fields (used by {% nitro_model %} tag).
+
+        This method is called automatically by the nitro_model template tag
+        to sync individual fields without requiring explicit action methods.
+
+        Args:
+            field: Field name to sync (e.g., 'email', 'search', 'user.profile.name')
+            value: New value for the field
+
+        Example:
+            # In template (Zero JS Mode)
+            <input {% nitro_model 'email' %}>
+            <input {% nitro_model 'user.profile.email' %}>
+
+            # This automatically calls:
+            call('_sync_field', {field: 'email', value: 'user@example.com'})
+            call('_sync_field', {field: 'user.profile.email', value: 'user@example.com'})
+
+        Note:
+            - This is a silent operation (no success messages)
+            - Validation errors are added to _pending_errors
+            - Supports nested fields with dot notation (e.g., 'user.email')
+        """
+        # Handle nested fields (dot notation)
+        if '.' in field:
+            # Split field path (e.g., 'user.profile.email' -> ['user', 'profile', 'email'])
+            parts = field.split('.')
+
+            # Navigate to the parent object
+            obj = self.state
+            for part in parts[:-1]:
+                if not hasattr(obj, part):
+                    if settings.DEBUG:
+                        raise ValueError(
+                            f"Nested field path '{field}' is invalid: "
+                            f"'{part}' does not exist in {obj.__class__.__name__}"
+                        )
+                    # In production, silently ignore
+                    return
+                obj = getattr(obj, part)
+
+            # Set the final field value
+            final_field = parts[-1]
+            if not hasattr(obj, final_field):
+                if settings.DEBUG:
+                    available_fields = ", ".join(
+                        f for f in dir(obj) if not f.startswith("_")
+                    )
+                    raise ValueError(
+                        f"Field '{final_field}' does not exist in {obj.__class__.__name__}. "
+                        f"Available fields: {available_fields}"
+                    )
+                # In production, silently ignore
+                return
+
+            try:
+                setattr(obj, final_field, value)
+            except ValidationError as e:
+                # Pydantic validation failed
+                error_msg = str(e.errors()[0]["msg"]) if e.errors() else str(e)
+                self._pending_errors[field] = error_msg
+        else:
+            # Simple field (no nesting)
+            # Validate field exists in state
+            if not hasattr(self.state, field):
+                if settings.DEBUG:
+                    # In debug mode, show helpful error
+                    available_fields = ", ".join(
+                        f for f in dir(self.state) if not f.startswith("_")
+                    )
+                    raise ValueError(
+                        f"Field '{field}' does not exist in {self.state.__class__.__name__}. "
+                        f"Available fields: {available_fields}"
+                    )
+                # In production, silently ignore
+                return
+
+            # Set the field value
+            try:
+                setattr(self.state, field, value)
+            except ValidationError as e:
+                # Pydantic validation failed
+                error_msg = str(e.errors()[0]["msg"]) if e.errors() else str(e)
+                self._pending_errors[field] = error_msg
+
+    def _handle_file_upload(self, field: str, uploaded_file=None):
+        """
+        Internal method for handling file uploads (used by {% nitro_file %} tag).
+
+        This method is called automatically by the nitro_file template tag
+        when a file is uploaded. Override this method in your component to
+        handle the file storage and processing.
+
+        Args:
+            field: Field name (e.g., 'avatar', 'document')
+            uploaded_file: Django UploadedFile object
+
+        Example:
+            # Override in your component
+            def _handle_file_upload(self, field: str, uploaded_file=None):
+                if field == 'avatar':
+                    # Save to media folder
+                    from django.core.files.storage import default_storage
+                    filename = default_storage.save(
+                        f'avatars/{uploaded_file.name}',
+                        uploaded_file
+                    )
+                    self.state.avatar_url = default_storage.url(filename)
+                    self.success('Avatar uploaded successfully!')
+
+                elif field == 'document':
+                    # Process document
+                    content = uploaded_file.read()
+                    # ... process content ...
+                    self.success('Document uploaded and processed!')
+
+        Note:
+            - This is a base implementation that does nothing
+            - You must override this in your component to handle files
+            - The uploaded file is available via self.request.FILES
+        """
+        # Base implementation - override in subclass
+        if uploaded_file:
+            self.warning(
+                f"File '{uploaded_file.name}' was uploaded but not processed. "
+                f"Override _handle_file_upload() in your component to handle it."
+            )
+        else:
+            self.error("No file was uploaded")
+
+    def emit(self, event_name: str, data: dict[str, Any] | None = None):
+        """
+        Emit a custom event to be sent to the client.
+
+        Events are dispatched as DOM events that can be caught by other
+        components or JavaScript code.
+
+        Args:
+            event_name: Name of the event (will be prefixed with 'nitro:' if not already)
+            data: Optional data payload for the event
+
+        Example:
+            # In one component
+            self.emit('user-updated', {'user_id': 123, 'name': 'John'})
+
+            # In another component's template
+            <div @nitro:user-updated.window="call('refresh')">...</div>
+        """
+        if not event_name.startswith("nitro:"):
+            event_name = f"nitro:{event_name}"
+
+        self._pending_events.append({"name": event_name, "data": data or {}})
+
+    def refresh_component(self, component_id: str):
+        """
+        Helper method to trigger a refresh on another component.
+
+        Emits a 'nitro:refresh-{component_id}' event that the target
+        component should listen for.
+
+        Args:
+            component_id: ID of the component to refresh (lowercase)
+
+        Example:
+            # In component A
+            self.refresh_component('propertylist')
+
+            # In PropertyList template
+            <div @nitro:refresh-propertylist.window="call('refresh')">...</div>
+        """
+        self.emit(f"refresh-{component_id.lower()}", {"source": self.__class__.__name__})
 
     def render(self):
         """
@@ -210,6 +509,7 @@ class NitroComponent(Generic[S]):
             "errors": {},
             "messages": [],
             "integrity": self._compute_integrity(),
+            "toast_config": self._get_toast_config(),
         }
 
         context = {"state": state_dict, "component": self}
@@ -246,11 +546,16 @@ class NitroComponent(Generic[S]):
             uploaded_file: Optional uploaded file from the client
 
         Returns:
-            Dictionary containing updated state, errors, messages, and integrity token
+            Dictionary containing updated state, errors, messages, integrity token,
+            toast config, and events. If smart_updates is enabled, state may be a diff
+            and partial will be True.
 
         Raises:
             ValueError: If the action method doesn't exist on this component
         """
+        # Store old state for diffing if smart_updates enabled
+        old_state_dict = current_state_dict.copy() if self.smart_updates else None
+
         try:
             if self.state_class:
                 self.state = self.state_class(**current_state_dict)
@@ -279,13 +584,25 @@ class NitroComponent(Generic[S]):
             else:
                 action_method(**payload)
 
+            # Get new state
+            new_state_dict = (
+                self.state.model_dump() if hasattr(self.state, "model_dump") else self.state
+            )
+
+            # Compute diff if smart_updates enabled
+            if self.smart_updates and old_state_dict:
+                state_to_send = self._compute_diff(old_state_dict, new_state_dict)
+            else:
+                state_to_send = new_state_dict
+
             return {
-                "state": (
-                    self.state.model_dump() if hasattr(self.state, "model_dump") else self.state
-                ),
+                "state": state_to_send,
+                "partial": self.smart_updates,  # Signal to client that this is a diff
                 "errors": self._pending_errors,
                 "messages": self._pending_messages,
                 "integrity": self._compute_integrity(),
+                "toast_config": self._get_toast_config(),
+                "events": self._pending_events,
             }
         raise ValueError(f"Action {action_name} not found")
 
@@ -296,6 +613,20 @@ class ModelNitroComponent(NitroComponent[S]):
 
     Extends NitroComponent with automatic model loading, queryset support,
     and automatic secure field detection for database IDs and foreign keys.
+
+    IMPORTANT: Your state schema MUST use ConfigDict(from_attributes=True)
+    when working with Django models. This allows Pydantic to read Django
+    model attributes correctly.
+
+    Example:
+        from pydantic import BaseModel, ConfigDict
+
+        class PropertyState(BaseModel):
+            model_config = ConfigDict(from_attributes=True)
+
+            id: int
+            name: str
+            address: str
 
     Attributes:
         model: Django model class associated with this component
@@ -362,6 +693,10 @@ class CrudNitroComponent(ModelNitroComponent[S]):
     Extends ModelNitroComponent with pre-built methods for creating, updating,
     and deleting model instances. Includes edit/create buffer management for
     form handling.
+
+    IMPORTANT: Your state schema MUST use ConfigDict(from_attributes=True)
+    when working with Django models. This allows Pydantic to correctly read
+    Django model attributes when loading data with model_validate().
 
     The state schema should include:
         - create_buffer: Optional schema for new item creation

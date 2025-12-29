@@ -8,6 +8,17 @@ Django Nitro is a modern library for building reactive, stateful components in D
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Django 5.2+](https://img.shields.io/badge/django-5.2+-green.svg)](https://www.djangoproject.com/)
 
+---
+
+## What's New in v0.5.0
+
+- **Advanced Template Tags** - New `nitro_attr`, `nitro_if`, `nitro_disabled`, and `nitro_file` tags for cleaner, more expressive templates
+- **Nested Fields Support** - Access nested state with dot notation (`user.profile.name`)
+- **File Upload System** - Streamlined file uploads with the `nitro_file` template tag
+- **Debugging Tools** - `NITRO_DEBUG` mode and Django Debug Toolbar integration panel
+
+---
+
 ## Why Django Nitro?
 
 - ✅ **Zero JavaScript** - Write reactive UIs entirely in Python
@@ -32,10 +43,16 @@ Django Nitro is a modern library for building reactive, stateful components in D
   - [TenantScopedMixin](#tenantscopedmixin)
   - [PermissionMixin](#permissionmixin)
 - [State Management](#state-management)
+  - [Nested Fields (Dot Notation)](#nested-fields-dot-notation-v050)
 - [Actions & Methods](#actions--methods)
 - [Template Integration](#template-integration)
+  - [Advanced Template Tags (v0.5.0)](#advanced-template-tags-v050)
 - [Security & Integrity](#security--integrity)
 - [Messages & Notifications](#messages--notifications)
+- [Events & Inter-Component Communication](#events--inter-component-communication-v040)
+- [CLI Tools](#cli-tools-v040)
+- [SEO-Friendly Template Tags](#seo-friendly-template-tags-v040)
+- [Performance Optimization](#performance-optimization-v040)
 - [File Uploads](#file-uploads)
 - [Debugging](#debugging)
 - [Advanced Usage](#advanced-usage)
@@ -85,6 +102,29 @@ urlpatterns = [
 
 **3. Add Alpine and Nitro JS to your base template**
 
+**Option A: Modern (v0.4.0+) - Recommended**
+
+```html
+<!-- templates/base.html -->
+{% load nitro_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My App</title>
+    <!-- Alpine JS (required) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Nitro CSS and JS (includes toast styles) -->
+    {% nitro_scripts %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+</body>
+</html>
+```
+
+**Option B: Manual**
+
 ```html
 <!-- templates/base.html -->
 <!DOCTYPE html>
@@ -98,12 +138,25 @@ urlpatterns = [
     {% block content %}{% endblock %}
 
     <!-- Nitro JS (load AFTER Alpine) -->
+    <link rel="stylesheet" href="{% static 'nitro/nitro.css' %}">
     <script src="{% static 'nitro/nitro.js' %}"></script>
 </body>
 </html>
 ```
 
-**4. Run collectstatic (if in production)**
+**4. (Optional) Configure Nitro Settings (v0.4.0+)**
+
+```python
+# settings.py
+NITRO = {
+    'TOAST_ENABLED': True,
+    'TOAST_POSITION': 'top-right',  # top-right, top-left, top-center, bottom-right, bottom-left, bottom-center
+    'TOAST_DURATION': 3000,  # milliseconds
+    'TOAST_STYLE': 'default',  # default, minimal, bordered
+}
+```
+
+**5. Run collectstatic (if in production)**
 
 ```bash
 python manage.py collectstatic
@@ -977,6 +1030,52 @@ class MyComponentState(BaseModel):
 <div x-show="selected_id !== null">Something is selected</div>
 ```
 
+### Nested Fields (Dot Notation) (v0.5.0)
+
+Access deeply nested state properties using dot notation in templates:
+
+```python
+from pydantic import BaseModel
+
+class ProfileSchema(BaseModel):
+    name: str = ""
+    avatar_url: str = ""
+
+class SettingsSchema(BaseModel):
+    theme: str = "light"
+    notifications: bool = True
+
+class UserState(BaseModel):
+    profile: ProfileSchema = Field(default_factory=ProfileSchema)
+    settings: SettingsSchema = Field(default_factory=SettingsSchema)
+
+
+@register_component
+class UserDashboard(NitroComponent[UserState]):
+    template_name = "components/user_dashboard.html"
+    state_class = UserState
+```
+
+```html
+<!-- Access nested fields with dot notation -->
+<h1>{% nitro_text 'profile.name' %}</h1>
+<img :src="profile.avatar_url" alt="Avatar">
+
+<!-- Bind to nested fields -->
+<input type="text" x-model="profile.name" placeholder="Your name">
+<select x-model="settings.theme">
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+</select>
+
+<!-- Conditionals with nested fields -->
+<div x-show="settings.notifications">
+    Notifications are enabled
+</div>
+```
+
+Nitro automatically handles nested field updates, syncing changes back to the server while maintaining the full state structure.
+
 ---
 
 ## Actions & Methods
@@ -1086,6 +1185,116 @@ Every Nitro component template has access to:
 <input @keyup.enter="call('submit')">
 <input @input.debounce.500ms="call('search')">
 ```
+
+### Advanced Template Tags (v0.5.0)
+
+Django Nitro v0.5.0 introduces powerful template tags for cleaner, more expressive templates.
+
+#### `nitro_attr` - Dynamic Attributes
+
+Set any HTML attribute dynamically based on state:
+
+```html
+{% load nitro_tags %}
+
+<!-- Dynamic class based on state -->
+<div {% nitro_attr 'class' 'status' %}>
+    Status indicator
+</div>
+<!-- Renders: <div class="active"> if status="active" -->
+
+<!-- Dynamic href -->
+<a {% nitro_attr 'href' 'profile_url' %}>View Profile</a>
+
+<!-- With fallback value -->
+<img {% nitro_attr 'src' 'avatar_url' fallback='/static/default-avatar.png' %}>
+```
+
+#### `nitro_if` - Server-Side Conditionals
+
+Render content conditionally based on state (SEO-friendly):
+
+```html
+{% load nitro_tags %}
+
+<!-- Show content based on boolean state -->
+{% nitro_if 'is_premium' %}
+    <div class="premium-badge">Premium Member</div>
+{% end_nitro_if %}
+
+<!-- With else clause -->
+{% nitro_if 'is_authenticated' %}
+    <span>Welcome back!</span>
+{% nitro_else %}
+    <a href="/login">Sign In</a>
+{% end_nitro_if %}
+
+<!-- Comparison operators -->
+{% nitro_if 'cart_count' gt 0 %}
+    <span class="badge">{{ cart_count }}</span>
+{% end_nitro_if %}
+```
+
+#### `nitro_disabled` - Conditional Button States
+
+Disable buttons based on state conditions:
+
+```html
+{% load nitro_tags %}
+
+<!-- Disable when loading -->
+<button @click="call('submit')" {% nitro_disabled 'isLoading' %}>
+    Submit
+</button>
+
+<!-- Disable based on validation -->
+<button @click="call('save')" {% nitro_disabled 'form_invalid' %}>
+    Save Changes
+</button>
+
+<!-- Disable with compound conditions -->
+<button
+    @click="call('checkout')"
+    {% nitro_disabled 'cart_empty' %}
+    {% nitro_disabled 'isLoading' %}
+>
+    Checkout
+</button>
+```
+
+#### `nitro_file` - Streamlined File Uploads
+
+Simplified file upload handling:
+
+```html
+{% load nitro_tags %}
+
+<!-- Basic file upload -->
+{% nitro_file 'upload_document' %}
+    <span>Upload Document</span>
+{% end_nitro_file %}
+
+<!-- With file type restrictions -->
+{% nitro_file 'upload_image' accept='image/*' %}
+    <span>Choose Image</span>
+{% end_nitro_file %}
+
+<!-- With additional parameters -->
+{% nitro_file 'upload_attachment' id=document.id accept='.pdf,.docx' %}
+    <span>Attach File</span>
+{% end_nitro_file %}
+
+<!-- Styled file upload button -->
+{% nitro_file 'upload_avatar' class='btn btn-primary' %}
+    <i class="icon-upload"></i> Upload Avatar
+{% end_nitro_file %}
+```
+
+The `nitro_file` tag automatically handles:
+- File input creation and styling
+- FormData construction
+- CSRF token inclusion
+- Action invocation with file parameter
 
 ---
 
@@ -1319,18 +1528,135 @@ Before deploying your Nitro components:
 
 ### Adding Messages
 
+Django Nitro provides four message levels for user feedback:
+
 ```python
 class MyComponent(NitroComponent[MyState]):
     def save(self):
         try:
             # ... save logic ...
-            self.success("Item saved successfully!")
-        except Exception as e:
-            self.error(f"Failed to save: {str(e)}")
+            self.success("Item saved successfully!")  # Green toast
+        except ValidationError as e:
+            self.error(f"Validation failed: {str(e)}")  # Red toast
             logger.exception("Save failed")
+
+    def export_data(self):
+        self.info("Export started. You'll receive an email when complete.")  # Blue toast
+
+    def check_quota(self):
+        if self.get_usage() > 80:
+            self.warning("You've used 80% of your quota!")  # Yellow/orange toast
 ```
 
-### Displaying Messages
+**Available methods:**
+- `self.success(message)` - Green toast for successful operations
+- `self.error(message)` - Red toast for errors and failures
+- `self.info(message)` - Blue toast for informational messages
+- `self.warning(message)` - Yellow/orange toast for warnings
+
+### Toast Notifications (v0.4.0+)
+
+Django Nitro includes a professional toast notification system that works out of the box, with support for custom toast libraries.
+
+#### Native Toasts (No Dependencies)
+
+By default, Nitro shows beautiful native toasts without any external dependencies:
+
+```python
+# settings.py (optional - these are the defaults)
+NITRO = {
+    'TOAST_ENABLED': True,
+    'TOAST_POSITION': 'top-right',  # top-right, top-left, top-center, bottom-right, bottom-left, bottom-center
+    'TOAST_DURATION': 3000,  # milliseconds (3 seconds)
+    'TOAST_STYLE': 'default',  # default, minimal, bordered
+}
+```
+
+**Features:**
+- 6 positions (top-right, top-left, top-center, bottom-right, bottom-left, bottom-center)
+- 3 styles (default, minimal, bordered)
+- 4 levels (success, error, warning, info)
+- Auto-dismiss with configurable duration
+- Manual close button
+- Smooth animations
+- Responsive design
+
+#### Per-Component Configuration
+
+Override global settings for specific components:
+
+```python
+@register_component
+class CriticalAlert(NitroComponent[AlertState]):
+    # Override toast settings for this component
+    toast_enabled = True
+    toast_position = 'top-center'
+    toast_duration = 5000  # Show for 5 seconds
+    toast_style = 'bordered'
+
+    def alert_user(self):
+        self.error("Critical: Server backup failed!")  # Uses component-specific config
+```
+
+#### Custom Toast Libraries
+
+Integrate your favorite toast library (SweetAlert2, Toastify, Notyf, etc.) by defining a custom adapter:
+
+```html
+<!-- In your base template, before nitro.js -->
+<script>
+// Example: SweetAlert2
+window.NitroToastAdapter = {
+    show: function(message, level, config) {
+        Swal.fire({
+            icon: level,
+            title: message,
+            toast: true,
+            position: config.position || 'top-end',
+            timer: config.duration || 3000,
+            showConfirmButton: false
+        });
+    }
+};
+</script>
+
+<!-- Or use Toastify -->
+<script>
+window.NitroToastAdapter = {
+    show: function(message, level, config) {
+        Toastify({
+            text: message,
+            className: level,
+            duration: config.duration || 3000,
+            gravity: config.position.includes('top') ? 'top' : 'bottom',
+            position: config.position.includes('right') ? 'right' : 'left'
+        }).showToast();
+    }
+};
+</script>
+```
+
+**See also:** [Toast Adapters Guide](docs/core-concepts/TOAST_ADAPTERS.md) for complete examples.
+
+#### Disabling Toasts
+
+Disable toasts globally or per-component:
+
+```python
+# settings.py - Disable all toasts
+NITRO = {
+    'TOAST_ENABLED': False,
+}
+
+# Or per-component
+@register_component
+class SilentComponent(NitroComponent[State]):
+    toast_enabled = False  # No toasts for this component
+```
+
+### Displaying Messages in Templates
+
+If you prefer manual message handling over toasts:
 
 ```html
 <!-- Basic -->
@@ -1344,6 +1670,7 @@ class MyComponent(NitroComponent[MyState]):
         :class="{
             'alert-success': msg.level === 'success',
             'alert-error': msg.level === 'error',
+            'alert-warning': msg.level === 'warning',
             'alert-info': msg.level === 'info'
         }"
         x-text="msg.text"
@@ -1361,6 +1688,456 @@ class MyComponent(NitroComponent[MyState]):
     ></div>
 </template>
 ```
+
+---
+
+## Events & Inter-Component Communication (v0.4.0+)
+
+Django Nitro provides a powerful event system for communication between components and custom integrations.
+
+### Emitting Custom Events
+
+Use `emit()` to send custom events from your component:
+
+```python
+@register_component
+class ShoppingCart(NitroComponent[CartState]):
+    def add_to_cart(self, product_id: int):
+        # Add product to cart
+        self.state.items.append(product_id)
+
+        # Emit custom event that other components can listen to
+        self.emit('cart-updated', {
+            'item_count': len(self.state.items),
+            'product_id': product_id
+        })
+
+        self.success("Item added to cart")
+```
+
+**Event name conventions:**
+- Events are automatically prefixed with `nitro:` if not already
+- `emit('cart-updated')` → dispatches `nitro:cart-updated`
+- `emit('nitro:custom')` → dispatches `nitro:custom` (no double prefix)
+
+### Refreshing Other Components
+
+Trigger a refresh in another component using the `refresh_component()` helper:
+
+```python
+@register_component
+class ProductEditor(ModelNitroComponent[ProductSchema]):
+    def save_product(self):
+        obj = self.get_object(self.state.id)
+        obj.name = self.state.name
+        obj.price = self.state.price
+        obj.save()
+
+        # Tell the ProductList component to refresh
+        self.refresh_component('ProductList')
+
+        self.success("Product saved!")
+```
+
+This emits a `nitro:refresh-productlist` event that your components can listen to.
+
+### Listening to Events (JavaScript)
+
+Listen to Nitro events in your templates or custom JavaScript:
+
+```html
+<script>
+// Listen for cart updates
+window.addEventListener('nitro:cart-updated', (event) => {
+    console.log('Cart updated:', event.detail);
+    // event.detail contains: { component: 'ShoppingCart', item_count: 3, product_id: 42 }
+
+    // Update badge count
+    document.getElementById('cart-badge').textContent = event.detail.item_count;
+});
+
+// Listen for component refresh requests
+window.addEventListener('nitro:refresh-productlist', (event) => {
+    console.log('ProductList should refresh');
+    // Trigger a refresh on your component if needed
+});
+</script>
+```
+
+### Built-in DOM Events
+
+Nitro automatically dispatches these events:
+
+**`nitro:message`** - Each message/toast notification
+```javascript
+window.addEventListener('nitro:message', (event) => {
+    // event.detail: { component: 'MyComponent', level: 'success', text: 'Saved!' }
+});
+```
+
+**`nitro:action-complete`** - Action succeeded
+```javascript
+window.addEventListener('nitro:action-complete', (event) => {
+    // event.detail: { component: 'MyComponent', action: 'save', state: {...} }
+    console.log('Action completed:', event.detail.action);
+});
+```
+
+**`nitro:error`** - Error occurred
+```javascript
+window.addEventListener('nitro:error', (event) => {
+    // event.detail: { component: 'MyComponent', action: 'save', error: '...', status: 500 }
+    console.error('Nitro error:', event.detail.error);
+});
+```
+
+### Example: Multi-Component Workflow
+
+```python
+# Product editor component
+@register_component
+class ProductEditor(ModelNitroComponent[ProductSchema]):
+    def delete_product(self):
+        obj = self.get_object(self.state.id)
+        product_name = obj.name
+        obj.delete()
+
+        # Notify analytics component
+        self.emit('product-deleted', {'product_name': product_name})
+
+        # Refresh the product list
+        self.refresh_component('ProductList')
+
+        self.success(f"Deleted {product_name}")
+
+# Analytics component
+@register_component
+class Analytics(NitroComponent[AnalyticsState]):
+    def track_deletion(self, product_name: str):
+        # Called via JavaScript event listener
+        self.state.deleted_count += 1
+        # Send to analytics service...
+```
+
+```html
+<!-- In your template -->
+<script>
+window.addEventListener('nitro:product-deleted', (event) => {
+    // Track the deletion
+    fetch('/api/analytics/track', {
+        method: 'POST',
+        body: JSON.stringify({
+            event: 'product_deleted',
+            product: event.detail.product_name
+        })
+    });
+});
+</script>
+```
+
+---
+
+## CLI Tools (v0.4.0+)
+
+### Component Scaffolding
+
+Quickly generate new Nitro components with the `startnitro` management command:
+
+```bash
+# Basic component
+python manage.py startnitro ComponentName --app myapp
+
+# List component with pagination and search
+python manage.py startnitro ProductList --app products --list
+
+# Full CRUD component
+python manage.py startnitro TaskManager --app tasks --crud
+```
+
+**Arguments:**
+- `ComponentName` - Name of the component (must start with uppercase)
+- `--app` - Django app where the component will be created (required)
+- `--list` - Generate a list component with pagination and search
+- `--crud` - Generate a CRUD component with create/edit/delete (implies `--list`)
+
+### What Gets Generated
+
+The command creates:
+
+1. **Component file**: `{app}/components/{component_name}.py`
+   - State schema (Pydantic model)
+   - Component class with actions
+   - Imports and boilerplate
+
+2. **Template file**: `{app}/templates/components/{component_name}.html`
+   - AlpineJS bindings
+   - Form inputs
+   - Action buttons
+
+3. **Package file**: `{app}/components/__init__.py` (if missing)
+
+### Example: Generated CRUD Component
+
+```bash
+python manage.py startnitro CompanyList --app companies --crud
+```
+
+Creates `companies/components/company_list.py`:
+
+```python
+from pydantic import BaseModel, ConfigDict, Field
+from nitro import BaseListComponent, BaseListState, register_component
+
+class CompanySchema(BaseModel):
+    """Schema for Company item."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str = ""
+    # TODO: Add more fields
+
+class CompanyFormSchema(BaseModel):
+    """Form schema for creating/editing Company."""
+    name: str = ""
+    # TODO: Add more fields
+
+class CompanyListState(BaseListState):
+    """State schema for CompanyList component."""
+    items: list[CompanySchema] = []
+    create_buffer: CompanyFormSchema = Field(default_factory=CompanyFormSchema)
+    edit_buffer: CompanyFormSchema | None = None
+
+@register_component
+class CompanyList(BaseListComponent[CompanyListState]):
+    """
+    CompanyList component with pagination, search, and CRUD.
+
+    Usage:
+        {% nitro_component 'CompanyList' %}
+    """
+    template_name = "components/company_list.html"
+    state_class = CompanyListState
+    # model = Company  # TODO: Uncomment and import model
+
+    search_fields = ['name']  # TODO: Adjust search fields
+    per_page = 20
+    order_by = '-id'
+
+    # Pre-built methods: create_item(), delete_item(), search_items(), etc.
+```
+
+And `companies/templates/components/company_list.html` with a complete UI including search, pagination, and CRUD forms.
+
+**Next steps:**
+1. Uncomment and import your Django model
+2. Add fields to the schemas
+3. Customize search fields and actions
+4. Use in templates: `{% nitro_component 'CompanyList' %}`
+
+---
+
+## SEO-Friendly Template Tags (v0.4.0+)
+
+For public-facing content that needs SEO (search engine optimization), Nitro provides special template tags that render static HTML for crawlers while maintaining Alpine.js reactivity.
+
+### `{% nitro_scripts %}` - Include Nitro Assets
+
+Load Nitro's CSS and JavaScript files (includes toast styles):
+
+```html
+{% load nitro_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Loads nitro.css and nitro.js -->
+    {% nitro_scripts %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+</body>
+</html>
+```
+
+Expands to:
+```html
+<link rel="stylesheet" href="/static/nitro/nitro.css">
+<script defer src="/static/nitro/nitro.js"></script>
+```
+
+### `{% nitro_text %}` - SEO-Friendly Text Binding
+
+Renders server-side text that's also reactive with Alpine.js:
+
+```html
+{% load nitro_tags %}
+
+<!-- Traditional Alpine (not SEO-friendly) -->
+<h1 x-text="product.name"></h1>
+<!-- Crawlers see: <h1 x-text="product.name"></h1> (no text content) -->
+
+<!-- SEO-friendly Nitro tag -->
+<h1>{% nitro_text 'product.name' %}</h1>
+<!-- Crawlers see: <h1><span x-text="product.name">Gaming Laptop</span></h1> -->
+<!-- Users see: Same thing, but reactive! -->
+```
+
+**How it works:**
+1. Server renders the actual value ("Gaming Laptop")
+2. Adds `x-text` binding for reactivity
+3. When state changes, Alpine updates the content
+4. Search engines see the static HTML
+
+**Usage:**
+```html
+<div class="product-card">
+    <h2>{% nitro_text 'item.name' %}</h2>
+    <p class="price">${% nitro_text 'item.price' %}</p>
+    <p class="description">{% nitro_text 'item.description' %}</p>
+</div>
+```
+
+### `{% nitro_for %}` - SEO-Friendly Loops
+
+Renders list items on the server for SEO, while keeping Alpine.js reactivity:
+
+```html
+{% load nitro_tags %}
+
+<!-- Traditional Alpine (not SEO-friendly) -->
+<template x-for="product in products" :key="product.id">
+    <div class="card">
+        <h3 x-text="product.name"></h3>
+    </div>
+</template>
+<!-- Crawlers see: Nothing (template tag is not rendered) -->
+
+<!-- SEO-friendly Nitro tag -->
+{% nitro_for 'products' as 'product' %}
+    <div class="card">
+        <h3>{% nitro_text 'product.name' %}</h3>
+        <p>{% nitro_text 'product.description' %}</p>
+    </div>
+{% end_nitro_for %}
+<!-- Crawlers see: All cards with actual content -->
+<!-- Users see: Same thing, but reactive when products change! -->
+```
+
+**How it works:**
+1. Server renders all items (e.g., 50 products)
+2. Wraps them in a hidden div (`x-show="false"`)
+3. Adds an Alpine `<template x-for>` for reactivity
+4. Search engines index the static content
+5. Alpine shows/updates the reactive template
+
+**Complete example:**
+
+```html
+{% load nitro_tags %}
+
+<div class="property-list">
+    <h1>Available Properties</h1>
+
+    <!-- SEO-friendly list -->
+    {% nitro_for 'properties' as 'property' %}
+        <div class="property-card">
+            <h2>{% nitro_text 'property.title' %}</h2>
+            <p class="address">{% nitro_text 'property.address' %}</p>
+            <p class="price">${% nitro_text 'property.price' %}</p>
+
+            <button @click="call('view_details', {id: property.id})">
+                View Details
+            </button>
+        </div>
+    {% end_nitro_for %}
+</div>
+```
+
+**When to use SEO tags:**
+- ✅ Public product listings
+- ✅ Blog posts
+- ✅ Property/real estate listings
+- ✅ Any content you want indexed by Google
+- ❌ Private dashboards (not crawled anyway)
+- ❌ Admin panels
+- ❌ Authenticated-only content
+
+---
+
+## Performance Optimization (v0.4.0+)
+
+### Smart State Updates (Diffing)
+
+For components with large lists (500+ items), enable smart updates to only send changes instead of the full list:
+
+```python
+from pydantic import BaseModel
+from nitro import BaseListComponent, register_component
+
+class TaskSchema(BaseModel):
+    id: int  # Required for diffing
+    title: str
+    completed: bool
+
+@register_component
+class TaskList(BaseListComponent[TaskListState]):
+    # Enable smart updates
+    smart_updates = True
+
+    def toggle_task(self, id: int):
+        # Only the changed task is sent to the client
+        task = Task.objects.get(id=id)
+        task.completed = not task.completed
+        task.save()
+
+        # Refresh state
+        self.refresh()
+        # Client receives: {added: [], removed: [], updated: [{id: 42, completed: true}]}
+        # Instead of: {items: [500 tasks...]}
+```
+
+**How it works:**
+1. Nitro compares old state vs new state
+2. For lists with items that have an `id` field, it calculates:
+   - `added` - New items
+   - `removed` - Deleted items (by id)
+   - `updated` - Modified items
+3. Client applies changes in-place (no full re-render)
+
+**Requirements:**
+- Items must have an `id` field
+- Set `smart_updates = True` on component
+- List must be in state (e.g., `items: list[TaskSchema]`)
+
+**Example response:**
+```json
+{
+  "partial": true,
+  "state": {
+    "items": {
+      "diff": {
+        "added": [{"id": 101, "title": "New task", "completed": false}],
+        "removed": [99],
+        "updated": [{"id": 42, "title": "Updated title", "completed": true}]
+      }
+    }
+  }
+}
+```
+
+**Performance benefits:**
+- 500 items → ~50KB full state vs ~1KB diff
+- Faster network transfer
+- Faster client-side processing
+- Better UX for real-time updates
+
+**When to use:**
+- ✅ Lists with 100+ items
+- ✅ Real-time collaborative editing
+- ✅ Live dashboards with frequent updates
+- ❌ Small lists (< 50 items) - overhead not worth it
+- ❌ Components without list state
 
 ---
 
@@ -1487,7 +2264,7 @@ if settings.DEBUG:
 
 ## Debugging
 
-### Enable Debug Mode
+### Enable Debug Mode (v0.5.0)
 
 To see detailed console logs for development:
 
@@ -1499,13 +2276,53 @@ To see detailed console logs for development:
 <script src="{% static 'nitro/nitro.js' %}"></script>
 ```
 
+Or configure in Django settings:
+
+```python
+# settings.py
+NITRO = {
+    'DEBUG': True,  # Enables client-side debug logging
+}
+```
+
 When enabled, you'll see:
 - Component initialization logs
 - Action calls with state and payload
 - Server responses
 - Message notifications
+- State diff information (when smart_updates is enabled)
 
-**Important**: Remove or set to `false` in production to avoid console spam.
+**Important**: Set to `False` in production to avoid console spam.
+
+### Django Debug Toolbar Panel (v0.5.0)
+
+Django Nitro includes a custom panel for Django Debug Toolbar that shows:
+- Registered components and their state
+- Action invocations during the request
+- State changes and integrity verification
+- Performance metrics
+
+**Setup:**
+
+```python
+# settings.py
+INSTALLED_APPS = [
+    # ...
+    'debug_toolbar',
+    'nitro',  # Must be after debug_toolbar
+]
+
+DEBUG_TOOLBAR_PANELS = [
+    # ... default panels ...
+    'nitro.panels.NitroDebugPanel',
+]
+```
+
+The panel displays:
+- **Components**: All registered Nitro components
+- **Actions**: Actions called during the request with parameters
+- **State**: Initial and final state for each component
+- **Timing**: Time spent in each action
 
 ---
 

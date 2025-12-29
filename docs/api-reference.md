@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API reference for Django Nitro v0.3.0+
+Complete API reference for Django Nitro v0.5.0+
 
 ## Core Components
 
@@ -20,6 +20,11 @@ from nitro.base import NitroComponent
 | `state_class` | `Type[BaseModel]` | Yes | Pydantic state model |
 | `secure_fields` | `list[str]` | No | Fields protected from tampering |
 | `model` | `Type[Model]` | No | Django model (for ModelNitroComponent) |
+| `toast_enabled` | `bool \| None` | No | Enable/disable toasts (v0.4.0+) |
+| `toast_position` | `str \| None` | No | Toast position: `top-right`, `top-left`, `top-center`, `bottom-right`, `bottom-left`, `bottom-center` (v0.4.0+) |
+| `toast_duration` | `int \| None` | No | Toast auto-dismiss duration in ms (v0.4.0+) |
+| `toast_style` | `str \| None` | No | Toast style: `default`, `minimal`, `bordered` (v0.4.0+) |
+| `smart_updates` | `bool` | No | Enable state diffing for large lists (v0.4.0+, default: `False`) |
 
 #### Properties
 
@@ -52,15 +57,19 @@ def render(self) -> str:
 
 ```python
 def success(self, message: str) -> None:
-    """Add success message."""
+    """Add success message (green toast)."""
     pass
 
 def error(self, message: str) -> None:
-    """Add error message."""
+    """Add error message (red toast)."""
+    pass
+
+def warning(self, message: str) -> None:
+    """Add warning message (yellow/orange toast) - v0.4.0+"""
     pass
 
 def info(self, message: str) -> None:
-    """Add info message."""
+    """Add info message (blue toast)."""
     pass
 ```
 
@@ -69,6 +78,113 @@ def info(self, message: str) -> None:
 ```python
 def require_auth(self, message: str = "Authentication required") -> bool:
     """Enforce authentication requirement."""
+    pass
+```
+
+##### Field Synchronization (v0.5.0+)
+
+```python
+def _sync_field(self, field: str, value: Any) -> None:
+    """
+    Synchronize a single field from client to server state.
+
+    Supports nested fields using dot notation for complex state structures.
+    This is used internally for x-model bindings and can be called directly
+    for programmatic state updates.
+
+    Args:
+        field: Field name, supports dot notation for nested fields
+               (e.g., 'name', 'address.city', 'items.0.quantity')
+        value: The value to set
+
+    Examples:
+        # Simple field
+        self._sync_field('username', 'john_doe')
+
+        # Nested field in object
+        self._sync_field('profile.email', 'john@example.com')
+
+        # Nested field in list
+        self._sync_field('items.0.name', 'Updated Item')
+
+        # Deep nesting
+        self._sync_field('order.shipping.address.city', 'New York')
+    """
+    pass
+```
+
+##### File Upload Handling (v0.5.0+)
+
+```python
+def _handle_file_upload(self, file: UploadedFile) -> str:
+    """
+    Handle file upload and return the saved file path.
+
+    Override this method to customize file storage behavior.
+    By default, saves files using Django's default storage backend.
+
+    Args:
+        file: Django UploadedFile object from request.FILES
+
+    Returns:
+        str: Path or URL to the saved file
+
+    Example:
+        class DocumentComponent(NitroComponent[DocumentState]):
+            def _handle_file_upload(self, file: UploadedFile) -> str:
+                # Custom storage logic
+                path = f"documents/{self.current_user.id}/{file.name}"
+                saved_path = default_storage.save(path, file)
+                return default_storage.url(saved_path)
+
+            def upload_document(self, doc_type: str):
+                # File is automatically available via self._uploaded_file
+                if self._uploaded_file:
+                    url = self._handle_file_upload(self._uploaded_file)
+                    self.state.documents.append({
+                        'type': doc_type,
+                        'url': url,
+                        'name': self._uploaded_file.name
+                    })
+                    self.success('Document uploaded successfully')
+    """
+    pass
+```
+
+##### Event Methods (v0.4.0+)
+
+```python
+def emit(self, event_name: str, data: dict[str, Any] | None = None) -> None:
+    """
+    Emit custom DOM event.
+
+    Event name is automatically prefixed with 'nitro:' if not already present.
+    Components and JavaScript can listen to these events via window.addEventListener.
+
+    Args:
+        event_name: Name of the event (e.g., 'cart-updated')
+        data: Optional data payload to include with the event
+
+    Example:
+        self.emit('product-deleted', {'product_id': 123})
+        # Dispatches 'nitro:product-deleted' event
+    """
+    pass
+
+def refresh_component(self, component_id: str) -> None:
+    """
+    Emit refresh event for another component.
+
+    Helper that emits a 'nitro:refresh-{component_id}' event that other
+    components can listen to and respond by refreshing their state.
+
+    Args:
+        component_id: Name of the component to refresh (e.g., 'ProductList')
+
+    Example:
+        self.refresh_component('ProductList')
+        # Dispatches 'nitro:refresh-productlist' event
+    """
     pass
 ```
 
@@ -563,8 +679,31 @@ INSTALLED_APPS = [
     'nitro',
 ]
 
-# Optional: Debug mode for Nitro
-NITRO_DEBUG = DEBUG
+# Optional: Nitro configuration (v0.4.0+)
+NITRO = {
+    # Toast notifications
+    'TOAST_ENABLED': True,
+    'TOAST_POSITION': 'top-right',  # top-right, top-left, top-center, bottom-right, bottom-left, bottom-center
+    'TOAST_DURATION': 3000,  # milliseconds
+    'TOAST_STYLE': 'default',  # default, minimal, bordered
+
+    # Debug mode
+    'DEBUG': False,
+}
+```
+
+### Configuration Helpers (v0.4.0+)
+
+```python
+from nitro.conf import get_setting, get_all_settings
+
+# Get individual setting with fallback
+toast_enabled = get_setting('TOAST_ENABLED')  # Returns True (default)
+custom_setting = get_setting('MY_SETTING', default='fallback')
+
+# Get all settings
+settings = get_all_settings()
+# Returns: {'TOAST_ENABLED': True, 'TOAST_POSITION': 'top-right', ...}
 ```
 
 ### URLs
@@ -581,9 +720,21 @@ urlpatterns = [
 
 ### Static Files
 
+**Option A: Using template tag (v0.4.0+, recommended):**
+
+```html
+<!-- base.html -->
+{% load nitro_tags %}
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+{% nitro_scripts %}  <!-- Loads nitro.css and nitro.js -->
+```
+
+**Option B: Manual:**
+
 ```html
 <!-- base.html -->
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<link rel="stylesheet" href="{% static 'nitro/nitro.css' %}">
 <script src="{% static 'nitro/nitro.js' %}"></script>
 ```
 
@@ -595,6 +746,145 @@ urlpatterns = [
     window.NITRO_DEBUG = true;
 </script>
 <script src="{% static 'nitro/nitro.js' %}"></script>
+```
+
+---
+
+## Template Tags (v0.4.0+)
+
+### nitro_scripts
+
+Load Nitro CSS and JavaScript files.
+
+```html
+{% load nitro_tags %}
+{% nitro_scripts %}
+
+<!-- Expands to: -->
+<link rel="stylesheet" href="/static/nitro/nitro.css">
+<script defer src="/static/nitro/nitro.js"></script>
+```
+
+### nitro_text
+
+SEO-friendly text binding that renders server-side content with Alpine.js reactivity.
+
+```html
+{% load nitro_tags %}
+
+<!-- Renders static value + x-text binding -->
+<h1>{% nitro_text 'product.name' %}</h1>
+
+<!-- Output: -->
+<h1><span x-text="product.name">Gaming Laptop</span></h1>
+```
+
+**Use for:**
+- Public content that needs SEO (product listings, blog posts, etc.)
+- Maintains reactivity while providing static HTML to crawlers
+
+### nitro_for
+
+SEO-friendly loop that renders static items with Alpine.js reactivity.
+
+```html
+{% load nitro_tags %}
+
+{% nitro_for 'products' as 'product' %}
+    <div class="card">
+        <h3>{% nitro_text 'product.name' %}</h3>
+        <p>{% nitro_text 'product.price' %}</p>
+    </div>
+{% end_nitro_for %}
+```
+
+**How it works:**
+1. Renders all items statically (SEO)
+2. Wraps in hidden div (`x-show="false"`)
+3. Adds Alpine `<template x-for>` for reactivity
+
+**Use for:**
+- Public product/content listings that need to be indexed by search engines
+
+---
+
+## CLI Commands (v0.4.0+)
+
+### startnitro
+
+Generate Nitro component boilerplate.
+
+```bash
+# Basic component
+python manage.py startnitro ComponentName --app myapp
+
+# List component with pagination/search
+python manage.py startnitro ProductList --app products --list
+
+# CRUD component
+python manage.py startnitro TaskManager --app tasks --crud
+```
+
+**Arguments:**
+- `ComponentName` - Name of component (must start with uppercase)
+- `--app` - Django app name (required)
+- `--list` - Generate list component with pagination
+- `--crud` - Generate CRUD component (implies `--list`)
+
+**Creates:**
+- `{app}/components/{component_name}.py` - Component class
+- `{app}/templates/components/{component_name}.html` - Template
+- `{app}/components/__init__.py` - Package file (if missing)
+
+---
+
+## DOM Events (v0.4.0+)
+
+Nitro dispatches custom DOM events that you can listen to in JavaScript.
+
+### Built-in Events
+
+**nitro:message** - Dispatched for each message/toast
+```javascript
+window.addEventListener('nitro:message', (event) => {
+    console.log(event.detail);
+    // { component: 'MyComponent', level: 'success', text: 'Saved!' }
+});
+```
+
+**nitro:action-complete** - Dispatched when action succeeds
+```javascript
+window.addEventListener('nitro:action-complete', (event) => {
+    console.log(event.detail);
+    // { component: 'MyComponent', action: 'save', state: {...} }
+});
+```
+
+**nitro:error** - Dispatched when error occurs
+```javascript
+window.addEventListener('nitro:error', (event) => {
+    console.log(event.detail);
+    // { component: 'MyComponent', action: 'save', error: '...', status: 500 }
+});
+```
+
+### Custom Events
+
+Listen to events emitted from Python via `emit()`:
+
+```python
+# Python component
+class MyComponent(NitroComponent[MyState]):
+    def do_action(self):
+        self.emit('custom-event', {'data': 'value'})
+```
+
+```javascript
+// JavaScript
+window.addEventListener('nitro:custom-event', (event) => {
+    console.log(event.detail);
+    // { component: 'MyComponent', data: 'value' }
+});
 ```
 
 ---
@@ -632,7 +922,7 @@ class MyState(BaseModel):
 ```python
 import nitro
 
-print(nitro.__version__)  # "0.3.0"
+print(nitro.__version__)  # "0.5.0"
 ```
 
 ---
@@ -676,6 +966,15 @@ from nitro.security import (
 ```python
 from nitro.registry import (
     register_component,
+)
+```
+
+### From `nitro.conf` (v0.4.0+)
+
+```python
+from nitro.conf import (
+    get_setting,
+    get_all_settings,
 )
 ```
 

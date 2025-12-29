@@ -26,7 +26,13 @@ from nitro.security import (
     TenantScopedMixin,
 )
 
-__version__ = "0.3.0"
+# Configuration (v0.4.0)
+from nitro.conf import (
+    get_all_settings,
+    get_setting,
+)
+
+__version__ = "0.5.0"
 
 __all__ = [
     # Base
@@ -45,4 +51,7 @@ __all__ = [
     "PermissionMixin",
     # Registry
     "register_component",
+    # Configuration
+    "get_setting",
+    "get_all_settings",
 ]

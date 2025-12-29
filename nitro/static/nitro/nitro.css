@@ -1,0 +1,207 @@
+/*
+ * Django Nitro - Native Toast Styles
+ * Version: 0.4.0
+ *
+ * Professional toast notifications without external dependencies.
+ * Supports 6 positions, 3 styles, and smooth animations.
+ */
+
+/* Toast container - fixed positioning */
+.nitro-toast-container {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+    padding: 16px;
+}
+
+/* Positioning variants */
+.nitro-toast-container.nitro-toast-top-right {
+    top: 0;
+    right: 0;
+}
+
+.nitro-toast-container.nitro-toast-top-left {
+    top: 0;
+    left: 0;
+}
+
+.nitro-toast-container.nitro-toast-top-center {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.nitro-toast-container.nitro-toast-bottom-right {
+    bottom: 0;
+    right: 0;
+}
+
+.nitro-toast-container.nitro-toast-bottom-left {
+    bottom: 0;
+    left: 0;
+}
+
+.nitro-toast-container.nitro-toast-bottom-center {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Toast item */
+.nitro-toast {
+    pointer-events: auto;
+    background: white;
+    border-radius: 8px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    max-width: 100%;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Show animation */
+.nitro-toast.nitro-toast-show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Hide animation */
+.nitro-toast.nitro-toast-hide {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* Toast level variants - default style */
+.nitro-toast.nitro-toast-default.nitro-toast-success {
+    border-left: 4px solid #10b981;
+    background: #f0fdf4;
+}
+
+.nitro-toast.nitro-toast-default.nitro-toast-error {
+    border-left: 4px solid #ef4444;
+    background: #fef2f2;
+}
+
+.nitro-toast.nitro-toast-default.nitro-toast-info {
+    border-left: 4px solid #3b82f6;
+    background: #eff6ff;
+}
+
+.nitro-toast.nitro-toast-default.nitro-toast-warning {
+    border-left: 4px solid #f59e0b;
+    background: #fffbeb;
+}
+
+/* Toast level variants - minimal style */
+.nitro-toast.nitro-toast-minimal {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Toast level variants - bordered style */
+.nitro-toast.nitro-toast-bordered {
+    border: 2px solid;
+    background: white;
+}
+
+.nitro-toast.nitro-toast-bordered.nitro-toast-success {
+    border-color: #10b981;
+}
+
+.nitro-toast.nitro-toast-bordered.nitro-toast-error {
+    border-color: #ef4444;
+}
+
+.nitro-toast.nitro-toast-bordered.nitro-toast-info {
+    border-color: #3b82f6;
+}
+
+.nitro-toast.nitro-toast-bordered.nitro-toast-warning {
+    border-color: #f59e0b;
+}
+
+/* Icon styling */
+.nitro-toast-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 1;
+    font-weight: bold;
+}
+
+.nitro-toast.nitro-toast-success .nitro-toast-icon {
+    color: #10b981;
+}
+
+.nitro-toast.nitro-toast-error .nitro-toast-icon {
+    color: #ef4444;
+}
+
+.nitro-toast.nitro-toast-info .nitro-toast-icon {
+    color: #3b82f6;
+}
+
+.nitro-toast.nitro-toast-warning .nitro-toast-icon {
+    color: #f59e0b;
+}
+
+/* Text styling */
+.nitro-toast-text {
+    flex: 1;
+    color: #1f2937;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Close button */
+.nitro-toast-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.nitro-toast-close:hover {
+    color: #1f2937;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .nitro-toast-container {
+        max-width: calc(100vw - 32px);
+        padding: 12px;
+        left: 16px !important;
+        right: 16px !important;
+        transform: none !important;
+    }
+
+    .nitro-toast {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+/* Loading state for component */
+.nitro-component[data-loading="true"] {
+    opacity: 0.7;
+    pointer-events: none;
+}
