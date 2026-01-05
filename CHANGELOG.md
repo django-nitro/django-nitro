@@ -5,6 +5,31 @@ All notable changes to Django Nitro will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-01-04
+
+### Fixed
+
+#### Critical Bug Fixes
+- **BaseListComponent now automatically applies security mixin filters** - `OwnershipMixin` and `TenantScopedMixin` now work without requiring manual override of `get_base_queryset()`. The component automatically detects and applies `filter_by_owner()` and `filter_by_tenant()` methods if present.
+- **Fixed `{% nitro_for %}` Alpine.js initialization error** - Changed from `x-show="false"` to `style="display: none;"` to prevent "Cannot set properties of null (setting '_x_dataStack')" error during Alpine.js initialization.
+- **Added custom JSON encoder for Django model fields** - Implemented `NitroJSONEncoder` to handle common Django field types (UUID, datetime, date, Decimal) that were causing serialization errors. No more manual type conversions needed.
+
+#### Template & Context Improvements
+- **State variables now unpacked to root template context** - Templates can now use `{{ items }}` instead of `{{ state.items }}`. Both syntaxes work for backward compatibility.
+
+#### Testing & Dependencies
+- **Fixed `test_sync_field_nonexistent_field_debug` test** - Added proper `override_settings(DEBUG=True)` decorator to ensure DEBUG mode validation works correctly.
+- **Added `email-validator` dependency** - Required for Pydantic's `EmailStr` validation to work properly. Fixes import errors when using email fields in component state.
+- **Fixed Pydantic v2 validation in `_sync_field()` method** - Updated to use `model_validate()` instead of `setattr()` to ensure proper validation of field values. This fixes validation errors not being caught when syncing fields with invalid values.
+
+### Changed
+- `BaseListComponent.get_base_queryset()` now includes auto-detection and application of security mixin filters
+- Template rendering context now includes both unpacked state variables (root level) and nested `state` object for compatibility
+
+### Documentation
+- Updated `BaseListComponent` docstring to reflect automatic mixin filter application
+- Added documentation for `NitroJSONEncoder` class
+
 ## [0.5.0] - 2025-12-29
 
 ### Added

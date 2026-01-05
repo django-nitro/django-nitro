@@ -4,6 +4,21 @@ All notable changes to Django Nitro are documented here.
 
 For the complete changelog, see [CHANGELOG.md](https://github.com/django-nitro/django-nitro/blob/main/CHANGELOG.md) on GitHub.
 
+## [0.5.1] - 2026-01-04
+
+### Fixed
+- **Security mixins now work automatically** - No manual `get_base_queryset()` override needed
+- **Fixed Alpine.js initialization error** in `{% nitro_for %}` tag
+- **State variables unpacked to root** - Use `{{ items }}` instead of `{{ state.items }}`
+- **Custom JSON encoder** - Auto-handles UUID, datetime, date, Decimal
+- **Pydantic v2 validation** - Field validation now works correctly
+- **Added email-validator** dependency
+
+### Documentation
+- Updated security mixin docs with v0.5.1 automatic filtering
+- Added NitroJSONEncoder documentation
+- Updated BaseListComponent examples
+
 ## [0.3.0] - 2025-12-28
 
 ### Added

@@ -245,6 +245,7 @@ class TestZeroJavaScriptMode(TestCase):
 
     def test_sync_field_nonexistent_field_debug(self):
         """Test syncing a non-existent field in DEBUG mode."""
+        from django.test import override_settings
 
         class TestState(BaseModel):
             email: str = ""
@@ -259,11 +260,12 @@ class TestZeroJavaScriptMode(TestCase):
         component = TestComponent()
 
         # Should raise ValueError in DEBUG mode
-        with self.assertRaises(ValueError) as cm:
-            component._sync_field("nonexistent", "value")
+        with override_settings(DEBUG=True):
+            with self.assertRaises(ValueError) as cm:
+                component._sync_field("nonexistent", "value")
 
-        self.assertIn("does not exist", str(cm.exception))
-        self.assertIn("Available fields", str(cm.exception))
+            self.assertIn("does not exist", str(cm.exception))
+            self.assertIn("Available fields", str(cm.exception))
 
 
 class TestTemplateTags(TestCase):
@@ -541,9 +543,12 @@ class TestNestedFieldSupport(TestCase):
 
         component = TestComponent()
 
-        # Try to sync non-existent nested path
-        with self.assertRaises(ValueError):
-            component._sync_field("profile.email", "test@example.com")
+        # Try to sync non-existent nested path (requires DEBUG mode)
+        from django.test import override_settings
+
+        with override_settings(DEBUG=True):
+            with self.assertRaises(ValueError):
+                component._sync_field("profile.email", "test@example.com")
 
 
 class TestFileUploadHandler(TestCase):

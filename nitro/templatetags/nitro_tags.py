@@ -83,8 +83,9 @@ class NitroForNode(Node):
         output = []
         list_var_name = self.list_var.var
 
-        # 1. Static content for SEO (hidden when Alpine loads)
-        output.append('<div x-show="false" class="nitro-seo-content">')
+        # 1. Static content for SEO (hidden with CSS, not Alpine x-show)
+        # Using CSS instead of x-show prevents Alpine.js dataStack initialization errors
+        output.append('<div class="nitro-seo-content" style="display: none;">')
         for item in items:
             context.push({self.item_var: item})
             output.append(self.nodelist.render(context))

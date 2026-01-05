@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-nitro"
-version = "0.5.0"
+version = "0.5.1"
 description = "Reactive Django components using AlpineJS and Django Ninja"
 readme = "README.md"
 authors = [
@@ -34,6 +34,7 @@ dependencies = [
     "Django>=5.2",
     "django-ninja>=1.4.0",
     "pydantic>=2.0.0",
+    "email-validator>=2.0.0",
 ]
 
 [project.optional-dependencies]

@@ -1,6 +1,9 @@
 import json
 import logging
+from datetime import date, datetime
+from decimal import Decimal
 from typing import Any, Generic, TypeVar, get_args
+from uuid import UUID
 
 from django.conf import settings
 from django.core.signing import BadSignature, Signer
@@ -12,6 +15,42 @@ from django.utils.safestring import mark_safe
 from pydantic import BaseModel, ValidationError
 
 logger = logging.getLogger(__name__)
+
+
+class NitroJSONEncoder(json.JSONEncoder):
+    """
+    Custom JSON encoder for Django Nitro.
+
+    Handles common Django model field types that are not JSON serializable
+    by default, including:
+    - UUID: Converted to string
+    - datetime/date: Converted to ISO format string
+    - Decimal: Converted to float
+    - Django Model instances: Converted to dict via model_to_dict
+
+    This prevents serialization errors when working with Django models.
+    """
+
+    def default(self, obj):
+        # UUID fields
+        if isinstance(obj, UUID):
+            return str(obj)
+
+        # Datetime and date fields
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+
+        # Decimal fields (common in pricing, measurements)
+        if isinstance(obj, Decimal):
+            return float(obj)
+
+        # Django model instances (fallback)
+        if isinstance(obj, models.Model):
+            from django.forms.models import model_to_dict
+
+            return model_to_dict(obj)
+
+        return super().default(obj)
 
 S = TypeVar("S", bound=BaseModel)
 
@@ -373,8 +412,18 @@ class NitroComponent(Generic[S]):
                 # In production, silently ignore
                 return
 
+            # Set the nested field value with validation
+            # Pydantic v2 requires re-validation for nested fields
             try:
-                setattr(obj, final_field, value)
+                # Get current state as dict
+                state_dict = self.state.model_dump()
+                # Navigate and update the nested value in the dict
+                dict_obj = state_dict
+                for part in parts[:-1]:
+                    dict_obj = dict_obj[part]
+                dict_obj[final_field] = value
+                # Re-validate the entire state
+                self.state = self.state_class.model_validate(state_dict)
             except ValidationError as e:
                 # Pydantic validation failed
                 error_msg = str(e.errors()[0]["msg"]) if e.errors() else str(e)
@@ -395,9 +444,16 @@ class NitroComponent(Generic[S]):
                 # In production, silently ignore
                 return
 
-            # Set the field value
+            # Set the field value with validation
+            # Pydantic v2 doesn't validate on setattr by default, so we need to
+            # create a new validated instance
             try:
-                setattr(self.state, field, value)
+                # Get current state as dict
+                state_dict = self.state.model_dump()
+                # Update the field
+                state_dict[field] = value
+                # Re-validate the entire state
+                self.state = self.state_class.model_validate(state_dict)
             except ValidationError as e:
                 # Pydantic validation failed
                 error_msg = str(e.errors()[0]["msg"]) if e.errors() else str(e)
@@ -512,7 +568,9 @@ class NitroComponent(Generic[S]):
             "toast_config": self._get_toast_config(),
         }
 
-        context = {"state": state_dict, "component": self}
+        # Unpack state variables to root level for cleaner templates
+        # This allows using {{ items }} instead of {{ state.items }}
+        context = {**state_dict, "component": self, "state": state_dict}
         if self.request:
             context["request"] = self.request
 
@@ -520,9 +578,10 @@ class NitroComponent(Generic[S]):
 
         # Store JSON in a data attribute (Django auto-escapes)
         # Use single quotes for the attribute value to avoid escaping issues
+        # Use custom encoder to handle UUID, datetime, Decimal, etc.
         wrapper = f"""
         <div id="{self.component_id}"
-             data-nitro-state='{json.dumps(full_payload)}'
+             data-nitro-state='{json.dumps(full_payload, cls=NitroJSONEncoder)}'
              x-data="nitro('{self.__class__.__name__}', $el)"
              class="nitro-component">
             {html_content}

@@ -24,8 +24,11 @@ class MyDocuments(OwnershipMixin, BaseListComponent[DocumentListState]):
     search_fields = ['title', 'description']
     per_page = 25
 
+    # That's it! No override needed (v0.5.1+)
     # Automatically filters to current user's documents only
 ```
+
+**New in v0.5.1:** No need to override `get_base_queryset()` - ownership filtering is applied automatically!
 
 ## Configuration
 
@@ -80,22 +83,30 @@ def get_base_queryset(self, search='', filters=None):
 
 ## How It Works
 
-The mixin adds automatic filtering:
+**v0.5.1+:** The mixin is automatically detected and applied by `BaseListComponent`:
 
 ```python
-# Without OwnershipMixin
-def get_base_queryset(self, search='', filters=None):
-    # Shows ALL documents (security risk!)
-    return Document.objects.all()
+# You write:
+@register_component
+class MyDocuments(OwnershipMixin, BaseListComponent[DocumentListState]):
+    model = Document
+    owner_field = 'user'
+    search_fields = ['title']
+    # No get_base_queryset() override needed!
 
-# With OwnershipMixin
+# BaseListComponent automatically calls filter_by_owner() for you:
 def get_base_queryset(self, search='', filters=None):
-    # Automatically filtered to current user
-    qs = self.filter_by_owner(Document.objects.all())
-    return qs
+    queryset = self.model.objects.all()
+
+    # AUTO-APPLIED by BaseListComponent (v0.5.1+)
+    if hasattr(self, 'filter_by_owner'):
+        queryset = self.filter_by_owner(queryset)
+
+    # Then applies search, filters, ordering...
+    return queryset
 ```
 
-Behind the scenes:
+Behind the scenes, `filter_by_owner()` does:
 
 ```python
 def filter_by_owner(self, queryset):
@@ -198,7 +209,7 @@ class MyTasks(OwnershipMixin, BaseListComponent[TaskListState]):
 
 ## Customizing Ownership Filter
 
-Override `get_base_queryset()` for custom filtering:
+**v0.5.1+:** Only override `get_base_queryset()` if you need **additional** custom filtering beyond ownership:
 
 ```python
 @register_component
@@ -207,21 +218,17 @@ class MyDocuments(OwnershipMixin, BaseListComponent[DocumentListState]):
     owner_field = 'created_by'
 
     def get_base_queryset(self, search='', filters=None):
-        # Start with ownership filter
-        qs = self.filter_by_owner(self.model.objects.all())
+        # Call parent - includes automatic ownership filter (v0.5.1+)
+        qs = super().get_base_queryset(search, filters)
 
-        # Add additional filters
+        # Add your custom filters on top
         qs = qs.filter(is_deleted=False)  # Exclude deleted
+        qs = qs.select_related('category')  # Optimize query
 
-        # Apply search
-        if search:
-            qs = self.apply_search(qs, search)
-
-        # Add related data optimization
-        qs = qs.select_related('category')
-
-        return qs.order_by(self.order_by)
+        return qs
 ```
+
+**Note:** The ownership filter is already applied by the parent `get_base_queryset()`, so you don't need to call `filter_by_owner()` manually anymore!
 
 ## Multiple Owner Types
 
@@ -304,15 +311,21 @@ class MyDocuments(
 
 ## Security Considerations
 
-### 1. Always Filter in get_base_queryset
+### 1. Ownership Filter is Automatic (v0.5.1+)
 
 ```python
-# ✅ Good - ownership filter applied
-def get_base_queryset(self, search='', filters=None):
-    qs = self.filter_by_owner(self.model.objects.all())
-    return qs
+# ✅ Good - automatic in v0.5.1+
+@register_component
+class MyDocs(OwnershipMixin, BaseListComponent):
+    model = Document
+    # Ownership filter applied automatically - no override needed!
 
-# ❌ Bad - skipping ownership filter
+# ✅ Also good - if you need custom filtering
+def get_base_queryset(self, search='', filters=None):
+    qs = super().get_base_queryset(search, filters)  # Includes ownership
+    return qs.filter(is_active=True)  # Add extra filters
+
+# ❌ Bad - skipping parent call loses ownership filter
 def get_base_queryset(self, search='', filters=None):
     return self.model.objects.all()  # Shows everyone's data!
 ```

@@ -272,7 +272,10 @@ class BaseListComponent(
         """
         Get base queryset with filters applied.
 
-        Override this method to customize filtering logic.
+        Automatically applies security mixin filters (OwnershipMixin, TenantScopedMixin)
+        if they are present in the component's inheritance chain.
+
+        Override this method to customize filtering logic beyond the default behavior.
 
         Args:
             search: Search query string
@@ -283,18 +286,27 @@ class BaseListComponent(
 
         Example:
             def get_base_queryset(self, search='', filters=None):
-                # Only show items owned by current user
-                qs = self.model.objects.filter(owner=self.request.user)
+                # Start with base queryset (includes mixin filters automatically)
+                qs = super().get_base_queryset(search, filters)
 
-                if search:
-                    qs = self.apply_search(qs, search)
+                # Add custom filtering
+                qs = qs.filter(is_active=True)
 
-                if filters:
-                    qs = self.apply_filters(qs, filters)
-
-                return qs.order_by(self.order_by)
+                return qs
         """
         queryset = self.model.objects.all()
+
+        # AUTO-APPLY SECURITY MIXIN FILTERS
+        # This allows OwnershipMixin and TenantScopedMixin to work without
+        # manually overriding get_base_queryset()
+
+        # Apply OwnershipMixin filter if present
+        if hasattr(self, 'filter_by_owner'):
+            queryset = self.filter_by_owner(queryset)
+
+        # Apply TenantScopedMixin filter if present
+        if hasattr(self, 'filter_by_tenant'):
+            queryset = self.filter_by_tenant(queryset)
 
         # Apply search
         if search:

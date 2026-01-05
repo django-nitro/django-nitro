@@ -10,6 +10,16 @@ Django Nitro is a modern library for building reactive, stateful components in D
 
 ---
 
+## What's New in v0.5.1 (Latest)
+
+**Bug Fixes & Improvements:**
+- 🔧 **Security mixins now work automatically** - `OwnershipMixin` and `TenantScopedMixin` no longer require manual `get_base_queryset()` override
+- 🔧 **Fixed Alpine.js initialization error** - `{% nitro_for %}` tag no longer causes "_x_dataStack" errors
+- 🔧 **Cleaner template syntax** - Access state variables directly: `{{ items }}` instead of `{{ state.items }}`
+- 🔧 **Django field type support** - Automatic JSON serialization for UUID, datetime, date, and Decimal fields
+- 🔧 **Pydantic validation now works** - Field validation errors are properly caught and displayed
+- 📦 Added `email-validator` dependency for EmailStr field support
+
 ## What's New in v0.5.0
 
 - **Advanced Template Tags** - New `nitro_attr`, `nitro_if`, `nitro_disabled`, and `nitro_file` tags for cleaner, more expressive templates
@@ -796,14 +806,17 @@ from nitro.list import BaseListComponent
 class MyDocuments(OwnershipMixin, BaseListComponent[DocumentListState]):
     model = Document
     owner_field = 'user'  # Field name linking to user (default: 'user')
+    search_fields = ['title', 'description']
 
-    # Automatically filters queryset to current user's documents only
+    # That's it! No need to override get_base_queryset()
+    # Automatically filters to current user's documents
 ```
 
-**How it works:**
-- Automatically adds a filter: `queryset.filter(user=request.user)`
+**How it works (v0.5.1+):**
+- **Automatically** applies filter: `queryset.filter(user=request.user)`
 - Returns empty queryset if user is not authenticated
 - Override `owner_field` to customize the field name (e.g., `'author'`, `'created_by'`)
+- **No manual override required** - BaseListComponent auto-detects and applies the mixin
 
 **Example:**
 ```python
@@ -835,15 +848,21 @@ from nitro.list import BaseListComponent
 class CompanyProjects(TenantScopedMixin, BaseListComponent[ProjectListState]):
     model = Project
     tenant_field = 'organization'  # Field linking to tenant (default: 'organization')
+    search_fields = ['name', 'description']
 
     def get_user_tenant(self):
         """Override to return current user's tenant/organization."""
         return self.request.user.current_organization
 
-    # Automatically filters: queryset.filter(organization=current_organization)
+    # That's it! Automatically filters by tenant (v0.5.1+)
 ```
 
 **Required:** You must override `get_user_tenant()` to return the current user's tenant.
+
+**How it works (v0.5.1+):**
+- **Automatically** applies filter: `queryset.filter(organization=current_organization)`
+- Returns empty queryset if user has no tenant
+- **No manual override of get_base_queryset() required**
 
 **Example with profile-based tenancy:**
 ```python

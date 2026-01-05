@@ -20,13 +20,16 @@ from nitro.registry import register_component
 class CompanyDocuments(TenantScopedMixin, BaseListComponent[DocumentListState]):
     model = Document
     tenant_field = 'organization'  # Field linking to tenant (default: 'organization')
+    search_fields = ['title', 'description']
 
     def get_user_tenant(self):
         """REQUIRED: Return current user's tenant."""
         return self.request.user.profile.organization
 
-    # Automatically filters to current organization's documents only
+    # That's it! Tenant filter applied automatically (v0.5.1+)
 ```
+
+**New in v0.5.1:** No need to override `get_base_queryset()` - tenant filtering is applied automatically!
 
 ## Configuration
 
