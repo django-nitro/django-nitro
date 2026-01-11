@@ -105,6 +105,56 @@ Empty state message with optional action button.
 - `action_text`: Button text (optional)
 - `action_call`: Nitro action (optional)
 
+## 7. Searchable Dropdown
+
+A dropdown with search/filter capabilities for selecting from many options.
+
+```django
+{% load nitro_components %}
+
+{% searchable_dropdown
+    'tenant_id'
+    tenants
+    label='Select Tenant'
+    display_field='full_name'
+    value_field='id'
+    placeholder='Search tenants...'
+    required=True
+    help_text='Choose the tenant for this lease' %}
+```
+
+**Parameters:**
+- `field_name`: Name for hidden input (e.g., `tenant_id`)
+- `options`: List of objects or dicts
+- `label`: Field label (optional)
+- `display_field`: Field to display (default: `name`)
+- `value_field`: Field to use as value (default: `id`)
+- `placeholder`: Search placeholder (default: `Search...`)
+- `required`: Whether field is required (default: `False`)
+- `help_text`: Optional help text
+- `current_value`: Pre-selected value (optional)
+- `current_display`: Pre-selected display text (optional)
+- `nitro_model`: Nitro model binding (optional)
+
+**Features:**
+- Live search/filter
+- Click outside to close
+- Clear selection button
+- Keyboard navigation ready
+- Works with Django models and dicts
+- Mobile responsive
+
+**With Nitro Model Binding:**
+
+```django
+{% searchable_dropdown
+    'tenant'
+    available_tenants
+    label='Tenant'
+    display_field='full_name'
+    nitro_model='create_buffer.tenant_id' %}
+```
+
 ## Slideover Component
 
 True slide-out panel from the side of the screen.

@@ -6,12 +6,14 @@ This module provides template tags for common UI patterns in Nitro apps:
 - Submit buttons with loading states
 - Expandable panels
 - Form fields with consistent styling
+- Searchable dropdowns
 
 Usage:
     {% load nitro_components %}
 """
 from django import template
 from django.utils.safestring import mark_safe
+import json
 
 register = template.Library()
 
@@ -180,3 +182,76 @@ def empty_state(icon='📦', title='No Items', message='', action_text='', actio
     {action_html}
 </div>'''
     return mark_safe(html)
+
+
+@register.filter
+def to_json(value):
+    """
+    Convert a Python object to JSON for use in Alpine.js.
+
+    Usage:
+        x-data="{ options: {{ my_list|to_json }} }"
+    """
+    return mark_safe(json.dumps(value))
+
+
+@register.inclusion_tag('nitro/components/searchable_dropdown.html', takes_context=True)
+def searchable_dropdown(
+    context,
+    field_name,
+    options,
+    label='',
+    display_field='name',
+    value_field='id',
+    placeholder='Search...',
+    required=False,
+    help_text='',
+    current_value=None,
+    current_display='',
+    nitro_model=''
+):
+    """
+    Render a searchable dropdown component.
+
+    Args:
+        field_name: Name for the hidden input field
+        options: List of dictionaries or objects to choose from
+        label: Field label
+        display_field: Field name to display in dropdown
+        value_field: Field name to use as value
+        placeholder: Placeholder text for search
+        required: Whether field is required
+        help_text: Optional help text
+        current_value: Pre-selected value
+        current_display: Pre-selected display text
+        nitro_model: Optional Nitro model binding
+
+    Usage:
+        {% searchable_dropdown 'tenant_id' tenants label='Select Tenant' display_field='full_name' required=True %}
+    """
+    # Convert objects to dicts if needed
+    options_data = []
+    for opt in options:
+        if isinstance(opt, dict):
+            options_data.append(opt)
+        else:
+            # Convert model instance to dict
+            opt_dict = {
+                value_field: str(getattr(opt, value_field)),
+                display_field: str(getattr(opt, display_field))
+            }
+            options_data.append(opt_dict)
+
+    return {
+        'field_name': field_name,
+        'options': json.dumps(options_data),
+        'label': label,
+        'display_field': display_field,
+        'value_field': value_field,
+        'placeholder': placeholder,
+        'required': required,
+        'help_text': help_text,
+        'current_value': json.dumps(current_value) if current_value else 'null',
+        'current_display': current_display,
+        'nitro_model': nitro_model,
+    }
