@@ -1,0 +1,76 @@
+<!--
+Slideover Component - True slide-out panel from the side
+
+Usage in your template:
+    Include this file and use Alpine.js to control visibility:
+
+    <div x-data="{ show: false }">
+        <button @click="show = true">Open Slideover</button>
+        {% include 'nitro/components/slideover.html' with show_var='show' title='My Form' %}
+    </div>
+
+    Or with Nitro state:
+    <button @click="call('toggle_slideover')">Open</button>
+    {% include 'nitro/components/slideover.html' with show_var='show_slideover' title='Edit Item' %}
+-->
+
+<!-- Backdrop -->
+<div x-show="{{ show_var|default:'show' }}"
+     x-transition:enter="transition-opacity ease-linear duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-linear duration-300"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 bg-gray-500 bg-opacity-75 z-40"
+     @click="{{ show_var|default:'show' }} = false"
+     style="display: none;">
+</div>
+
+<!-- Slideover Panel -->
+<div x-show="{{ show_var|default:'show' }}"
+     x-transition:enter="transform transition ease-in-out duration-500"
+     x-transition:enter-start="translate-x-full"
+     x-transition:enter-end="translate-x-0"
+     x-transition:leave="transform transition ease-in-out duration-500"
+     x-transition:leave-start="translate-x-0"
+     x-transition:leave-end="translate-x-full"
+     class="fixed inset-y-0 {{ position|default:'right' }}-0 flex max-w-full {{ max_width|default:'max-w-md' }} z-50"
+     style="display: none;">
+
+    <div class="w-screen {{ max_width|default:'max-w-md' }}">
+        <div class="flex h-full flex-col bg-white shadow-xl">
+            <!-- Header -->
+            <div class="px-4 py-6 bg-gray-50 border-b border-gray-200 sm:px-6">
+                <div class="flex items-start justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        {{ title|default:'Panel' }}
+                    </h2>
+                    <button type="button"
+                            @click="{{ show_var|default:'show' }} = false"
+                            class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="relative flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+                {{ content|safe }}
+                {% block slideover_content %}
+                <!-- Your content goes here -->
+                {% endblock %}
+            </div>
+
+            <!-- Footer (optional) -->
+            {% if footer %}
+            <div class="flex-shrink-0 border-t border-gray-200 px-4 py-4 sm:px-6">
+                {{ footer|safe }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

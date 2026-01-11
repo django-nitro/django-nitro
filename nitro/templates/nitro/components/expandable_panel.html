@@ -1,0 +1,9 @@
+<div x-show="{{ state_var }}"
+     class="{{ panel_class }}"
+     {% if transition %}x-transition{% endif %}>
+    {% if title %}
+    <h2 class="font-bold text-gray-900 mb-4">{{ title }}</h2>
+    {% endif %}
+
+    {{ children }}
+</div>
