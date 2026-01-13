@@ -67,6 +67,7 @@ pip install django-nitro  # No extras needed
 - [Actions & Methods](#actions--methods)
 - [Template Integration](#template-integration)
   - [Advanced Template Tags (v0.5.0)](#advanced-template-tags-v050)
+  - [Form Field Template Tags (v0.6.0)](#form-field-template-tags-v060)
 - [Security & Integrity](#security--integrity)
 - [Messages & Notifications](#messages--notifications)
 - [Events & Inter-Component Communication](#events--inter-component-communication-v040)
@@ -2820,7 +2821,7 @@ def get_initial_state(self, **kwargs):
 
 ## Example Projects
 
-This repository includes two complete example applications in the `examples/` folder:
+This repository includes three complete example applications in the `examples/` folder:
 
 ### 1. Counter Example (`examples/counter/`)
 Simple beginner-friendly example demonstrating basic Nitro concepts:
@@ -2829,7 +2830,16 @@ Simple beginner-friendly example demonstrating basic Nitro concepts:
 - ✅ AlpineJS template bindings
 - ✅ Success messages
 
-### 2. Property Manager (`examples/property-manager/`)
+### 2. Contact Form (`examples/contact-form/`) ⭐ NEW in v0.6.0
+Demonstrates the new **Form Field Template Tags** with a complete contact form:
+- ✅ `{% nitro_input %}` for text, email, and tel inputs
+- ✅ `{% nitro_select %}` for dropdown with subject choices
+- ✅ `{% nitro_textarea %}` for multi-line message field
+- ✅ `{% nitro_checkbox %}` for terms acceptance
+- ✅ Automatic error handling and validation
+- ✅ Bootstrap styling integration
+
+### 3. Property Manager (`examples/property-manager/`)
 Comprehensive real-world example with advanced features:
 - ✅ Property CRUD with search and pagination
 - ✅ Tenant management (nested component)
@@ -2842,11 +2852,11 @@ Comprehensive real-world example with advanced features:
 
 ```bash
 git clone https://github.com/django-nitro/django-nitro.git
-cd django-nitro/examples/counter  # or examples/property-manager
+cd django-nitro/examples/counter  # or contact-form or property-manager
 python -m venv env
 source env/bin/activate  # Windows: env\Scripts\activate
 pip install -r requirements.txt
-python manage.py migrate
+python manage.py migrate  # (not needed for contact-form)
 python manage.py runserver
 ```
 
