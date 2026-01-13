@@ -3,15 +3,27 @@
 ## Requirements
 
 - Python 3.12+
-- Django 5.2+
+- Django 5.2+ or 6.0+
 - django-ninja 1.4.0+
 - pydantic 2.0+
 
 ## Install from PyPI
 
+### Django 6.0+
+
 ```bash
 pip install django-nitro
 ```
+
+### Django 5.2
+
+For Django 5.2 compatibility, install with the `django52` extra:
+
+```bash
+pip install django-nitro[django52]
+```
+
+This installs `django-template-partials` which provides template partial support (built-in in Django 6.0+).
 
 ## Install from Source
 

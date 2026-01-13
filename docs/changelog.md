@@ -4,6 +4,40 @@ All notable changes to Django Nitro are documented here.
 
 For the complete changelog, see [CHANGELOG.md](https://github.com/django-nitro/django-nitro/blob/main/CHANGELOG.md) on GitHub.
 
+## [0.6.0] - 2026-01-13
+
+### Added
+- **Form Field Template Tags** - Pre-built tags for common form fields
+  - `{% nitro_input %}` - Text, email, number, date, tel inputs with error handling
+  - `{% nitro_select %}` - Dropdown with choices support
+  - `{% nitro_checkbox %}` - Checkbox with label
+  - `{% nitro_textarea %}` - Multi-line text input
+  - All tags include automatic error display and Bootstrap styling
+  - Support for edit buffers and nested fields
+- **Default Debounce (200ms)** - `nitro_model` now includes 200ms debounce by default
+  - Reduces server load and improves performance
+  - Use `no_debounce=True` to disable when instant sync is needed
+- **Code Deduplication** - New `nitro/utils.py` module
+  - `build_error_path()` - Builds Alpine.js error paths with optional chaining
+  - `build_safe_field()` - Builds safe field paths for edit buffers
+  - Eliminates ~48 lines of duplicated code across template tags
+- **TypeAdapter Caching** - Performance optimization in `BaseListComponent`
+  - Class-level cache for Pydantic TypeAdapter (~1-5ms saved per request)
+  - Automatically applied in `get_initial_state()` and `refresh()` methods
+
+### Changed
+- Django 5.2 compatibility using `django-template-partials`
+  - Install with: `pip install django-nitro[django52]`
+  - Django 6.0+ uses built-in template partials
+- Updated template tag implementations to use utility functions
+- Improved form field templates with consistent styling
+
+### Documentation
+- Added comprehensive Form Field Template Tags section to README
+- New contact-form example demonstrating all form field tags
+- Updated examples README with learning path
+- Added Django 5.2 compatibility instructions
+
 ## [0.5.1] - 2026-01-04
 
 ### Fixed

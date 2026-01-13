@@ -73,6 +73,14 @@ nav:
     - Components: core-concepts/components.md
     - State Management: core-concepts/state-management.md
     - Actions: core-concepts/actions.md
+    - Form Fields (v0.6.0): core-concepts/form-fields.md
+    - Template Tags (SEO): core-concepts/template-tags.md
+    - Events: core-concepts/events.md
+    - Smart Updates: core-concepts/smart-updates.md
+    - CLI Tools: core-concepts/cli-tools.md
+    - Toast Adapters: core-concepts/TOAST_ADAPTERS.md
+    - Debugging: core-concepts/debugging.md
+    - Zero JavaScript Mode: core-concepts/zero-javascript-mode.md
   - Components:
     - NitroComponent: components/nitro-component.md
     - ModelNitroComponent: components/model-nitro-component.md

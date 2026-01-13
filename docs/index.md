@@ -67,7 +67,20 @@ class Counter(NitroComponent[CounterState]):
 - **[TenantScopedMixin](security/tenant-scoped-mixin.md)** - Multi-tenant isolation
 - **[PermissionMixin](security/permission-mixin.md)** - Custom permission framework
 
-### New in v0.4.0
+### New in v0.6.0 ⭐
+
+- **Form Field Template Tags** - Pre-built tags for common form fields
+  - `{% nitro_input %}` - Text, email, number, date inputs with error handling
+  - `{% nitro_select %}` - Dropdown with choices
+  - `{% nitro_checkbox %}` - Checkbox with label
+  - `{% nitro_textarea %}` - Multi-line text input
+- **Default Debounce (200ms)** - Automatic debouncing on `nitro_model` reduces server load
+- **Performance Improvements** - TypeAdapter caching and code deduplication
+- **Django 5.2 Support** - Compatible with Django 5.2 using `django-template-partials`
+
+### Previous Releases
+
+#### v0.4.0
 
 - **[Toast Notifications](core-concepts/TOAST_ADAPTERS.md)** - Native toasts or integrate your favorite library
 - **[Events System](core-concepts/events.md)** - Component-to-component communication with `emit()` and `refresh_component()`

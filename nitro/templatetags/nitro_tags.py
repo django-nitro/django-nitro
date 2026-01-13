@@ -7,6 +7,7 @@ from django.templatetags.static import static
 from django.conf import settings
 
 from nitro.registry import get_component_class
+from nitro.utils import build_error_path, build_safe_field
 
 register = template.Library()
 
@@ -236,23 +237,28 @@ def nitro_text(parser, token):
 # ============================================================================
 
 @register.simple_tag
-def nitro_model(field, debounce=None, lazy=False, on_change=None):
+def nitro_model(field, debounce='200ms', lazy=False, on_change=None, no_debounce=False):
     """
     Auto-sync bidirectional binding (wire:model equivalent).
 
     Hides Alpine syntax for "Zero JavaScript" mode.
 
+    NOW WITH DEFAULT DEBOUNCE: 200ms debounce is applied by default to reduce
+    server load. This prevents a server request on every keystroke.
+
     Usage:
-        {% nitro_model 'email' %}
-        {% nitro_model 'search' debounce='300ms' %}
-        {% nitro_model 'password' lazy=True %}
+        {% nitro_model 'email' %}  <!-- 200ms debounce by default -->
+        {% nitro_model 'search' debounce='500ms' %}  <!-- Custom debounce -->
+        {% nitro_model 'password' lazy=True %}  <!-- Sync on blur only -->
         {% nitro_model 'email' on_change='validate_email' %}
+        {% nitro_model 'counter' no_debounce=True %}  <!-- Instant sync, no debounce -->
 
     Args:
         field: Field name from state (e.g., 'email', 'search')
-        debounce: Debounce time (e.g., '300ms', '1s')
+        debounce: Debounce time (default: '200ms', e.g., '300ms', '1s')
         lazy: If True, sync on blur instead of input
         on_change: Optional action to call after sync
+        no_debounce: If True, disable debouncing entirely (instant sync)
 
     Returns:
         HTML attributes string with Alpine bindings
@@ -266,6 +272,10 @@ def nitro_model(field, debounce=None, lazy=False, on_change=None):
             @input.debounce.300ms="call('_sync_field', {field: 'email', value: email})"
         >
     """
+    # Handle no_debounce flag
+    if no_debounce:
+        debounce = None
+
     # Build debug info
     debug_parts = [f"field='{field}'"]
     if debounce:
@@ -298,8 +308,9 @@ def nitro_model(field, debounce=None, lazy=False, on_change=None):
 
     attrs.append(f'{event}="{sync_call}"')
 
-    # Add error styling
-    attrs.append(f":class=\"{{'border-red-500': errors.{field}}}\"")
+    # Add error styling - use optional chaining for nested fields
+    error_path = build_error_path(field)
+    attrs.append(f":class=\"{{'border-red-500': {error_path}}}\"")
 
     return mark_safe(' '.join(attrs))
 
@@ -656,3 +667,152 @@ def nitro_if(parser, token):
     parser.delete_first_token()
 
     return NitroIfNode(condition, nodelist)
+
+
+# ============================================================================
+# FORM FIELD TEMPLATE TAGS - Complete Alpine.js Abstraction (v0.6.0)
+# ============================================================================
+
+@register.inclusion_tag('nitro/fields/input.html')
+def nitro_input(field, label="", type="text", required=False, placeholder="", **kwargs):
+    """
+    Complete form input abstraction - no Alpine.js knowledge needed.
+
+    Automatically handles:
+    - edit_buffer vs create_buffer (adds ?. for edit_buffer)
+    - Error validation styling
+    - Consistent CSS classes
+    - Labels and required indicators
+
+    Usage:
+        {% nitro_input field="create_buffer.name" label="Nombre" required=True %}
+        {% nitro_input field="edit_buffer.email" label="Email" type="email" %}
+        {% nitro_input field="edit_buffer.price" label="Precio" type="number" step="0.01" %}
+
+    Args:
+        field: Field path (e.g., 'create_buffer.name', 'edit_buffer.email')
+        label: Field label (optional)
+        type: Input type (text, number, email, date, etc.)
+        required: Show required indicator
+        placeholder: Placeholder text
+        **kwargs: Additional HTML attributes (step, min, max, etc.)
+    """
+    # Use utility functions for safe field and error path
+    safe_field, is_edit_buffer = build_safe_field(field)
+    error_path = build_error_path(field)
+
+    return {
+        'field': field,
+        'safe_field': safe_field,
+        'error_path': error_path,
+        'label': label,
+        'type': type,
+        'required': required,
+        'placeholder': placeholder,
+        'extra_attrs': ' '.join(f'{k}="{v}"' for k, v in kwargs.items()),
+        'debug': NITRO_DEBUG,
+    }
+
+
+@register.inclusion_tag('nitro/fields/select.html')
+def nitro_select(field, label="", choices=None, required=False, **kwargs):
+    """
+    Complete form select abstraction - no Alpine.js knowledge needed.
+
+    Usage:
+        {% nitro_select field="create_buffer.status" label="Estado" choices=status_choices %}
+        {% nitro_select field="edit_buffer.property_type" label="Tipo" choices=property_types %}
+
+    Args:
+        field: Field path
+        label: Field label
+        choices: List of (value, display) tuples or [{'value': ..., 'label': ...}]
+        required: Show required indicator
+    """
+    # Use utility functions for safe field and error path
+    safe_field, is_edit_buffer = build_safe_field(field)
+    error_path = build_error_path(field)
+
+    # Normalize choices format
+    normalized_choices = []
+    if choices:
+        for choice in choices:
+            if isinstance(choice, (list, tuple)):
+                normalized_choices.append({'value': choice[0], 'label': choice[1]})
+            elif isinstance(choice, dict):
+                normalized_choices.append(choice)
+
+    return {
+        'field': field,
+        'safe_field': safe_field,
+        'error_path': error_path,
+        'label': label,
+        'choices': normalized_choices,
+        'required': required,
+        'extra_attrs': ' '.join(f'{k}="{v}"' for k, v in kwargs.items()),
+        'debug': NITRO_DEBUG,
+    }
+
+
+@register.inclusion_tag('nitro/fields/checkbox.html')
+def nitro_checkbox(field, label="", **kwargs):
+    """
+    Complete form checkbox abstraction - no Alpine.js knowledge needed.
+
+    Usage:
+        {% nitro_checkbox field="create_buffer.is_active" label="Activo" %}
+        {% nitro_checkbox field="edit_buffer.is_vendor" label="Es Vendor" %}
+
+    Args:
+        field: Field path
+        label: Checkbox label
+    """
+    is_edit_buffer = 'edit_buffer' in field
+    safe_field = field.replace('.', '?.') if is_edit_buffer else field
+
+    # For checkboxes, we need special handling for @change
+    # If edit_buffer, wrap in null check
+    change_handler = f"if({field.split('.')[0]}) {field} = $el.checked" if is_edit_buffer else f"{field} = $el.checked; call('_sync_field', {{field: '{field}', value: {field}}})"
+
+    return {
+        'field': field,
+        'safe_field': safe_field,
+        'label': label,
+        'change_handler': change_handler,
+        'is_edit_buffer': is_edit_buffer,
+        'extra_attrs': ' '.join(f'{k}="{v}"' for k, v in kwargs.items()),
+        'debug': NITRO_DEBUG,
+    }
+
+
+@register.inclusion_tag('nitro/fields/textarea.html')
+def nitro_textarea(field, label="", required=False, rows=3, placeholder="", **kwargs):
+    """
+    Complete form textarea abstraction - no Alpine.js knowledge needed.
+
+    Usage:
+        {% nitro_textarea field="create_buffer.description" label="Descripción" rows=5 %}
+        {% nitro_textarea field="edit_buffer.notes" label="Notas" required=True %}
+
+    Args:
+        field: Field path
+        label: Field label
+        required: Show required indicator
+        rows: Number of rows
+        placeholder: Placeholder text
+    """
+    # Use utility functions for safe field and error path
+    safe_field, is_edit_buffer = build_safe_field(field)
+    error_path = build_error_path(field)
+
+    return {
+        'field': field,
+        'safe_field': safe_field,
+        'error_path': error_path,
+        'label': label,
+        'required': required,
+        'rows': rows,
+        'placeholder': placeholder,
+        'extra_attrs': ' '.join(f'{k}="{v}"' for k, v in kwargs.items()),
+        'debug': NITRO_DEBUG,
+    }

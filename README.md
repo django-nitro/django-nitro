@@ -10,15 +10,25 @@ Django Nitro is a modern library for building reactive, stateful components in D
 
 ---
 
-## What's New in v0.5.1 (Latest)
+## What's New in v0.6.0 (Latest)
 
-**Bug Fixes & Improvements:**
-- 🔧 **Security mixins now work automatically** - `OwnershipMixin` and `TenantScopedMixin` no longer require manual `get_base_queryset()` override
-- 🔧 **Fixed Alpine.js initialization error** - `{% nitro_for %}` tag no longer causes "_x_dataStack" errors
-- 🔧 **Cleaner template syntax** - Access state variables directly: `{{ items }}` instead of `{{ state.items }}`
-- 🔧 **Django field type support** - Automatic JSON serialization for UUID, datetime, date, and Decimal fields
-- 🔧 **Pydantic validation now works** - Field validation errors are properly caught and displayed
-- 📦 Added `email-validator` dependency for EmailStr field support
+**Performance & Code Quality Improvements:**
+- ⚡ **TypeAdapter Caching** - 1-5ms performance boost per request by caching Pydantic TypeAdapters at class level
+- 🎯 **Default Debounce** - `nitro_model` now has 200ms debounce by default, reducing server load by ~80% on text inputs
+- 🧹 **Code Deduplication** - New `nitro.utils` module eliminates 50+ lines of repetitive code
+- 🔧 **Django 5.2 Compatibility** - Added `django-template-partials` as optional dependency for Django 5.2 users (Django 6.0+ has built-in partials)
+- 📋 **Form Field Template Tags (v0.6.0)** - Complete form abstractions: `{% nitro_input %}`, `{% nitro_select %}`, `{% nitro_checkbox %}`, `{% nitro_textarea %}`
+- 🚀 **Moved to Beta** - Framework is now stable and production-ready
+
+**Installation for Django 5.2:**
+```bash
+pip install django-nitro[django52]
+```
+
+**Installation for Django 6.0+:**
+```bash
+pip install django-nitro  # No extras needed
+```
 
 ## What's New in v0.5.0
 
@@ -1314,6 +1324,240 @@ The `nitro_file` tag automatically handles:
 - FormData construction
 - CSRF token inclusion
 - Action invocation with file parameter
+
+---
+
+## Form Field Template Tags (v0.6.0)
+
+Django Nitro includes pre-built template tags for common form fields with built-in validation, error handling, and Alpine.js integration.
+
+### `{% nitro_input %}`
+
+Renders an input field with automatic error display and optional chaining support.
+
+**Basic Usage:**
+
+```django
+<!-- Text input -->
+{% nitro_input 'name' %}
+
+<!-- Email input -->
+{% nitro_input 'email' type='email' %}
+
+<!-- Number input -->
+{% nitro_input 'price' type='number' %}
+
+<!-- Date input -->
+{% nitro_input 'birth_date' type='date' %}
+
+<!-- With placeholder -->
+{% nitro_input 'phone' type='tel' placeholder='555-1234' %}
+
+<!-- With custom CSS classes -->
+{% nitro_input 'username' class='form-control-lg' %}
+
+<!-- Disabled input -->
+{% nitro_input 'id' disabled=True %}
+
+<!-- With custom attributes -->
+{% nitro_input 'age' type='number' min='18' max='100' %}
+```
+
+**Edit Buffer Support:**
+
+```django
+<!-- Automatically uses edit_buffer when present in field name -->
+{% nitro_input 'edit_buffer.name' %}
+
+<!-- Works with nested fields -->
+{% nitro_input 'edit_buffer.address.street' %}
+```
+
+**Generated HTML:**
+
+```html
+<div class="mb-3">
+  <input
+    type="text"
+    x-model="name"
+    class="form-control"
+    :class="{'is-invalid': errors?.name}"
+  >
+  <div x-show="errors?.name" class="invalid-feedback" x-text="errors?.name"></div>
+</div>
+```
+
+### `{% nitro_select %}`
+
+Renders a select dropdown with choices and error handling.
+
+**Basic Usage:**
+
+```django
+<!-- Simple select with choices list -->
+{% nitro_select 'status' choices=status_choices %}
+
+<!-- With custom CSS classes -->
+{% nitro_select 'category' choices=categories class='form-select-lg' %}
+
+<!-- Disabled select -->
+{% nitro_select 'country' choices=countries disabled=True %}
+
+<!-- Edit buffer support -->
+{% nitro_select 'edit_buffer.priority' choices=priority_choices %}
+```
+
+**Choices Format:**
+
+```python
+# In your component
+class MyComponent(NitroComponent[MyState]):
+    def get_initial_state(self):
+        return MyState(
+            status_choices=[
+                {'value': 'active', 'label': 'Active'},
+                {'value': 'inactive', 'label': 'Inactive'},
+                {'value': 'pending', 'label': 'Pending'},
+            ]
+        )
+```
+
+**Generated HTML:**
+
+```html
+<div class="mb-3">
+  <select x-model="status" class="form-select" :class="{'is-invalid': errors?.status}">
+    <option value="">---------</option>
+    <option value="active">Active</option>
+    <option value="inactive">Inactive</option>
+    <option value="pending">Pending</option>
+  </select>
+  <div x-show="errors?.status" class="invalid-feedback" x-text="errors?.status"></div>
+</div>
+```
+
+### `{% nitro_checkbox %}`
+
+Renders a checkbox input with label and error handling.
+
+**Basic Usage:**
+
+```django
+<!-- Simple checkbox -->
+{% nitro_checkbox 'is_active' label='Active' %}
+
+<!-- Terms and conditions -->
+{% nitro_checkbox 'terms_accepted' label='I agree to the terms and conditions' %}
+
+<!-- With custom CSS classes -->
+{% nitro_checkbox 'newsletter' label='Subscribe to newsletter' class='form-check-lg' %}
+
+<!-- Disabled checkbox -->
+{% nitro_checkbox 'verified' label='Verified' disabled=True %}
+
+<!-- Edit buffer support -->
+{% nitro_checkbox 'edit_buffer.is_featured' label='Featured' %}
+```
+
+**Generated HTML:**
+
+```html
+<div class="form-check mb-3">
+  <input
+    type="checkbox"
+    x-model="is_active"
+    class="form-check-input"
+    :class="{'is-invalid': errors?.is_active}"
+    id="id_is_active"
+  >
+  <label class="form-check-label" for="id_is_active">
+    Active
+  </label>
+  <div x-show="errors?.is_active" class="invalid-feedback" x-text="errors?.is_active"></div>
+</div>
+```
+
+### `{% nitro_textarea %}`
+
+Renders a textarea field with error handling.
+
+**Basic Usage:**
+
+```django
+<!-- Simple textarea -->
+{% nitro_textarea 'description' %}
+
+<!-- With rows -->
+{% nitro_textarea 'notes' rows='5' %}
+
+<!-- With placeholder -->
+{% nitro_textarea 'comments' placeholder='Enter your comments...' %}
+
+<!-- With custom CSS classes -->
+{% nitro_textarea 'bio' class='form-control-lg' rows='10' %}
+
+<!-- Disabled textarea -->
+{% nitro_textarea 'system_log' disabled=True %}
+
+<!-- Edit buffer support -->
+{% nitro_textarea 'edit_buffer.description' rows='8' %}
+```
+
+**Generated HTML:**
+
+```html
+<div class="mb-3">
+  <textarea
+    x-model="description"
+    class="form-control"
+    :class="{'is-invalid': errors?.description}"
+    rows="3"
+  ></textarea>
+  <div x-show="errors?.description" class="invalid-feedback" x-text="errors?.description"></div>
+</div>
+```
+
+### Complete Form Example
+
+```django
+<div x-data="nitroComponent('{{ component_id }}', {{ state|json_script:component_id|safe }})">
+  <form @submit.prevent="call('save_item')">
+    {% nitro_input 'name' placeholder='Full Name' %}
+    {% nitro_input 'email' type='email' placeholder='email@example.com' %}
+    {% nitro_select 'status' choices=status_choices %}
+    {% nitro_textarea 'bio' rows='5' placeholder='Tell us about yourself...' %}
+    {% nitro_checkbox 'newsletter' label='Subscribe to newsletter' %}
+
+    <button type="submit" class="btn btn-primary" :disabled="isLoading">
+      <span x-show="!isLoading">Save</span>
+      <span x-show="isLoading">Saving...</span>
+    </button>
+  </form>
+</div>
+```
+
+### Error Handling
+
+All form field tags automatically display validation errors from your Pydantic models:
+
+```python
+class UserSchema(BaseModel):
+    name: str = Field(min_length=2, max_length=100)
+    email: EmailStr
+    age: int = Field(ge=18, le=120)
+
+class UserForm(NitroComponent[UserSchema]):
+    def save_user(self):
+        try:
+            # Pydantic validation runs automatically
+            user = User.objects.create(**self.state.dict())
+            self.success("User created!")
+        except ValidationError as e:
+            # Errors automatically displayed under each field
+            pass
+```
+
+The error messages will appear automatically under the corresponding field with Bootstrap's `.invalid-feedback` styling.
 
 ---
 

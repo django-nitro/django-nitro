@@ -1,6 +1,6 @@
 # Security
 
-Django Nitro v0.3.0 introduces security mixins for common authentication and authorization patterns.
+Django Nitro provides security mixins (since v0.3.0) for common authentication and authorization patterns.
 
 ## Security Mixins
 

@@ -2,7 +2,7 @@
 
 from typing import Any, Generic, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, TypeAdapter
 
 from nitro.base import CrudNitroComponent
 
@@ -216,6 +216,25 @@ class BaseListComponent(
     per_page: int = 20
     order_by: str = "-id"
 
+    # Class-level cache for TypeAdapter (performance optimization)
+    _item_adapter_cache: dict = {}
+
+    @classmethod
+    def _get_item_adapter(cls):
+        """Get cached TypeAdapter for item schema.
+
+        TypeAdapter compilation is expensive (~1-5ms per call).
+        This class-level cache ensures we only compile once per component class.
+
+        Returns:
+            TypeAdapter for list of items
+        """
+        cache_key = cls.__name__
+        if cache_key not in cls._item_adapter_cache:
+            item_type = cls.state_class.model_fields["items"].annotation.__args__[0]
+            cls._item_adapter_cache[cache_key] = TypeAdapter(list[item_type])
+        return cls._item_adapter_cache[cache_key]
+
     def get_initial_state(self, **kwargs):
         """
         Get initial state with paginated items.
@@ -235,12 +254,8 @@ class BaseListComponent(
         total_count = queryset.count()
         pagination_data = self.paginate_queryset(queryset, page, per_page)
 
-        # Convert items to Pydantic schemas
-        from pydantic import TypeAdapter
-
-        schema_list = TypeAdapter(
-            list[self.state_class.model_fields["items"].annotation.__args__[0]]
-        )
+        # Convert items to Pydantic schemas using cached TypeAdapter
+        schema_list = self._get_item_adapter()
         items = schema_list.validate_python(
             [
                 item.__dict__ if hasattr(item, "__dict__") else item
@@ -340,11 +355,8 @@ class BaseListComponent(
         total_count = queryset.count()
         pagination_data = self.paginate_queryset(queryset, self.state.page, self.state.per_page)
 
-        from pydantic import TypeAdapter
-
-        schema_list = TypeAdapter(
-            list[self.state_class.model_fields["items"].annotation.__args__[0]]
-        )
+        # Convert items to Pydantic schemas using cached TypeAdapter
+        schema_list = self._get_item_adapter()
         items = schema_list.validate_python(
             [
                 item.__dict__ if hasattr(item, "__dict__") else item

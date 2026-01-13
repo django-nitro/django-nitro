@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-nitro"
-version = "0.5.1"
+version = "0.6.0"
 description = "Reactive Django components using AlpineJS and Django Ninja"
 readme = "README.md"
 authors = [
@@ -12,7 +12,7 @@ authors = [
 ]
 license = {text = "MIT"}
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Environment :: Web Environment",
     "Framework :: Django",
     "Framework :: Django :: 5.2",
@@ -38,6 +38,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# For Django 5.2 compatibility (Django 6.0+ has built-in template partials)
+django52 = [
+    "django-template-partials>=24.4",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-django>=4.5.0",

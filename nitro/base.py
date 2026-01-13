@@ -90,6 +90,12 @@ class NitroComponent(Generic[S]):
     # Smart updates configuration
     smart_updates: bool = False
 
+    # Polling configuration (0 = disabled, >0 = interval in milliseconds)
+    poll: int = 0
+
+    # Parent component ID (for nested components)
+    parent_id: str | None = None
+
     def __init__(self, request: HttpRequest | None = None, initial_state: dict = None, **kwargs):
         """
         Initialize a Nitro component.
@@ -504,6 +510,24 @@ class NitroComponent(Generic[S]):
         else:
             self.error("No file was uploaded")
 
+    def _poll(self):
+        """
+        Internal method for polling/auto-refresh (called by polling interval).
+
+        This is a no-op by default. Components can override this to implement
+        custom polling behavior, or rely on the state refresh mechanism.
+
+        Example:
+            # Override in your component for custom polling behavior
+            def _poll(self):
+                # Fetch new data from database
+                self.state.updated_at = timezone.now()
+                # Update other fields as needed
+        """
+        # Base implementation - no-op
+        # The state will be automatically refreshed by the client
+        pass
+
     def emit(self, event_name: str, data: dict[str, Any] | None = None):
         """
         Emit a custom event to be sent to the client.
@@ -579,10 +603,12 @@ class NitroComponent(Generic[S]):
         # Store JSON in a data attribute (Django auto-escapes)
         # Use single quotes for the attribute value to avoid escaping issues
         # Use custom encoder to handle UUID, datetime, Decimal, etc.
+        poll_attr = f' data-nitro-poll="{self.poll}"' if self.poll > 0 else ''
+        parent_attr = f' data-nitro-parent="{self.parent_id}"' if self.parent_id else ''
         wrapper = f"""
         <div id="{self.component_id}"
              data-nitro-state='{json.dumps(full_payload, cls=NitroJSONEncoder)}'
-             x-data="nitro('{self.__class__.__name__}', $el)"
+             x-data="nitro('{self.__class__.__name__}', $el)"{poll_attr}{parent_attr}
              class="nitro-component">
             {html_content}
         </div>
@@ -606,14 +632,17 @@ class NitroComponent(Generic[S]):
 
         Returns:
             Dictionary containing updated state, errors, messages, integrity token,
-            toast config, and events. If smart_updates is enabled, state may be a diff
-            and partial will be True.
+            toast config, and events. If smart_updates is enabled OR if action is
+            _sync_field, state may be partial and merge will be True.
 
         Raises:
             ValueError: If the action method doesn't exist on this component
         """
-        # Store old state for diffing if smart_updates enabled
-        old_state_dict = current_state_dict.copy() if self.smart_updates else None
+        # Store old state for diffing if smart_updates enabled OR action is _sync_field
+        # For _sync_field, we ALWAYS want partial updates to prevent data loss
+        is_sync_field = action_name == "_sync_field"
+        should_compute_diff = self.smart_updates or is_sync_field
+        old_state_dict = current_state_dict.copy() if should_compute_diff else None
 
         try:
             if self.state_class:
@@ -629,41 +658,149 @@ class NitroComponent(Generic[S]):
                 str(e),
                 exc_info=True,
             )
-            raise
+            # Return structured error response for better error messages
+            return {
+                "error": True,
+                "message": "Failed to load component state. Please refresh the page.",
+                "state": current_state_dict,
+                "partial": False,
+                "merge": False,
+                "errors": {},
+                "messages": [],
+                "integrity": self._compute_integrity(),
+                "toast_config": self._get_toast_config(),
+                "events": [],
+            }
 
         if hasattr(self, action_name):
             action_method = getattr(self, action_name)
 
-            # Check if action accepts uploaded_file parameter
-            import inspect
+            try:
+                # Check if action accepts uploaded_file parameter
+                import inspect
 
-            sig = inspect.signature(action_method)
-            if "uploaded_file" in sig.parameters:
-                action_method(**payload, uploaded_file=uploaded_file)
-            else:
-                action_method(**payload)
+                sig = inspect.signature(action_method)
+                if "uploaded_file" in sig.parameters:
+                    action_method(**payload, uploaded_file=uploaded_file)
+                else:
+                    action_method(**payload)
 
-            # Get new state
-            new_state_dict = (
-                self.state.model_dump() if hasattr(self.state, "model_dump") else self.state
-            )
+                # Get new state
+                new_state_dict = (
+                    self.state.model_dump() if hasattr(self.state, "model_dump") else self.state
+                )
 
-            # Compute diff if smart_updates enabled
-            if self.smart_updates and old_state_dict:
-                state_to_send = self._compute_diff(old_state_dict, new_state_dict)
-            else:
-                state_to_send = new_state_dict
+                # Compute diff if smart_updates enabled OR if this is _sync_field
+                # For _sync_field, we only send the changed field to prevent data loss
+                if should_compute_diff and old_state_dict:
+                    if is_sync_field:
+                        # For _sync_field, only return the field that was synced
+                        # This prevents overwriting other unsynced fields on the client
+                        synced_field = payload.get("field", "")
+                        if synced_field and "." in synced_field:
+                            # Nested field (e.g., 'create_buffer.property_id')
+                            # Send the top-level object that contains the change
+                            top_level_field = synced_field.split(".")[0]
+                            state_to_send = {top_level_field: new_state_dict.get(top_level_field)}
+                        elif synced_field:
+                            # Simple field - only send that field
+                            state_to_send = {synced_field: new_state_dict.get(synced_field)}
+                        else:
+                            # Fallback: send full diff
+                            state_to_send = self._compute_diff(old_state_dict, new_state_dict)
+                    else:
+                        # Regular smart_updates: compute full diff
+                        state_to_send = self._compute_diff(old_state_dict, new_state_dict)
+                else:
+                    state_to_send = new_state_dict
 
-            return {
-                "state": state_to_send,
-                "partial": self.smart_updates,  # Signal to client that this is a diff
-                "errors": self._pending_errors,
-                "messages": self._pending_messages,
-                "integrity": self._compute_integrity(),
-                "toast_config": self._get_toast_config(),
-                "events": self._pending_events,
-            }
-        raise ValueError(f"Action {action_name} not found")
+                return {
+                    "state": state_to_send,
+                    "partial": should_compute_diff,  # Signal to client that this is a partial update
+                    "merge": is_sync_field,  # Signal to client to merge, not replace (NEW)
+                    "errors": self._pending_errors,
+                    "messages": self._pending_messages,
+                    "integrity": self._compute_integrity(),
+                    "toast_config": self._get_toast_config(),
+                    "events": self._pending_events,
+                }
+            except PermissionError as e:
+                logger.warning(
+                    "Permission denied for action %s in component %s: %s",
+                    action_name,
+                    self.__class__.__name__,
+                    str(e),
+                )
+                return {
+                    "error": True,
+                    "message": "You don't have permission to perform this action",
+                    "state": current_state_dict,
+                    "partial": False,
+                    "merge": False,
+                    "errors": {},
+                    "messages": [],
+                    "integrity": self._compute_integrity(),
+                    "toast_config": self._get_toast_config(),
+                    "events": [],
+                }
+            except ValidationError as e:
+                logger.warning(
+                    "Validation error for action %s in component %s: %s",
+                    action_name,
+                    self.__class__.__name__,
+                    str(e),
+                )
+                error_msg = str(e.errors()[0]["msg"]) if e.errors() else str(e)
+                return {
+                    "error": True,
+                    "message": f"Validation error: {error_msg}",
+                    "state": current_state_dict,
+                    "partial": False,
+                    "merge": False,
+                    "errors": {},
+                    "messages": [],
+                    "integrity": self._compute_integrity(),
+                    "toast_config": self._get_toast_config(),
+                    "events": [],
+                }
+            except Exception as e:
+                logger.exception(
+                    "Error executing action %s in component %s: %s",
+                    action_name,
+                    self.__class__.__name__,
+                    str(e),
+                )
+                return {
+                    "error": True,
+                    "message": "Something went wrong. Please try again.",
+                    "state": current_state_dict,
+                    "partial": False,
+                    "merge": False,
+                    "errors": {},
+                    "messages": [],
+                    "integrity": self._compute_integrity(),
+                    "toast_config": self._get_toast_config(),
+                    "events": [],
+                }
+
+        # Action method not found
+        logger.error(
+            "Action %s not found in component %s",
+            action_name,
+            self.__class__.__name__,
+        )
+        return {
+            "error": True,
+            "message": "Action not found. Please refresh the page.",
+            "state": current_state_dict,
+            "partial": False,
+            "merge": False,
+            "errors": {},
+            "messages": [],
+            "integrity": self._compute_integrity(),
+            "toast_config": self._get_toast_config(),
+            "events": [],
+        }
 
 
 class ModelNitroComponent(NitroComponent[S]):

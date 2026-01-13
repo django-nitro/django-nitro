@@ -571,7 +571,7 @@ After exploring this example:
 1. **Add Authentication** - Use [OwnershipMixin](../security/ownership-mixin.md)
 2. **Add Permissions** - Use [PermissionMixin](../security/permission-mixin.md)
 3. **Add Multi-Tenancy** - Use [TenantScopedMixin](../security/tenant-scoped-mixin.md)
-4. **Add File Uploads** - See File Uploads documentation (coming soon)
+4. **Add File Uploads** - Use `{% nitro_file %}` tag (see [API Reference](../api-reference.md#template-tags-v040))
 
 ## Complete Code
 

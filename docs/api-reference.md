@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API reference for Django Nitro v0.5.0+
+Complete API reference for Django Nitro v0.6.0+
 
 ## Core Components
 
@@ -806,6 +806,124 @@ SEO-friendly loop that renders static items with Alpine.js reactivity.
 **Use for:**
 - Public product/content listings that need to be indexed by search engines
 
+### nitro_input (v0.6.0+)
+
+Renders an input field with automatic error display and validation styling.
+
+```html
+{% load nitro_tags %}
+
+<!-- Text input -->
+{% nitro_input 'name' %}
+
+<!-- Email input -->
+{% nitro_input 'email' type='email' placeholder='user@example.com' %}
+
+<!-- Number input with attributes -->
+{% nitro_input 'age' type='number' min='18' max='100' %}
+
+<!-- Edit buffer support -->
+{% nitro_input 'edit_buffer.name' %}
+```
+
+**Parameters:**
+- `field` (required) - Field name or path (supports nested fields)
+- `type` (optional) - Input type (default: `'text'`)
+- `placeholder` (optional) - Placeholder text
+- `class` (optional) - Additional CSS classes
+- `disabled` (optional) - Disable input
+- `**attrs` - Any other HTML attributes (e.g., `min`, `max`, `step`)
+
+**Supported Types:**
+`text`, `email`, `password`, `number`, `tel`, `url`, `date`, `time`, `datetime-local`, `search`
+
+### nitro_select (v0.6.0+)
+
+Renders a select dropdown with choices and error handling.
+
+```html
+{% load nitro_tags %}
+
+<!-- Basic select -->
+{% nitro_select 'status' choices=status_choices %}
+
+<!-- With custom class -->
+{% nitro_select 'category' choices=categories class='form-select-lg' %}
+
+<!-- Edit buffer support -->
+{% nitro_select 'edit_buffer.priority' choices=priority_choices %}
+```
+
+**Parameters:**
+- `field` (required) - Field name or path
+- `choices` (required) - List of dicts with `value` and `label` keys
+- `class` (optional) - Additional CSS classes
+- `disabled` (optional) - Disable select
+- `**attrs` - Any other HTML attributes
+
+**Choices Format:**
+```python
+choices = [
+    {'value': 'option1', 'label': 'Option 1'},
+    {'value': 'option2', 'label': 'Option 2'},
+]
+```
+
+### nitro_textarea (v0.6.0+)
+
+Renders a textarea with error handling.
+
+```html
+{% load nitro_tags %}
+
+<!-- Basic textarea -->
+{% nitro_textarea 'description' %}
+
+<!-- With rows and placeholder -->
+{% nitro_textarea 'notes' rows='5' placeholder='Enter notes...' %}
+
+<!-- Edit buffer support -->
+{% nitro_textarea 'edit_buffer.bio' rows='8' %}
+```
+
+**Parameters:**
+- `field` (required) - Field name or path
+- `rows` (optional) - Number of visible rows (default: `3`)
+- `placeholder` (optional) - Placeholder text
+- `class` (optional) - Additional CSS classes
+- `disabled` (optional) - Disable textarea
+- `**attrs` - Any other HTML attributes
+
+### nitro_checkbox (v0.6.0+)
+
+Renders a checkbox with label and error handling.
+
+```html
+{% load nitro_tags %}
+
+<!-- Basic checkbox -->
+{% nitro_checkbox 'is_active' label='Active' %}
+
+<!-- Terms acceptance -->
+{% nitro_checkbox 'terms_accepted' label='I agree to terms and conditions' %}
+
+<!-- Edit buffer support -->
+{% nitro_checkbox 'edit_buffer.is_featured' label='Featured' %}
+```
+
+**Parameters:**
+- `field` (required) - Field name or path
+- `label` (required) - Label text displayed next to checkbox
+- `class` (optional) - Additional CSS classes
+- `disabled` (optional) - Disable checkbox
+- `**attrs` - Any other HTML attributes
+
+**Note:** All form field tags automatically:
+- Bind to Alpine.js using `x-model`
+- Display validation errors using `x-show` and `:class`
+- Support nested fields with optional chaining
+- Use Bootstrap styling classes
+
 ---
 
 ## CLI Commands (v0.4.0+)
@@ -922,7 +1040,7 @@ class MyState(BaseModel):
 ```python
 import nitro
 
-print(nitro.__version__)  # "0.5.0"
+print(nitro.__version__)  # "0.6.0"
 ```
 
 ---

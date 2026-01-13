@@ -132,7 +132,7 @@ Adds an informational message to be displayed to the user.
 self.info("Your session will expire in 5 minutes.")
 ```
 
-### Security Helpers (v0.3.0+)
+### Security Helpers
 
 #### `current_user -> User | None`
 

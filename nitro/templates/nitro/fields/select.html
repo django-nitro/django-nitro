@@ -1,0 +1,20 @@
+<!-- Nitro Select Field - Complete Alpine.js Abstraction -->
+<div>
+    {% if label %}
+    <label class="block text-xs text-gray-600 mb-1">
+        {{ label }}{% if required %} *{% endif %}
+    </label>
+    {% endif %}
+    <select
+        class="w-full rounded-lg border-gray-300"
+        x-model="{{ safe_field }}"
+        @change="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}})"
+        :class="{'border-red-500': {{ error_path }}}"
+        {{ extra_attrs|safe }}
+        {% if debug %}data-nitro-debug="nitro_select: field='{{ field }}'"{% endif %}
+    >
+        {% for choice in choices %}
+        <option value="{{ choice.value }}">{{ choice.label }}</option>
+        {% endfor %}
+    </select>
+</div>

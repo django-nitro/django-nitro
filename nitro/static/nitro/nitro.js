@@ -181,9 +181,122 @@ function applyListDiff(currentArray, diff) {
 }
 
 /**
+ * Setup event listeners with modifiers support
+ * Handles nitro:click.prevent.stop="action_name" attributes
+ */
+function setupEventModifiers(element) {
+    // Find all elements with nitro:click or similar attributes
+    const eventTypes = ['click', 'submit', 'change', 'input'];
+
+    eventTypes.forEach(eventType => {
+        const selector = `[nitro\\:${eventType}], [nitro\\:${eventType}\\.prevent], [nitro\\:${eventType}\\.stop], [nitro\\:${eventType}\\.self]`;
+        const elements = element.querySelectorAll(selector);
+
+        elements.forEach(el => {
+            // Get all attributes that start with nitro:{eventType}
+            Array.from(el.attributes).forEach(attr => {
+                if (attr.name.startsWith(`nitro:${eventType}`)) {
+                    const fullAttr = attr.name;
+                    const actionName = attr.value;
+
+                    // Parse modifiers from attribute name
+                    // e.g., "nitro:click.prevent.stop" -> ['prevent', 'stop']
+                    const parts = fullAttr.split('.');
+                    const modifiers = parts.slice(1); // Everything after "nitro:click"
+
+                    if (NITRO_DEBUG && modifiers.length > 0) {
+                        console.log(`[Nitro] Setting up ${eventType} with modifiers:`, modifiers, 'for action:', actionName);
+                    }
+
+                    // Add event listener with modifiers
+                    el.addEventListener(eventType, (event) => {
+                        // Apply modifiers
+                        if (modifiers.includes('prevent')) {
+                            event.preventDefault();
+                        }
+                        if (modifiers.includes('stop')) {
+                            event.stopPropagation();
+                        }
+                        if (modifiers.includes('self')) {
+                            // Only trigger if event.target === event.currentTarget
+                            if (event.target !== event.currentTarget) {
+                                return;
+                            }
+                        }
+
+                        // Find the Alpine component and call the action
+                        // This is handled by Alpine's x-data, so we just need to ensure modifiers work
+                        // The actual action call is handled by Alpine's @click directive
+                    });
+                }
+            });
+        });
+    });
+}
+
+/**
  * Alpine.js component initialization
  */
 document.addEventListener('alpine:init', () => {
+    // Create global store for dirty state tracking and component registry
+    Alpine.store('nitro', {
+        dirtyComponents: [],
+        componentRegistry: {},
+
+        markDirty(componentId) {
+            if (!this.dirtyComponents.includes(componentId)) {
+                this.dirtyComponents.push(componentId);
+                if (NITRO_DEBUG) {
+                    console.log('[Nitro] Component marked as dirty:', componentId);
+                }
+            }
+        },
+
+        markClean(componentId) {
+            const index = this.dirtyComponents.indexOf(componentId);
+            if (index !== -1) {
+                this.dirtyComponents.splice(index, 1);
+                if (NITRO_DEBUG) {
+                    console.log('[Nitro] Component marked as clean:', componentId);
+                }
+            }
+        },
+
+        isDirty(componentId) {
+            return this.dirtyComponents.includes(componentId);
+        },
+
+        hasAnyDirty() {
+            return this.dirtyComponents.length > 0;
+        },
+
+        // Register component for parent-child access
+        registerComponent(componentId, component, parentId) {
+            this.componentRegistry[componentId] = {
+                component: component,
+                parentId: parentId
+            };
+            if (NITRO_DEBUG) {
+                console.log(`[Nitro] Registered component: ${componentId}`, parentId ? `with parent: ${parentId}` : '(no parent)');
+            }
+        },
+
+        // Get component by ID
+        getComponent(componentId) {
+            const entry = this.componentRegistry[componentId];
+            return entry ? entry.component : null;
+        },
+
+        // Get parent component
+        getParent(componentId) {
+            const entry = this.componentRegistry[componentId];
+            if (entry && entry.parentId) {
+                return this.getComponent(entry.parentId);
+            }
+            return null;
+        }
+    });
+
     Alpine.data('nitro', (componentName, element) => {
         // Parse state from data attribute
         const initialPayload = JSON.parse(element.dataset.nitroState || '{}');
@@ -198,6 +311,9 @@ document.addEventListener('alpine:init', () => {
             console.log('[Nitro] Initializing', componentName, 'with state:', initialPayload.state);
         }
 
+        // Setup event modifiers for nitro:click attributes
+        setTimeout(() => setupEventModifiers(element), 0);
+
         return {
             // Spread state into component root
             ...initialPayload.state,
@@ -209,10 +325,101 @@ document.addEventListener('alpine:init', () => {
             _toast_config: initialPayload.toast_config || {},
             _events: [],
             isLoading: false,
+            _pollInterval: null,
+            _isDirty: false,
+            _originalState: null,
 
             get errors() { return this._errors; },
             get messages() { return this._messages; },
             get events() { return this._events; },
+            get isDirty() { return this._isDirty; },
+
+            // Mark component as dirty
+            markDirty() {
+                if (!this._isDirty) {
+                    this._isDirty = true;
+                    Alpine.store('nitro').markDirty(element.id);
+                }
+            },
+
+            // Mark component as clean
+            markClean() {
+                if (this._isDirty) {
+                    this._isDirty = false;
+                    Alpine.store('nitro').markClean(element.id);
+                }
+            },
+
+            // Track field changes for dirty state
+            trackChange(field) {
+                // Mark as dirty when user changes a field
+                this.markDirty();
+
+                if (NITRO_DEBUG) {
+                    console.log(`[Nitro] Field changed: ${field}, component marked dirty`);
+                }
+            },
+
+            // $parent accessor for child components
+            get $parent() {
+                const parent = Alpine.store('nitro').getParent(element.id);
+                if (!parent) {
+                    console.warn(`[Nitro] No parent component found for ${element.id}`);
+                    return null;
+                }
+                return parent;
+            },
+
+            // Initialize polling if configured
+            init() {
+                // Register this component in the global registry
+                const parentId = element.dataset.nitroParent || null;
+                Alpine.store('nitro').registerComponent(element.id, this, parentId);
+
+                // Store original state for dirty checking
+                this._originalState = JSON.stringify(this._getCleanState());
+                const pollInterval = element.dataset.nitroPoll;
+                if (pollInterval && parseInt(pollInterval) > 0) {
+                    const interval = parseInt(pollInterval);
+                    if (NITRO_DEBUG) {
+                        console.log(`[Nitro] Setting up polling for ${componentName} every ${interval}ms`);
+                    }
+
+                    // Start polling
+                    this._pollInterval = setInterval(() => {
+                        if (!this.isLoading) {
+                            if (NITRO_DEBUG) {
+                                console.log(`[Nitro] Polling refresh for ${componentName}`);
+                            }
+                            // Call refresh action if it exists, otherwise just re-fetch state
+                            if (typeof this.refresh === 'function') {
+                                this.refresh();
+                            } else {
+                                // Default: call a _poll action that components can implement
+                                this.call('_poll').catch(() => {
+                                    // Ignore errors for polling - component might not have _poll action
+                                });
+                            }
+                        }
+                    }, interval);
+                }
+            },
+
+            // Cleanup polling on component destroy
+            destroy() {
+                if (this._pollInterval) {
+                    clearInterval(this._pollInterval);
+                    if (NITRO_DEBUG) {
+                        console.log(`[Nitro] Cleared polling interval for ${componentName}`);
+                    }
+                }
+
+                // Unregister component
+                delete Alpine.store('nitro').componentRegistry[element.id];
+                if (NITRO_DEBUG) {
+                    console.log(`[Nitro] Unregistered component: ${element.id}`);
+                }
+            },
 
             async call(actionName, payload = {}, file = null) {
                 this.isLoading = true;
@@ -287,9 +494,34 @@ document.addEventListener('alpine:init', () => {
 
                     const data = await response.json();
 
+                    // Check for error response from server
+                    if (data.error) {
+                        // Show error toast
+                        const errorConfig = {
+                            position: this._toast_config.position || 'top-right',
+                            duration: 5000,  // 5 seconds for errors
+                            style: this._toast_config.style || 'default'
+                        };
+                        showToast(data.message || 'An error occurred', 'error', errorConfig);
+
+                        // Dispatch error event
+                        this._dispatchEvent('nitro:error', {
+                            action: actionName,
+                            error: data.message,
+                            status: response.status
+                        });
+
+                        if (NITRO_DEBUG) {
+                            console.error('[Nitro] Action error:', data.message);
+                        }
+                        return;
+                    }
+
                     // Handle smart updates (partial state with diffs)
+                    // FIX: Always use merge strategy for partial updates (including _sync_field)
+                    // This prevents data loss when syncing individual fields
                     if (data.partial && data.state) {
-                        // Apply diffs for arrays
+                        // Partial update - merge only changed fields
                         Object.keys(data.state).forEach(key => {
                             const value = data.state[key];
                             if (value && typeof value === 'object' && 'diff' in value) {
@@ -298,12 +530,17 @@ document.addEventListener('alpine:init', () => {
                                     applyListDiff(this[key], value.diff);
                                 }
                             } else {
-                                // Regular update
+                                // Regular update - only update keys that are present in response
                                 this[key] = value;
                             }
                         });
+                    } else if (data.merge && data.state) {
+                        // Explicit merge request (for _sync_field backward compat)
+                        Object.keys(data.state).forEach(key => {
+                            this[key] = data.state[key];
+                        });
                     } else {
-                        // Full state update (backward compatible)
+                        // Full state replacement (backward compatible)
                         Object.assign(this, data.state);
                     }
 
@@ -345,6 +582,16 @@ document.addEventListener('alpine:init', () => {
                         action: actionName,
                         state: data.state
                     });
+
+                    // Mark component as clean after successful save/update actions
+                    // Common save action names
+                    const saveActions = ['save', 'update', 'create', 'save_edit', 'create_item', 'submit'];
+                    if (saveActions.includes(actionName)) {
+                        this.markClean();
+                        if (NITRO_DEBUG) {
+                            console.log(`[Nitro] Component marked clean after ${actionName}`);
+                        }
+                    }
 
                     // Log messages to console in debug mode
                     if (NITRO_DEBUG && data.messages && data.messages.length > 0) {
@@ -557,4 +804,17 @@ document.addEventListener('alpine:init', () => {
             }
         };
     })
+});
+
+/**
+ * Warn user before leaving page with unsaved changes
+ */
+window.addEventListener('beforeunload', (e) => {
+    // Check if any components have unsaved changes
+    if (Alpine.store('nitro') && Alpine.store('nitro').hasAnyDirty()) {
+        const message = 'You have unsaved changes. Are you sure you want to leave?';
+        e.preventDefault();
+        e.returnValue = message; // For Chrome
+        return message; // For other browsers
+    }
 });
