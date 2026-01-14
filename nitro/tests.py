@@ -69,14 +69,15 @@ class TestNitroComponent(TestCase):
         self.assertEqual(result["state"]["message"], "test message")
 
     def test_process_action_invalid(self):
-        """Test that invalid action raises ValueError."""
+        """Test that invalid action returns error response."""
         component = SimpleComponent(request=self.request)
-        with self.assertRaises(ValueError):
-            component.process_action(
-                action_name="nonexistent_action",
-                payload={},
-                current_state_dict={"count": 0, "message": ""},
-            )
+        result = component.process_action(
+            action_name="nonexistent_action",
+            payload={},
+            current_state_dict={"count": 0, "message": ""},
+        )
+        self.assertTrue(result["error"])
+        self.assertIn("Action not found", result["message"])
 
     def test_integrity_computation(self):
         """Test that integrity token is computed for secure fields."""
