@@ -47,8 +47,10 @@ class Counter(NitroComponent[CounterState]):
 
 ```html
 <!-- templates/components/counter.html -->
+{% load nitro_tags %}
+
 <div class="counter-widget">
-    <h2>Counter: <span x-text="count"></span></h2>
+    <h2>Counter: {% nitro_text 'count' %}</h2>
 
     <div class="controls">
         <button @click="call('decrement')" :disabled="isLoading">-</button>

@@ -66,11 +66,13 @@ class Counter(NitroComponent[CounterState]):
 
 ### 3. Template
 
-HTML with AlpineJS directives for reactivity:
+HTML with Nitro template tags and AlpineJS directives for reactivity:
 
 ```html
+{% load nitro_tags %}
+
 <div class="counter">
-    <h2>Count: <span x-text="count"></span></h2>
+    <h2>Count: {% nitro_text 'count' %}</h2>
     <button @click="call('increment')">+</button>
 </div>
 ```

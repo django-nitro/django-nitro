@@ -425,9 +425,9 @@ class CompanyList(BaseListComponent[CompanyListState]):
     <!-- Create form -->
     <div class="create-form">
         <h3>Add Company</h3>
-        <input x-model="create_buffer.name" placeholder="Company name" type="text">
-        <input x-model="create_buffer.email" placeholder="Email" type="email">
-        <input x-model="create_buffer.phone" placeholder="Phone" type="tel">
+        {% nitro_input 'create_buffer.name' placeholder='Company name' %}
+        {% nitro_input 'create_buffer.email' type='email' placeholder='Email' %}
+        {% nitro_input 'create_buffer.phone' type='tel' placeholder='Phone' %}
         <button @click="call('create_item')" :disabled="isLoading">
             Add Company
         </button>
@@ -478,9 +478,9 @@ class CompanyList(BaseListComponent[CompanyListState]):
                     <template x-if="editing_id === company.id && edit_buffer">
                         <td colspan="5">
                             <div class="inline-edit">
-                                <input x-model="edit_buffer.name" type="text">
-                                <input x-model="edit_buffer.email" type="email">
-                                <input x-model="edit_buffer.phone" type="tel">
+                                {% nitro_input 'edit_buffer.name' %}
+                                {% nitro_input 'edit_buffer.email' type='email' %}
+                                {% nitro_input 'edit_buffer.phone' type='tel' %}
                                 <button @click="call('save_edit')">Save</button>
                                 <button @click="call('cancel_edit')">Cancel</button>
                             </div>

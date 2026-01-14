@@ -85,8 +85,10 @@ class Counter(NitroComponent[CounterState]):
 ### Template
 
 ```html
+{% load nitro_tags %}
+
 <div class="counter-widget">
-    <h2>Counter: <span x-text="count"></span></h2>
+    <h2>Counter: {% nitro_text 'count' %}</h2>
 
     <div class="controls">
         <!-- Decrement button -->
