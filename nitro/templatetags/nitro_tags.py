@@ -673,7 +673,7 @@ def nitro_if(parser, token):
 
 
 @register.inclusion_tag("nitro/fields/input.html")
-def nitro_input(field, label="", type="text", required=False, placeholder="", **kwargs):
+def nitro_input(field, label="", type="text", required=False, placeholder="", lazy=False, debounce="200ms", **kwargs):
     """
     Complete form input abstraction - no Alpine.js knowledge needed.
 
@@ -682,11 +682,14 @@ def nitro_input(field, label="", type="text", required=False, placeholder="", **
     - Error validation styling
     - Consistent CSS classes
     - Labels and required indicators
+    - Debounced sync (default 200ms) or lazy sync (on blur)
 
     Usage:
         {% nitro_input field="create_buffer.name" label="Nombre" required=True %}
         {% nitro_input field="edit_buffer.email" label="Email" type="email" %}
         {% nitro_input field="edit_buffer.price" label="Precio" type="number" step="0.01" %}
+        {% nitro_input field="create_buffer.name" label="Nombre" lazy=True %}  <!-- Sync on blur -->
+        {% nitro_input field="create_buffer.search" label="Buscar" debounce="500ms" %}  <!-- Custom debounce -->
 
     Args:
         field: Field path (e.g., 'create_buffer.name', 'edit_buffer.email')
@@ -694,6 +697,8 @@ def nitro_input(field, label="", type="text", required=False, placeholder="", **
         type: Input type (text, number, email, date, etc.)
         required: Show required indicator
         placeholder: Placeholder text
+        lazy: If True, sync on blur instead of on input (default: False)
+        debounce: Debounce time for input event (default: "200ms", ignored if lazy=True)
         **kwargs: Additional HTML attributes (step, min, max, etc.)
     """
     # Use utility functions for safe field and error path
@@ -708,6 +713,8 @@ def nitro_input(field, label="", type="text", required=False, placeholder="", **
         "type": type,
         "required": required,
         "placeholder": placeholder,
+        "lazy": lazy,
+        "debounce": debounce,
         "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
         "debug": NITRO_DEBUG,
     }
@@ -789,13 +796,14 @@ def nitro_checkbox(field, label="", **kwargs):
 
 
 @register.inclusion_tag("nitro/fields/textarea.html")
-def nitro_textarea(field, label="", required=False, rows=3, placeholder="", **kwargs):
+def nitro_textarea(field, label="", required=False, rows=3, placeholder="", lazy=False, debounce="200ms", **kwargs):
     """
     Complete form textarea abstraction - no Alpine.js knowledge needed.
 
     Usage:
         {% nitro_textarea field="create_buffer.description" label="Descripción" rows=5 %}
         {% nitro_textarea field="edit_buffer.notes" label="Notas" required=True %}
+        {% nitro_textarea field="create_buffer.bio" label="Bio" lazy=True %}  <!-- Sync on blur -->
 
     Args:
         field: Field path
@@ -803,6 +811,8 @@ def nitro_textarea(field, label="", required=False, rows=3, placeholder="", **kw
         required: Show required indicator
         rows: Number of rows
         placeholder: Placeholder text
+        lazy: If True, sync on blur instead of on input (default: False)
+        debounce: Debounce time for input event (default: "200ms", ignored if lazy=True)
     """
     # Use utility functions for safe field and error path
     safe_field, is_edit_buffer = build_safe_field(field)
@@ -816,6 +826,8 @@ def nitro_textarea(field, label="", required=False, rows=3, placeholder="", **kw
         "required": required,
         "rows": rows,
         "placeholder": placeholder,
+        "lazy": lazy,
+        "debounce": debounce,
         "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
         "debug": NITRO_DEBUG,
     }

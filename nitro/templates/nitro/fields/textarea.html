@@ -10,9 +10,13 @@
         rows="{{ rows }}"
         {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
         x-model="{{ safe_field }}"
-        @input="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}})"
+        {% if lazy %}
+        @blur="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}})"
+        {% else %}
+        @input.debounce.{{ debounce }}="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}})"
+        {% endif %}
         :class="{'border-red-500': {{ error_path }}}"
         {{ extra_attrs|safe }}
-        {% if debug %}data-nitro-debug="nitro_textarea: field='{{ field }}'"{% endif %}
+        {% if debug %}data-nitro-debug="nitro_textarea: field='{{ field }}' lazy={{ lazy }} debounce={{ debounce }}"{% endif %}
     ></textarea>
 </div>
