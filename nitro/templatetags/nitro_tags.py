@@ -12,9 +12,9 @@ from nitro.utils import build_error_path, build_safe_field
 register = template.Library()
 
 # Debug mode flag
-NITRO_DEBUG = getattr(settings, 'DEBUG', False) and getattr(
-    settings, 'NITRO', {}
-).get('DEBUG', False)
+NITRO_DEBUG = getattr(settings, "DEBUG", False) and getattr(settings, "NITRO", {}).get(
+    "DEBUG", False
+)
 
 
 @register.simple_tag(takes_context=True)
@@ -53,12 +53,11 @@ def nitro_scripts():
     - nitro.css (toast styles and component utilities)
     - nitro.js (Alpine.js integration and client-side logic)
     """
-    css_path = static('nitro/nitro.css')
-    js_path = static('nitro/nitro.js')
+    css_path = static("nitro/nitro.css")
+    js_path = static("nitro/nitro.js")
 
     return mark_safe(
-        f'<link rel="stylesheet" href="{css_path}">\n'
-        f'<script defer src="{js_path}"></script>'
+        f'<link rel="stylesheet" href="{css_path}">\n<script defer src="{js_path}"></script>'
     )
 
 
@@ -91,7 +90,7 @@ class NitroForNode(Node):
             context.push({self.item_var: item})
             output.append(self.nodelist.render(context))
             context.pop()
-        output.append('</div>')
+        output.append("</div>")
 
         # 2. Alpine.js template for reactivity
         output.append(
@@ -106,9 +105,9 @@ class NitroForNode(Node):
             output.append(self.nodelist.render(context))
             context.pop()
 
-        output.append('</template>')
+        output.append("</template>")
 
-        return ''.join(output)
+        return "".join(output)
 
 
 @register.tag
@@ -149,17 +148,16 @@ def nitro_for(parser, token):
     try:
         # Parse: {% nitro_for 'list_var' as 'item_var' %}
         bits = token.split_contents()
-        if len(bits) != 4 or bits[2] != 'as':
+        if len(bits) != 4 or bits[2] != "as":
             raise TemplateSyntaxError(
-                f"{bits[0]} tag requires format: "
-                "{% nitro_for 'list_var' as 'item_var' %}"
+                f"{bits[0]} tag requires format: {{% nitro_for 'list_var' as 'item_var' %}}"
             )
 
         tag_name, list_var, as_word, item_var = bits
 
         # Remove quotes from variables
-        list_var = list_var.strip('\'"')
-        item_var = item_var.strip('\'"')
+        list_var = list_var.strip("'\"")
+        item_var = item_var.strip("'\"")
 
     except ValueError:
         raise TemplateSyntaxError(
@@ -168,7 +166,7 @@ def nitro_for(parser, token):
         ) from None
 
     # Parse until {% end_nitro_for %}
-    nodelist = parser.parse(('end_nitro_for',))
+    nodelist = parser.parse(("end_nitro_for",))
     parser.delete_first_token()
 
     return NitroForNode(list_var, item_var, nodelist)
@@ -190,7 +188,7 @@ class NitroTextNode(Node):
         try:
             value = self.var.resolve(context)
         except template.VariableDoesNotExist:
-            value = ''
+            value = ""
 
         # Render with both server value (SEO) and x-text binding (reactivity)
         # Escape value to prevent XSS in initial render
@@ -222,7 +220,7 @@ def nitro_text(parser, token):
     try:
         tag_name, var_name = token.split_contents()
         # Remove quotes
-        var_name = var_name.strip('\'"')
+        var_name = var_name.strip("'\"")
     except ValueError:
         raise TemplateSyntaxError(
             f"{token.contents.split()[0]} tag requires a single argument: "
@@ -236,8 +234,9 @@ def nitro_text(parser, token):
 # ZERO JAVASCRIPT MODE - Wire-like Template Tags (v0.4.0)
 # ============================================================================
 
+
 @register.simple_tag
-def nitro_model(field, debounce='200ms', lazy=False, on_change=None, no_debounce=False):
+def nitro_model(field, debounce="200ms", lazy=False, on_change=None, no_debounce=False):
     """
     Auto-sync bidirectional binding (wire:model equivalent).
 
@@ -295,9 +294,9 @@ def nitro_model(field, debounce='200ms', lazy=False, on_change=None, no_debounce
     attrs.append(f'x-model="{field}"')
 
     # Determine event
-    event = '@blur' if lazy else '@input'
+    event = "@blur" if lazy else "@input"
     if debounce:
-        event += f'.debounce.{debounce}'
+        event += f".debounce.{debounce}"
 
     # Auto-sync call
     sync_call = f"call('_sync_field', {{field: '{field}', value: {field}}})"
@@ -312,7 +311,7 @@ def nitro_model(field, debounce='200ms', lazy=False, on_change=None, no_debounce
     error_path = build_error_path(field)
     attrs.append(f":class=\"{{'border-red-500': {error_path}}}\"")
 
-    return mark_safe(' '.join(attrs))
+    return mark_safe(" ".join(attrs))
 
 
 @register.simple_tag
@@ -349,13 +348,13 @@ def nitro_action(action, **kwargs):
     if NITRO_DEBUG:
         debug_info = f"nitro_action: action='{action}'"
         if kwargs:
-            params_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
+            params_str = ", ".join(f"{k}={v}" for k, v in kwargs.items())
             debug_info += f", params=({params_str})"
         attrs.append(f'data-nitro-debug="{debug_info}"')
 
     # Build params object
     if kwargs:
-        params = '{' + ', '.join(f'{k}: {v}' for k, v in kwargs.items()) + '}'
+        params = "{" + ", ".join(f"{k}: {v}" for k, v in kwargs.items()) + "}"
         click_handler = f"call('{action}', {params})"
     else:
         click_handler = f"call('{action}')"
@@ -365,7 +364,7 @@ def nitro_action(action, **kwargs):
     # Auto-disable during loading
     attrs.append(':disabled="isLoading"')
 
-    return mark_safe(' '.join(attrs))
+    return mark_safe(" ".join(attrs))
 
 
 @register.simple_tag
@@ -418,15 +417,16 @@ def nitro_class(**conditions):
         <div :class="{'active': isActive, 'error': hasError}">
     """
     if not conditions:
-        return ''
+        return ""
 
-    class_obj = '{' + ', '.join(f"'{k}': {v}" for k, v in conditions.items()) + '}'
+    class_obj = "{" + ", ".join(f"'{k}': {v}" for k, v in conditions.items()) + "}"
     return mark_safe(f':class="{class_obj}"')
 
 
 # ============================================================================
 # ADVANCED ZERO JAVASCRIPT MODE - Template Tags (v0.5.0)
 # ============================================================================
+
 
 @register.simple_tag
 def nitro_attr(attr_name, value):
@@ -460,7 +460,7 @@ def nitro_attr(attr_name, value):
 
     attrs.append(f':{attr_name}="{value}"')
 
-    return mark_safe(' '.join(attrs))
+    return mark_safe(" ".join(attrs))
 
 
 @register.simple_tag
@@ -498,7 +498,7 @@ def nitro_disabled(condition):
 
     attrs.append(f':disabled="{condition}"')
 
-    return mark_safe(' '.join(attrs))
+    return mark_safe(" ".join(attrs))
 
 
 @register.simple_tag
@@ -557,18 +557,18 @@ def nitro_file(field, accept=None, max_size=None, preview=False):
     # Build options object
     options = {}
     if max_size:
-        options['maxSize'] = f"'{max_size}'"
+        options["maxSize"] = f"'{max_size}'"
     if preview:
-        options['preview'] = 'true'
+        options["preview"] = "true"
 
     # File upload handler
     if options:
-        options_str = '{' + ', '.join(f'{k}: {v}' for k, v in options.items()) + '}'
-        attrs.append(f'@change="handleFileUpload($event, \'{field}\', {options_str})"')
+        options_str = "{" + ", ".join(f"{k}: {v}" for k, v in options.items()) + "}"
+        attrs.append(f"@change=\"handleFileUpload($event, '{field}', {options_str})\"")
     else:
-        attrs.append(f'@change="handleFileUpload($event, \'{field}\')"')
+        attrs.append(f"@change=\"handleFileUpload($event, '{field}')\"")
 
-    return mark_safe(' '.join(attrs))
+    return mark_safe(" ".join(attrs))
 
 
 class NitroIfNode(Node):
@@ -587,12 +587,12 @@ class NitroIfNode(Node):
 
         # Alpine.js x-if template
         output.append(f'<template x-if="{self.condition}">')
-        output.append('<div>')
+        output.append("<div>")
         output.append(self.nodelist.render(context))
-        output.append('</div>')
-        output.append('</template>')
+        output.append("</div>")
+        output.append("</template>")
 
-        return ''.join(output)
+        return "".join(output)
 
 
 @register.tag
@@ -647,23 +647,21 @@ def nitro_if(parser, token):
         bits = token.split_contents()
         if len(bits) != 2:
             raise TemplateSyntaxError(
-                f"{bits[0]} tag requires format: "
-                "{% nitro_if 'condition' %}"
+                f"{bits[0]} tag requires format: {{% nitro_if 'condition' %}}"
             )
 
         tag_name, condition = bits
 
         # Remove quotes from condition
-        condition = condition.strip('\'"')
+        condition = condition.strip("'\"")
 
     except ValueError:
         raise TemplateSyntaxError(
-            f"{token.contents.split()[0]} tag requires format: "
-            "{% nitro_if 'condition' %}"
+            f"{token.contents.split()[0]} tag requires format: {{% nitro_if 'condition' %}}"
         ) from None
 
     # Parse until {% end_nitro_if %}
-    nodelist = parser.parse(('end_nitro_if',))
+    nodelist = parser.parse(("end_nitro_if",))
     parser.delete_first_token()
 
     return NitroIfNode(condition, nodelist)
@@ -673,7 +671,8 @@ def nitro_if(parser, token):
 # FORM FIELD TEMPLATE TAGS - Complete Alpine.js Abstraction (v0.6.0)
 # ============================================================================
 
-@register.inclusion_tag('nitro/fields/input.html')
+
+@register.inclusion_tag("nitro/fields/input.html")
 def nitro_input(field, label="", type="text", required=False, placeholder="", **kwargs):
     """
     Complete form input abstraction - no Alpine.js knowledge needed.
@@ -702,19 +701,19 @@ def nitro_input(field, label="", type="text", required=False, placeholder="", **
     error_path = build_error_path(field)
 
     return {
-        'field': field,
-        'safe_field': safe_field,
-        'error_path': error_path,
-        'label': label,
-        'type': type,
-        'required': required,
-        'placeholder': placeholder,
-        'extra_attrs': ' '.join(f'{k}="{v}"' for k, v in kwargs.items()),
-        'debug': NITRO_DEBUG,
+        "field": field,
+        "safe_field": safe_field,
+        "error_path": error_path,
+        "label": label,
+        "type": type,
+        "required": required,
+        "placeholder": placeholder,
+        "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
+        "debug": NITRO_DEBUG,
     }
 
 
-@register.inclusion_tag('nitro/fields/select.html')
+@register.inclusion_tag("nitro/fields/select.html")
 def nitro_select(field, label="", choices=None, required=False, **kwargs):
     """
     Complete form select abstraction - no Alpine.js knowledge needed.
@@ -738,23 +737,23 @@ def nitro_select(field, label="", choices=None, required=False, **kwargs):
     if choices:
         for choice in choices:
             if isinstance(choice, (list, tuple)):
-                normalized_choices.append({'value': choice[0], 'label': choice[1]})
+                normalized_choices.append({"value": choice[0], "label": choice[1]})
             elif isinstance(choice, dict):
                 normalized_choices.append(choice)
 
     return {
-        'field': field,
-        'safe_field': safe_field,
-        'error_path': error_path,
-        'label': label,
-        'choices': normalized_choices,
-        'required': required,
-        'extra_attrs': ' '.join(f'{k}="{v}"' for k, v in kwargs.items()),
-        'debug': NITRO_DEBUG,
+        "field": field,
+        "safe_field": safe_field,
+        "error_path": error_path,
+        "label": label,
+        "choices": normalized_choices,
+        "required": required,
+        "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
+        "debug": NITRO_DEBUG,
     }
 
 
-@register.inclusion_tag('nitro/fields/checkbox.html')
+@register.inclusion_tag("nitro/fields/checkbox.html")
 def nitro_checkbox(field, label="", **kwargs):
     """
     Complete form checkbox abstraction - no Alpine.js knowledge needed.
@@ -767,25 +766,29 @@ def nitro_checkbox(field, label="", **kwargs):
         field: Field path
         label: Checkbox label
     """
-    is_edit_buffer = 'edit_buffer' in field
-    safe_field = field.replace('.', '?.') if is_edit_buffer else field
+    is_edit_buffer = "edit_buffer" in field
+    safe_field = field.replace(".", "?.") if is_edit_buffer else field
 
     # For checkboxes, we need special handling for @change
     # If edit_buffer, wrap in null check
-    change_handler = f"if({field.split('.')[0]}) {field} = $el.checked" if is_edit_buffer else f"{field} = $el.checked; call('_sync_field', {{field: '{field}', value: {field}}})"
+    change_handler = (
+        f"if({field.split('.')[0]}) {field} = $el.checked"
+        if is_edit_buffer
+        else f"{field} = $el.checked; call('_sync_field', {{field: '{field}', value: {field}}})"
+    )
 
     return {
-        'field': field,
-        'safe_field': safe_field,
-        'label': label,
-        'change_handler': change_handler,
-        'is_edit_buffer': is_edit_buffer,
-        'extra_attrs': ' '.join(f'{k}="{v}"' for k, v in kwargs.items()),
-        'debug': NITRO_DEBUG,
+        "field": field,
+        "safe_field": safe_field,
+        "label": label,
+        "change_handler": change_handler,
+        "is_edit_buffer": is_edit_buffer,
+        "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
+        "debug": NITRO_DEBUG,
     }
 
 
-@register.inclusion_tag('nitro/fields/textarea.html')
+@register.inclusion_tag("nitro/fields/textarea.html")
 def nitro_textarea(field, label="", required=False, rows=3, placeholder="", **kwargs):
     """
     Complete form textarea abstraction - no Alpine.js knowledge needed.
@@ -806,13 +809,13 @@ def nitro_textarea(field, label="", required=False, rows=3, placeholder="", **kw
     error_path = build_error_path(field)
 
     return {
-        'field': field,
-        'safe_field': safe_field,
-        'error_path': error_path,
-        'label': label,
-        'required': required,
-        'rows': rows,
-        'placeholder': placeholder,
-        'extra_attrs': ' '.join(f'{k}="{v}"' for k, v in kwargs.items()),
-        'debug': NITRO_DEBUG,
+        "field": field,
+        "safe_field": safe_field,
+        "error_path": error_path,
+        "label": label,
+        "required": required,
+        "rows": rows,
+        "placeholder": placeholder,
+        "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
+        "debug": NITRO_DEBUG,
     }

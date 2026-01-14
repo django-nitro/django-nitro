@@ -52,6 +52,7 @@ class NitroJSONEncoder(json.JSONEncoder):
 
         return super().default(obj)
 
+
 S = TypeVar("S", bound=BaseModel)
 
 
@@ -324,14 +325,10 @@ class NitroComponent(Generic[S]):
         """
         # Build ID mappings
         old_ids = {
-            item.get("id"): item
-            for item in old_list
-            if isinstance(item, dict) and "id" in item
+            item.get("id"): item for item in old_list if isinstance(item, dict) and "id" in item
         }
         new_ids = {
-            item.get("id"): item
-            for item in new_list
-            if isinstance(item, dict) and "id" in item
+            item.get("id"): item for item in new_list if isinstance(item, dict) and "id" in item
         }
 
         # Detect changes
@@ -387,9 +384,9 @@ class NitroComponent(Generic[S]):
             - Supports nested fields with dot notation (e.g., 'user.email')
         """
         # Handle nested fields (dot notation)
-        if '.' in field:
+        if "." in field:
             # Split field path (e.g., 'user.profile.email' -> ['user', 'profile', 'email'])
-            parts = field.split('.')
+            parts = field.split(".")
 
             # Navigate to the parent object
             obj = self.state
@@ -408,9 +405,7 @@ class NitroComponent(Generic[S]):
             final_field = parts[-1]
             if not hasattr(obj, final_field):
                 if settings.DEBUG:
-                    available_fields = ", ".join(
-                        f for f in dir(obj) if not f.startswith("_")
-                    )
+                    available_fields = ", ".join(f for f in dir(obj) if not f.startswith("_"))
                     raise ValueError(
                         f"Field '{final_field}' does not exist in {obj.__class__.__name__}. "
                         f"Available fields: {available_fields}"
@@ -603,8 +598,8 @@ class NitroComponent(Generic[S]):
         # Store JSON in a data attribute (Django auto-escapes)
         # Use single quotes for the attribute value to avoid escaping issues
         # Use custom encoder to handle UUID, datetime, Decimal, etc.
-        poll_attr = f' data-nitro-poll="{self.poll}"' if self.poll > 0 else ''
-        parent_attr = f' data-nitro-parent="{self.parent_id}"' if self.parent_id else ''
+        poll_attr = f' data-nitro-poll="{self.poll}"' if self.poll > 0 else ""
+        parent_attr = f' data-nitro-parent="{self.parent_id}"' if self.parent_id else ""
         wrapper = f"""
         <div id="{self.component_id}"
              data-nitro-state='{json.dumps(full_payload, cls=NitroJSONEncoder)}'

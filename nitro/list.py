@@ -316,11 +316,11 @@ class BaseListComponent(
         # manually overriding get_base_queryset()
 
         # Apply OwnershipMixin filter if present
-        if hasattr(self, 'filter_by_owner'):
+        if hasattr(self, "filter_by_owner"):
             queryset = self.filter_by_owner(queryset)
 
         # Apply TenantScopedMixin filter if present
-        if hasattr(self, 'filter_by_tenant'):
+        if hasattr(self, "filter_by_tenant"):
             queryset = self.filter_by_tenant(queryset)
 
         # Apply search

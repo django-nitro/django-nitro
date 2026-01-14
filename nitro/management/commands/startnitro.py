@@ -13,40 +13,33 @@ from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):
-    help = 'Create a new Nitro component with boilerplate code'
+    help = "Create a new Nitro component with boilerplate code"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'component_name',
+            "component_name",
             type=str,
-            help='Name of the component (e.g., PropertyList, UserProfile)'
+            help="Name of the component (e.g., PropertyList, UserProfile)",
         )
         parser.add_argument(
-            '--app',
-            type=str,
-            required=True,
-            help='Django app where the component will be created'
+            "--app", type=str, required=True, help="Django app where the component will be created"
         )
         parser.add_argument(
-            '--list',
-            action='store_true',
-            help='Create a list component with pagination and search'
+            "--list", action="store_true", help="Create a list component with pagination and search"
         )
         parser.add_argument(
-            '--crud',
-            action='store_true',
-            help='Create a CRUD component (implies --list)'
+            "--crud", action="store_true", help="Create a CRUD component (implies --list)"
         )
 
     def handle(self, *args, **options):
-        component_name = options['component_name']
-        app_name = options['app']
-        is_list = options['list'] or options['crud']
-        is_crud = options['crud']
+        component_name = options["component_name"]
+        app_name = options["app"]
+        is_list = options["list"] or options["crud"]
+        is_crud = options["crud"]
 
         # Validate component name
         if not component_name[0].isupper():
-            raise CommandError('Component name must start with an uppercase letter')
+            raise CommandError("Component name must start with an uppercase letter")
 
         # Find app directory
         app_dir = self._find_app_dir(app_name)
@@ -54,27 +47,27 @@ class Command(BaseCommand):
             raise CommandError(f'App "{app_name}" not found')
 
         # Create components directory
-        components_dir = os.path.join(app_dir, 'components')
+        components_dir = os.path.join(app_dir, "components")
         os.makedirs(components_dir, exist_ok=True)
 
         # Create __init__.py if not exists
-        init_file = os.path.join(components_dir, '__init__.py')
+        init_file = os.path.join(components_dir, "__init__.py")
         if not os.path.exists(init_file):
-            with open(init_file, 'w') as f:
-                f.write('# Components package\n')
+            with open(init_file, "w") as f:
+                f.write("# Components package\n")
 
         # Create component file
         snake_name = self._to_snake_case(component_name)
-        component_file = os.path.join(components_dir, f'{snake_name}.py')
+        component_file = os.path.join(components_dir, f"{snake_name}.py")
         if os.path.exists(component_file):
-            raise CommandError(f'Component file already exists: {component_file}')
+            raise CommandError(f"Component file already exists: {component_file}")
 
         # Create templates directory
-        templates_dir = os.path.join(app_dir, 'templates', 'components')
+        templates_dir = os.path.join(app_dir, "templates", "components")
         os.makedirs(templates_dir, exist_ok=True)
 
         # Create template file
-        template_file = os.path.join(templates_dir, f'{snake_name}.html')
+        template_file = os.path.join(templates_dir, f"{snake_name}.html")
 
         # Generate component code
         if is_list or is_crud:
@@ -85,30 +78,30 @@ class Command(BaseCommand):
             template_code = self._generate_simple_template(component_name)
 
         # Write files
-        with open(component_file, 'w') as f:
+        with open(component_file, "w") as f:
             f.write(component_code)
 
-        with open(template_file, 'w') as f:
+        with open(template_file, "w") as f:
             f.write(template_code)
 
-        self.stdout.write(self.style.SUCCESS(f'✓ Created component: {component_file}'))
-        self.stdout.write(self.style.SUCCESS(f'✓ Created template: {template_file}'))
-        self.stdout.write('\nNext steps:')
-        self.stdout.write('1. Edit the component and state schema')
-        self.stdout.write(f'2. Use in template: {{% nitro_component \'{component_name}\' %}}')
+        self.stdout.write(self.style.SUCCESS(f"✓ Created component: {component_file}"))
+        self.stdout.write(self.style.SUCCESS(f"✓ Created template: {template_file}"))
+        self.stdout.write("\nNext steps:")
+        self.stdout.write("1. Edit the component and state schema")
+        self.stdout.write(f"2. Use in template: {{% nitro_component '{component_name}' %}}")
 
     def _find_app_dir(self, app_name):
         """Find the directory of a Django app."""
         for app in settings.INSTALLED_APPS:
-            if app.split('.')[-1] == app_name:
+            if app.split(".")[-1] == app_name:
                 try:
-                    module = __import__(app, fromlist=[''])
+                    module = __import__(app, fromlist=[""])
                     return os.path.dirname(module.__file__)
                 except ImportError:
                     continue
 
         # Try BASE_DIR
-        base_dir = getattr(settings, 'BASE_DIR', None)
+        base_dir = getattr(settings, "BASE_DIR", None)
         if base_dir:
             potential_path = os.path.join(base_dir, app_name)
             if os.path.isdir(potential_path):
@@ -118,8 +111,8 @@ class Command(BaseCommand):
 
     def _to_snake_case(self, name):
         """Convert CamelCase to snake_case."""
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+        s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
     def _generate_simple_component(self, component_name, snake_name):
         """Generate code for a simple component."""
@@ -157,7 +150,7 @@ class {component_name}(NitroComponent[{component_name}State]):
 
     def _generate_simple_template(self, component_name):
         """Generate template for a simple component."""
-        return f'''<!-- {component_name} Component Template -->
+        return f"""<!-- {component_name} Component Template -->
 <div>
     <h2>{component_name}</h2>
 
@@ -172,12 +165,12 @@ class {component_name}(NitroComponent[{component_name}State]):
         <span x-show="isLoading">Loading...</span>
     </button>
 </div>
-'''
+"""
 
     def _generate_list_component(self, component_name, is_crud):
         """Generate code for a list component."""
         snake_name = self._to_snake_case(component_name)
-        model_name = component_name.replace('List', '')
+        model_name = component_name.replace("List", "")
         snake_component = snake_name  # For use in f-string
 
         return f'''from pydantic import BaseModel, ConfigDict, Field
@@ -249,7 +242,7 @@ class {component_name}(BaseListComponent[{component_name}State]):
 
     def _generate_list_template(self, component_name):
         """Generate template for a list component."""
-        return f'''<!-- {component_name} Component Template -->
+        return f"""<!-- {component_name} Component Template -->
 <div>
     <h2>{component_name}</h2>
 
@@ -332,4 +325,4 @@ class {component_name}(BaseListComponent[{component_name}State]):
         </div>
     </div>
 </div>
-'''
+"""

@@ -6,9 +6,11 @@ Displays component state, action calls, and events for debugging.
 
 try:
     from debug_toolbar.panels import Panel
+
     HAS_DEBUG_TOOLBAR = True
 except ImportError:
     HAS_DEBUG_TOOLBAR = False
+
     # Dummy Panel class for when debug_toolbar is not installed
     class Panel:
         pass
@@ -34,8 +36,8 @@ class NitroDebugPanel(Panel):
         ]
     """
 
-    name = 'Nitro'
-    template = 'nitro/debug_toolbar_panel.html'
+    name = "Nitro"
+    template = "nitro/debug_toolbar_panel.html"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -46,16 +48,16 @@ class NitroDebugPanel(Panel):
 
     def nav_title(self):
         """Title in the debug toolbar nav."""
-        return 'Nitro'
+        return "Nitro"
 
     def nav_subtitle(self):
         """Subtitle showing component count."""
         count = len(self.components)
-        return f'{count} component{"s" if count != 1 else ""}'
+        return f"{count} component{'s' if count != 1 else ''}"
 
     def title(self):
         """Title of the panel."""
-        return 'Nitro Components'
+        return "Nitro Components"
 
     def enable_instrumentation(self):
         """Enable instrumentation to track Nitro components."""
@@ -68,11 +70,13 @@ class NitroDebugPanel(Panel):
             """Track component render."""
             # Get component info
             component_info = {
-                'name': component_self.__class__.__name__,
-                'template': component_self.template_name,
-                'state': component_self.state.model_dump() if hasattr(component_self.state, 'model_dump') else str(component_self.state),
-                'secure_fields': component_self.secure_fields,
-                'smart_updates': component_self.smart_updates,
+                "name": component_self.__class__.__name__,
+                "template": component_self.template_name,
+                "state": component_self.state.model_dump()
+                if hasattr(component_self.state, "model_dump")
+                else str(component_self.state),
+                "secure_fields": component_self.secure_fields,
+                "smart_updates": component_self.smart_updates,
             }
 
             self.components.append(component_info)
@@ -84,18 +88,22 @@ class NitroDebugPanel(Panel):
         # Track actions
         original_process_action = NitroComponent.process_action
 
-        def tracked_process_action(component_self, action_name, payload, current_state_dict, uploaded_file=None):
+        def tracked_process_action(
+            component_self, action_name, payload, current_state_dict, uploaded_file=None
+        ):
             """Track action calls."""
             action_info = {
-                'component': component_self.__class__.__name__,
-                'action': action_name,
-                'payload': payload,
-                'has_file': uploaded_file is not None,
+                "component": component_self.__class__.__name__,
+                "action": action_name,
+                "payload": payload,
+                "has_file": uploaded_file is not None,
             }
 
             self.actions.append(action_info)
 
-            return original_process_action(component_self, action_name, payload, current_state_dict, uploaded_file)
+            return original_process_action(
+                component_self, action_name, payload, current_state_dict, uploaded_file
+            )
 
         NitroComponent.process_action = tracked_process_action
 
@@ -105,9 +113,9 @@ class NitroDebugPanel(Panel):
         def tracked_emit(component_self, event_name, data=None):
             """Track emitted events."""
             event_info = {
-                'component': component_self.__class__.__name__,
-                'event': event_name,
-                'data': data,
+                "component": component_self.__class__.__name__,
+                "event": event_name,
+                "data": data,
             }
 
             self.events.append(event_info)
@@ -124,19 +132,21 @@ class NitroDebugPanel(Panel):
 
     def generate_stats(self, request, response):
         """Generate statistics for the panel."""
-        self.record_stats({
-            'components': self.components,
-            'actions': self.actions,
-            'events': self.events,
-            'template_tags': self.template_tags,
-            'component_count': len(self.components),
-            'action_count': len(self.actions),
-            'event_count': len(self.events),
-        })
+        self.record_stats(
+            {
+                "components": self.components,
+                "actions": self.actions,
+                "events": self.events,
+                "template_tags": self.template_tags,
+                "component_count": len(self.components),
+                "action_count": len(self.actions),
+                "event_count": len(self.events),
+            }
+        )
 
 
 # Only export if debug_toolbar is installed
 if HAS_DEBUG_TOOLBAR:
-    __all__ = ['NitroDebugPanel']
+    __all__ = ["NitroDebugPanel"]
 else:
     __all__ = []

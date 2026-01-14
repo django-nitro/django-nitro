@@ -11,6 +11,7 @@ This module provides template tags for common UI patterns in Nitro apps:
 Usage:
     {% load nitro_components %}
 """
+
 import json
 
 from django import template
@@ -20,7 +21,7 @@ register = template.Library()
 
 
 @register.simple_tag
-def toggle_btn(state_var, action_name, open_text='+ Create', close_text='✕ Cancel', css_class=''):
+def toggle_btn(state_var, action_name, open_text="+ Create", close_text="✕ Cancel", css_class=""):
     """
     Generate a toggle button that shows different text based on state.
 
@@ -34,7 +35,7 @@ def toggle_btn(state_var, action_name, open_text='+ Create', close_text='✕ Can
     Usage:
         {% toggle_btn 'show_create_form' 'toggle_create_form' '+ Create' '✕ Cancel' 'btn-primary w-full' %}
     """
-    default_class = 'w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg active:scale-95 transition-transform'
+    default_class = "w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg active:scale-95 transition-transform"
     final_class = css_class if css_class else default_class
 
     html = f'''<button @click="call('{action_name}')" class="{final_class}">
@@ -45,7 +46,7 @@ def toggle_btn(state_var, action_name, open_text='+ Create', close_text='✕ Can
 
 
 @register.simple_tag
-def loading_btn(text='Save', loading_text='Saving...', css_class='', icon='💾'):
+def loading_btn(text="Save", loading_text="Saving...", css_class="", icon="💾"):
     """
     Generate a button with loading state. MUST be used with nitro_action separately.
 
@@ -61,7 +62,7 @@ def loading_btn(text='Save', loading_text='Saving...', css_class='', icon='💾'
     Or use the content:
         {% loading_btn 'Save Item' 'Saving...' 'btn-primary' '💾' %}
     """
-    default_class = 'bg-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg active:scale-95 transition-transform'
+    default_class = "bg-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg active:scale-95 transition-transform"
     final_class = css_class if css_class else default_class
 
     html = f'''class="{final_class}" :disabled="is_loading">
@@ -74,7 +75,7 @@ def loading_btn(text='Save', loading_text='Saving...', css_class='', icon='💾'
 
 
 @register.simple_tag
-def panel_container(state_var='show_form', css_class=''):
+def panel_container(state_var="show_form", css_class=""):
     """
     Start an expandable panel container with Alpine transitions.
 
@@ -87,7 +88,7 @@ def panel_container(state_var='show_form', css_class=''):
             <!-- Your form content -->
         </div>
     """
-    default_class = 'bg-white rounded-lg shadow-sm p-4'
+    default_class = "bg-white rounded-lg shadow-sm p-4"
     final_class = css_class if css_class else default_class
 
     html = f'<div x-show="{state_var}" class="{final_class}" x-transition>'
@@ -95,7 +96,7 @@ def panel_container(state_var='show_form', css_class=''):
 
 
 @register.simple_tag
-def form_field(label, field_type='text', placeholder='', help_text='', required=False, **kwargs):
+def form_field(label, field_type="text", placeholder="", help_text="", required=False, **kwargs):
     """
     Generate a consistent form field with label and styling.
 
@@ -112,8 +113,8 @@ def form_field(label, field_type='text', placeholder='', help_text='', required=
 
     Note: You still need to add {% nitro_model %} separately for data binding.
     """
-    req_indicator = ' *' if required else ''
-    attrs = ' '.join([f'{k}="{v}"' for k, v in kwargs.items()])
+    req_indicator = " *" if required else ""
+    attrs = " ".join([f'{k}="{v}"' for k, v in kwargs.items()])
 
     html = f'''<div>
     <label class="block text-sm font-medium text-gray-700 mb-1">{label}{req_indicator}</label>
@@ -121,13 +122,13 @@ def form_field(label, field_type='text', placeholder='', help_text='', required=
            placeholder="{placeholder}"
            {attrs}
            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-    {f'<p class="text-xs text-gray-500 mt-1">{help_text}</p>' if help_text else ''}
+    {f'<p class="text-xs text-gray-500 mt-1">{help_text}</p>' if help_text else ""}
 </div>'''
     return mark_safe(html)
 
 
 @register.simple_tag
-def card(title='', subtitle='', css_class='', border_color=''):
+def card(title="", subtitle="", css_class="", border_color=""):
     """
     Start a card container with optional title.
 
@@ -142,12 +143,12 @@ def card(title='', subtitle='', css_class='', border_color=''):
             <!-- Card content -->
         </div>
     """
-    default_class = 'bg-white rounded-lg shadow-sm p-4'
-    border_class = f' border-l-4 {border_color}' if border_color else ''
-    final_class = f'{default_class}{border_class} {css_class}'.strip()
+    default_class = "bg-white rounded-lg shadow-sm p-4"
+    border_class = f" border-l-4 {border_color}" if border_color else ""
+    final_class = f"{default_class}{border_class} {css_class}".strip()
 
-    title_html = f'<h3 class="font-bold text-gray-900 mb-2">{title}</h3>' if title else ''
-    subtitle_html = f'<p class="text-sm text-gray-600 mb-3">{subtitle}</p>' if subtitle else ''
+    title_html = f'<h3 class="font-bold text-gray-900 mb-2">{title}</h3>' if title else ""
+    subtitle_html = f'<p class="text-sm text-gray-600 mb-3">{subtitle}</p>' if subtitle else ""
 
     html = f'''<div class="{final_class}">
     {title_html}
@@ -156,7 +157,7 @@ def card(title='', subtitle='', css_class='', border_color=''):
 
 
 @register.simple_tag
-def empty_state(icon='📦', title='No Items', message='', action_text='', action_call=''):
+def empty_state(icon="📦", title="No Items", message="", action_text="", action_call=""):
     """
     Generate an empty state message with optional action button.
 
@@ -170,18 +171,22 @@ def empty_state(icon='📦', title='No Items', message='', action_text='', actio
     Usage:
         {% empty_state '📦' 'No Items Found' 'Create your first item' '+ Create' 'toggle_create_form' %}
     """
-    action_html = f'''
+    action_html = (
+        f"""
     <button @click="call('{action_call}')"
             class="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition">
         {action_text}
-    </button>''' if action_text and action_call else ''
+    </button>"""
+        if action_text and action_call
+        else ""
+    )
 
-    html = f'''<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+    html = f"""<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
     <div class="text-4xl mb-2">{icon}</div>
     <h3 class="font-bold text-gray-900 mb-2">{title}</h3>
-    {f'<p class="text-sm text-gray-600 mb-4">{message}</p>' if message else ''}
+    {f'<p class="text-sm text-gray-600 mb-4">{message}</p>' if message else ""}
     {action_html}
-</div>'''
+</div>"""
     return mark_safe(html)
 
 
@@ -196,20 +201,20 @@ def to_json(value):
     return mark_safe(json.dumps(value))
 
 
-@register.inclusion_tag('nitro/components/searchable_dropdown.html', takes_context=True)
+@register.inclusion_tag("nitro/components/searchable_dropdown.html", takes_context=True)
 def searchable_dropdown(
     context,
     field_name,
     options,
-    label='',
-    display_field='name',
-    value_field='id',
-    placeholder='Search...',
+    label="",
+    display_field="name",
+    value_field="id",
+    placeholder="Search...",
     required=False,
-    help_text='',
+    help_text="",
     current_value=None,
-    current_display='',
-    nitro_model=''
+    current_display="",
+    nitro_model="",
 ):
     """
     Render a searchable dropdown component.
@@ -239,20 +244,20 @@ def searchable_dropdown(
             # Convert model instance to dict
             opt_dict = {
                 value_field: str(getattr(opt, value_field)),
-                display_field: str(getattr(opt, display_field))
+                display_field: str(getattr(opt, display_field)),
             }
             options_data.append(opt_dict)
 
     return {
-        'field_name': field_name,
-        'options': json.dumps(options_data),
-        'label': label,
-        'display_field': display_field,
-        'value_field': value_field,
-        'placeholder': placeholder,
-        'required': required,
-        'help_text': help_text,
-        'current_value': json.dumps(current_value) if current_value else 'null',
-        'current_display': current_display,
-        'nitro_model': nitro_model,
+        "field_name": field_name,
+        "options": json.dumps(options_data),
+        "label": label,
+        "display_field": display_field,
+        "value_field": value_field,
+        "placeholder": placeholder,
+        "required": required,
+        "help_text": help_text,
+        "current_value": json.dumps(current_value) if current_value else "null",
+        "current_display": current_display,
+        "nitro_model": nitro_model,
     }

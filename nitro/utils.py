@@ -24,13 +24,13 @@ def build_error_path(field: str) -> str:
         >>> build_error_path('address.street')
         'errors?.address?.street'
     """
-    if '.' in field:
-        parts = field.split('.')
-        return 'errors?.' + '?.'.join(parts)
-    return f'errors?.{field}'
+    if "." in field:
+        parts = field.split(".")
+        return "errors?." + "?.".join(parts)
+    return f"errors?.{field}"
 
 
-def build_safe_field(field: str, edit_buffer_name: str = 'edit_buffer') -> tuple[str, bool]:
+def build_safe_field(field: str, edit_buffer_name: str = "edit_buffer") -> tuple[str, bool]:
     """Build safe field path with optional chaining for edit buffers.
 
     When working with edit buffers (fields that may be null), we need optional
@@ -51,5 +51,5 @@ def build_safe_field(field: str, edit_buffer_name: str = 'edit_buffer') -> tuple
         ('edit_buffer?.email', True)
     """
     is_edit_buffer = edit_buffer_name in field
-    safe_field = field.replace('.', '?.') if is_edit_buffer else field
+    safe_field = field.replace(".", "?.") if is_edit_buffer else field
     return safe_field, is_edit_buffer
