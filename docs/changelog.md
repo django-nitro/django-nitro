@@ -4,6 +4,40 @@ All notable changes to Django Nitro are documented here.
 
 For the complete changelog, see [CHANGELOG.md](https://github.com/django-nitro/django-nitro/blob/main/CHANGELOG.md) on GitHub.
 
+## [0.6.1] - 2026-01-13
+
+### Added
+- **Comprehensive Test Suite** - 24 new tests covering v0.6.0 features
+  - Form field template tags tests (nitro_input, nitro_select, nitro_checkbox, nitro_textarea)
+  - SEO template tags tests (nitro_text, nitro_for with XSS protection)
+  - Component rendering tests (nitro_component, nitro_scripts)
+  - Conditional rendering tests (nitro_if)
+  - Utility functions tests with 100% coverage
+  - Message handling tests (success, error, info, warning)
+
+### Fixed
+- **CI/CD Pipeline** - All checks now passing
+  - Fixed ruff linting issues (import sorting, exception handling)
+  - Applied consistent code formatting across all files
+  - Fixed mkdocs build warnings and broken links
+- **Test Compatibility** - Updated `test_process_action_invalid` to match graceful error handling
+  - Changed from expecting `ValueError` exception to checking error response dict
+  - Aligns with production behavior where errors return JSON instead of raising exceptions
+
+### Improved
+- **Test Coverage** - Significant coverage improvements
+  - Overall coverage: 46% → 59% (+13%)
+  - nitro_tags.py: 49% → 88% (+39%)
+  - utils.py: 44% → 100% (+56%)
+  - Total tests: 41 → 65 (+24 new tests)
+
+### Documentation
+- Updated all examples to use Nitro template tags instead of raw Alpine.js
+  - Counter example now uses `{% nitro_text %}` for display
+  - Contact form uses `{% nitro_input %}` and `{% nitro_textarea %}`
+  - CRUD examples use form field tags throughout
+- Fixed broken documentation links in smart-updates.md and zero-javascript-mode.md
+
 ## [0.6.0] - 2026-01-13
 
 ### Added
