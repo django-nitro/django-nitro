@@ -599,3 +599,428 @@ class TestFileUploadHandler(TestCase):
         self.assertEqual(len(component._pending_messages), 1)
         self.assertEqual(component._pending_messages[0]["level"], "error")
         self.assertIn("No file was uploaded", component._pending_messages[0]["text"])
+
+
+# ============================================================================
+# V0.6.0 FORM FIELD TEMPLATE TAGS TESTS
+# ============================================================================
+
+
+class TestFormFieldTags(TestCase):
+    """Tests for v0.6.0 Form Field Template Tags."""
+
+    def test_nitro_input_basic(self):
+        """Test basic nitro_input tag."""
+        from nitro.templatetags.nitro_tags import nitro_input
+
+        result = nitro_input("create_buffer.name", label="Name")
+
+        # Should return context dict
+        self.assertIn("field", result)
+        self.assertEqual(result["field"], "create_buffer.name")
+        self.assertEqual(result["label"], "Name")
+        self.assertEqual(result["type"], "text")
+
+    def test_nitro_input_with_edit_buffer(self):
+        """Test nitro_input with edit_buffer (safe navigation)."""
+        from nitro.templatetags.nitro_tags import nitro_input
+
+        result = nitro_input("edit_buffer.email", label="Email", type="email")
+
+        # Should use safe navigation operator
+        self.assertIn("safe_field", result)
+        self.assertIn("?.", result["safe_field"])
+
+    def test_nitro_input_with_extra_attrs(self):
+        """Test nitro_input with additional HTML attributes."""
+        from nitro.templatetags.nitro_tags import nitro_input
+
+        result = nitro_input("create_buffer.price", type="number", step="0.01", min="0")
+
+        # Should include extra attributes
+        self.assertIn("extra_attrs", result)
+        self.assertIn('step="0.01"', result["extra_attrs"])
+        self.assertIn('min="0"', result["extra_attrs"])
+
+    def test_nitro_select_basic(self):
+        """Test basic nitro_select tag."""
+        from nitro.templatetags.nitro_tags import nitro_select
+
+        choices = [("active", "Active"), ("inactive", "Inactive")]
+        result = nitro_select("create_buffer.status", label="Status", choices=choices)
+
+        # Should normalize choices
+        self.assertIn("choices", result)
+        self.assertEqual(len(result["choices"]), 2)
+        self.assertEqual(result["choices"][0]["value"], "active")
+        self.assertEqual(result["choices"][0]["label"], "Active")
+
+    def test_nitro_select_with_dict_choices(self):
+        """Test nitro_select with dict-based choices."""
+        from nitro.templatetags.nitro_tags import nitro_select
+
+        choices = [{"value": "1", "label": "Option 1"}, {"value": "2", "label": "Option 2"}]
+        result = nitro_select("edit_buffer.option", choices=choices)
+
+        # Should handle dict format
+        self.assertEqual(len(result["choices"]), 2)
+        self.assertEqual(result["choices"][0]["value"], "1")
+
+    def test_nitro_checkbox_basic(self):
+        """Test basic nitro_checkbox tag."""
+        from nitro.templatetags.nitro_tags import nitro_checkbox
+
+        result = nitro_checkbox("create_buffer.is_active", label="Active")
+
+        # Should include field and label
+        self.assertEqual(result["field"], "create_buffer.is_active")
+        self.assertEqual(result["label"], "Active")
+        self.assertIn("change_handler", result)
+
+    def test_nitro_checkbox_with_edit_buffer(self):
+        """Test nitro_checkbox with edit_buffer null check."""
+        from nitro.templatetags.nitro_tags import nitro_checkbox
+
+        result = nitro_checkbox("edit_buffer.is_vendor", label="Is Vendor")
+
+        # Should use safe navigation
+        self.assertTrue(result["is_edit_buffer"])
+        self.assertIn("?.", result["safe_field"])
+
+    def test_nitro_textarea_basic(self):
+        """Test basic nitro_textarea tag."""
+        from nitro.templatetags.nitro_tags import nitro_textarea
+
+        result = nitro_textarea("create_buffer.description", label="Description", rows=5)
+
+        # Should include all parameters
+        self.assertEqual(result["field"], "create_buffer.description")
+        self.assertEqual(result["label"], "Description")
+        self.assertEqual(result["rows"], 5)
+
+    def test_nitro_textarea_with_placeholder(self):
+        """Test nitro_textarea with placeholder."""
+        from nitro.templatetags.nitro_tags import nitro_textarea
+
+        result = nitro_textarea(
+            "edit_buffer.notes", label="Notes", placeholder="Enter notes here..."
+        )
+
+        # Should include placeholder
+        self.assertEqual(result["placeholder"], "Enter notes here...")
+        self.assertIn("?.", result["safe_field"])
+
+
+# ============================================================================
+# V0.6.0 SEO TEMPLATE TAGS TESTS
+# ============================================================================
+
+
+class TestSEOTemplateTags(TestCase):
+    """Tests for v0.6.0 SEO-friendly template tags."""
+
+    def test_nitro_text_tag(self):
+        """Test nitro_text tag rendering."""
+        from django.template import Context, Template
+
+        template = Template("{% load nitro_tags %}{% nitro_text 'count' %}")
+        context = Context({"count": 42})
+        result = template.render(context)
+
+        # Should include both server-rendered value and x-text binding
+        self.assertIn("42", result)
+        self.assertIn('x-text="count"', result)
+        self.assertIn("<span", result)
+
+    def test_nitro_text_with_missing_variable(self):
+        """Test nitro_text with non-existent variable."""
+        from django.template import Context, Template
+
+        template = Template("{% load nitro_tags %}{% nitro_text 'missing' %}")
+        context = Context({})
+        result = template.render(context)
+
+        # Should render empty but include binding
+        self.assertIn('x-text="missing"', result)
+
+    def test_nitro_text_escapes_html(self):
+        """Test nitro_text escapes HTML for XSS protection."""
+        from django.template import Context, Template
+
+        template = Template("{% load nitro_tags %}{% nitro_text 'value' %}")
+        context = Context({"value": "<script>alert('xss')</script>"})
+        result = template.render(context)
+
+        # Should escape HTML in server-rendered content
+        self.assertIn("&lt;script&gt;", result)
+        self.assertNotIn("<script>", result)
+
+    def test_nitro_for_tag_basic(self):
+        """Test nitro_for tag with basic list."""
+        from django.template import Context, Template
+
+        template = Template(
+            "{% load nitro_tags %}"
+            "{% nitro_for 'items' as 'item' %}"
+            "<div>{% nitro_text 'item.name' %}</div>"
+            "{% end_nitro_for %}"
+        )
+
+        items = [{"name": "Item 1", "id": 1}, {"name": "Item 2", "id": 2}]
+        context = Context({"items": items})
+        result = template.render(context)
+
+        # Should include both SEO content and Alpine template
+        self.assertIn("Item 1", result)
+        self.assertIn("Item 2", result)
+        self.assertIn('<template x-for=', result)
+        self.assertIn("nitro-seo-content", result)
+
+    def test_nitro_for_with_empty_list(self):
+        """Test nitro_for with empty list."""
+        from django.template import Context, Template
+
+        template = Template(
+            "{% load nitro_tags %}"
+            "{% nitro_for 'items' as 'item' %}"
+            "<div>{% nitro_text 'item.name' %}</div>"
+            "{% end_nitro_for %}"
+        )
+
+        context = Context({"items": []})
+        result = template.render(context)
+
+        # Should still render structure
+        self.assertIn('<template x-for=', result)
+
+
+# ============================================================================
+# COMPONENT RENDERING TESTS
+# ============================================================================
+
+
+class TestComponentRendering(TestCase):
+    """Tests for component rendering tags."""
+
+    def test_nitro_component_tag(self):
+        """Test nitro_component tag."""
+        from django.template import Context, Template
+
+        # Register a test component
+        @register_component
+        class TestRenderComponent(NitroComponent[SimpleState]):
+            template_name = "test.html"
+            state_class = SimpleState
+
+            def get_initial_state(self, **kwargs):
+                return SimpleState()
+
+            def render(self):
+                return "<div>Test Component</div>"
+
+        template = Template("{% load nitro_tags %}{% nitro_component 'TestRenderComponent' %}")
+        context = Context({"request": RequestFactory().get("/")})
+        result = template.render(context)
+
+        # Should render component
+        self.assertIn("Test Component", result)
+
+        # Cleanup
+        _components_registry.pop("TestRenderComponent", None)
+
+    def test_nitro_component_with_kwargs(self):
+        """Test nitro_component with initialization kwargs."""
+        from django.template import Context, Template
+
+        @register_component
+        class TestKwargsComponent(NitroComponent[SimpleState]):
+            template_name = "test.html"
+            state_class = SimpleState
+
+            def get_initial_state(self, **kwargs):
+                return SimpleState(count=kwargs.get("initial", 0))
+
+            def render(self):
+                return f"<div>Count: {self.state.count}</div>"
+
+        template = Template(
+            "{% load nitro_tags %}{% nitro_component 'TestKwargsComponent' initial=10 %}"
+        )
+        context = Context({"request": RequestFactory().get("/")})
+        result = template.render(context)
+
+        # Should pass kwargs
+        self.assertIn("Count: 10", result)
+
+        # Cleanup
+        _components_registry.pop("TestKwargsComponent", None)
+
+    def test_nitro_component_not_found(self):
+        """Test nitro_component with non-existent component."""
+        from django.template import Context, Template
+
+        template = Template("{% load nitro_tags %}{% nitro_component 'NonExistent' %}")
+        context = Context({"request": RequestFactory().get("/")})
+        result = template.render(context)
+
+        # Should return empty string
+        self.assertEqual(result.strip(), "")
+
+    def test_nitro_scripts_tag(self):
+        """Test nitro_scripts tag includes CSS and JS."""
+        from nitro.templatetags.nitro_tags import nitro_scripts
+
+        result = nitro_scripts()
+
+        # Should include both CSS and JS
+        self.assertIn("nitro.css", result)
+        self.assertIn("nitro.js", result)
+        self.assertIn('<link rel="stylesheet"', result)
+        self.assertIn("<script defer", result)
+
+
+# ============================================================================
+# CONDITIONAL RENDERING TESTS
+# ============================================================================
+
+
+class TestConditionalRendering(TestCase):
+    """Tests for nitro_if conditional rendering."""
+
+    def test_nitro_if_tag(self):
+        """Test nitro_if tag."""
+        from django.template import Context, Template
+
+        template = Template(
+            "{% load nitro_tags %}"
+            "{% nitro_if 'isActive' %}"
+            "<div>Active Content</div>"
+            "{% end_nitro_if %}"
+        )
+
+        context = Context({"isActive": True})
+        result = template.render(context)
+
+        # Should wrap in x-if template
+        self.assertIn('<template x-if="isActive">', result)
+        self.assertIn("Active Content", result)
+
+    def test_nitro_if_with_complex_condition(self):
+        """Test nitro_if with complex expression."""
+        from django.template import Context, Template
+
+        template = Template(
+            "{% load nitro_tags %}"
+            "{% nitro_if 'count > 0 && !isLoading' %}"
+            "<div>Content</div>"
+            "{% end_nitro_if %}"
+        )
+
+        context = Context({})
+        result = template.render(context)
+
+        # Should include full condition
+        self.assertIn('x-if="count > 0 && !isLoading"', result)
+
+
+# ============================================================================
+# BASE LIST COMPONENT TESTS
+# ============================================================================
+
+
+class TestBaseListComponent(TestCase):
+    """Tests for BaseListComponent pagination and filtering."""
+
+    def test_base_list_initialization(self):
+        """Test BaseListComponent initialization."""
+        from nitro.list import BaseListComponent
+
+        class ItemState(BaseModel):
+            id: int
+            name: str
+
+        class ItemListState(BaseModel):
+            items: list[ItemState] = []
+            total: int = 0
+            page: int = 1
+
+        class TestModel(models.Model):
+            name = models.CharField(max_length=100)
+
+            class Meta:
+                app_label = "nitro"
+
+        class ItemList(BaseListComponent[ItemListState]):
+            template_name = "test.html"
+            state_class = ItemListState
+            model = TestModel
+            per_page = 10
+
+            def get_initial_state(self, **kwargs):
+                return ItemListState()
+
+        factory = RequestFactory()
+        request = factory.get("/")
+        component = ItemList(request=request)
+
+        # Should initialize with default state
+        self.assertEqual(component.state.page, 1)
+        self.assertEqual(component.state.total, 0)
+
+    def test_base_list_messages(self):
+        """Test message handling in components."""
+        component = SimpleComponent(request=RequestFactory().get("/"))
+
+        # Test success message
+        component.success("Success!")
+        self.assertEqual(len(component._pending_messages), 1)
+        self.assertEqual(component._pending_messages[0]["level"], "success")
+
+        # Test info message
+        component.info("Info message")
+        self.assertEqual(len(component._pending_messages), 2)
+        self.assertEqual(component._pending_messages[1]["level"], "info")
+
+        # Test warning message
+        component.warning("Warning!")
+        self.assertEqual(len(component._pending_messages), 3)
+        self.assertEqual(component._pending_messages[2]["level"], "warning")
+
+
+# ============================================================================
+# UTILITY FUNCTIONS TESTS
+# ============================================================================
+
+
+class TestUtilityFunctions(TestCase):
+    """Tests for utility functions."""
+
+    def test_build_safe_field(self):
+        """Test build_safe_field utility."""
+        from nitro.utils import build_safe_field
+
+        # Test with edit_buffer
+        safe_field, is_edit = build_safe_field("edit_buffer.name")
+        self.assertIn("?.", safe_field)
+        self.assertTrue(is_edit)
+
+        # Test with create_buffer
+        safe_field, is_edit = build_safe_field("create_buffer.name")
+        self.assertNotIn("?.", safe_field)
+        self.assertFalse(is_edit)
+
+    def test_build_error_path(self):
+        """Test build_error_path utility."""
+        from nitro.utils import build_error_path
+
+        # Test with simple field
+        error_path = build_error_path("name")
+        self.assertEqual(error_path, "errors?.name")
+
+        # Test with nested field
+        error_path = build_error_path("address.street")
+        self.assertEqual(error_path, "errors?.address?.street")
+
+        # Test with deeply nested field
+        error_path = build_error_path("create_buffer.address.street")
+        self.assertEqual(error_path, "errors?.create_buffer?.address?.street")
