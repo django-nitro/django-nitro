@@ -657,4 +657,3 @@ class BoardState(BaseModel):
 
 - [API Reference: smart_updates](../api-reference.md#class-attributes)
 - [BaseListComponent](../components/base-list-component.md)
-- [Performance Best Practices](../best-practices.md)

@@ -963,7 +963,8 @@ TemplateSyntaxError: Invalid block tag: 'nitro_model'
 
 - [Template Tags Reference](template-tags.md) - SEO tags (nitro_for, nitro_text)
 - [API Reference](../api-reference.md) - Complete API documentation
-- [Examples](../../examples/) - Working examples
+- [Counter Example](../examples/counter.md) - Simple example
+- [Property Manager Example](../examples/property-manager.md) - Advanced example
 - [Getting Started](../getting-started/quick-start.md) - Quickstart guide
 
 ---
