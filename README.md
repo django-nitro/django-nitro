@@ -234,8 +234,10 @@ class Counter(NitroComponent[CounterState]):
 
 ```html
 <!-- templates/components/counter.html -->
+{% load nitro_tags %}
+
 <div class="counter-widget">
-    <h2>Counter: <span x-text="count"></span></h2>
+    <h2>Counter: {% nitro_text 'count' %}</h2>
 
     <div class="controls">
         <button @click="call('decrement')" :disabled="isLoading">-</button>
@@ -330,14 +332,12 @@ class ContactForm(NitroComponent[ContactFormState]):
 
 ```html
 <!-- templates/components/contact_form.html -->
+{% load nitro_tags %}
+
 <form x-show="!submitted">
-    <input type="text" x-model="name" placeholder="Jearel Alcantara">
-    <span x-show="errors.name" x-text="errors.name" class="error"></span>
-
-    <input type="email" x-model="email" placeholder="Your email">
-
-    <textarea x-model="message" placeholder="Your message"></textarea>
-    <span x-show="errors.message" x-text="errors.message" class="error"></span>
+    {% nitro_input 'name' placeholder='Jearel Alcantara' %}
+    {% nitro_input 'email' type='email' placeholder='Your email' %}
+    {% nitro_textarea 'message' placeholder='Your message' rows='4' %}
 
     <button @click="call('submit')" :disabled="isLoading">
         Send Message
@@ -529,15 +529,14 @@ class TaskList(CrudNitroComponent[TaskListState]):
 
 ```html
 <!-- templates/components/task_list.html -->
+{% load nitro_tags %}
+
 <div class="task-list">
     <!-- Create new task -->
     <div class="create-form">
-        <input
-            type="text"
-            x-model="create_buffer.title"
-            placeholder="New task..."
-            @keyup.enter="call('create_item')"
-        >
+        <div @keyup.enter="call('create_item')">
+            {% nitro_input 'create_buffer.title' placeholder='New task...' %}
+        </div>
         <button @click="call('create_item')">Add</button>
     </div>
 
@@ -553,7 +552,7 @@ class TaskList(CrudNitroComponent[TaskListState]):
                             :checked="task.completed"
                             @click="call('toggle_completed', {id: task.id})"
                         >
-                        <span x-text="task.title"></span>
+                        {% nitro_text 'task.title' %}
                         <button @click="call('start_edit', {id: task.id})">Edit</button>
                         <button @click="call('delete_item', {id: task.id})">Delete</button>
                     </div>
@@ -562,7 +561,7 @@ class TaskList(CrudNitroComponent[TaskListState]):
                 <!-- Edit view -->
                 <template x-if="editing_id === task.id && edit_buffer">
                     <div class="task-edit">
-                        <input type="text" x-model="edit_buffer.title">
+                        {% nitro_input 'edit_buffer.title' %}
                         <button @click="call('save_edit')">Save</button>
                         <button @click="call('cancel_edit')">Cancel</button>
                     </div>
@@ -1092,11 +1091,8 @@ class UserDashboard(NitroComponent[UserState]):
 <img :src="profile.avatar_url" alt="Avatar">
 
 <!-- Bind to nested fields -->
-<input type="text" x-model="profile.name" placeholder="Your name">
-<select x-model="settings.theme">
-    <option value="light">Light</option>
-    <option value="dark">Dark</option>
-</select>
+{% nitro_input 'profile.name' placeholder='Your name' %}
+{% nitro_select 'settings.theme' choices=theme_choices %}
 
 <!-- Conditionals with nested fields -->
 <div x-show="settings.notifications">
