@@ -7,6 +7,12 @@ from nitro.base import (
     NitroComponent,
 )
 
+# Configuration (v0.4.0)
+from nitro.conf import (
+    get_all_settings,
+    get_setting,
+)
+
 # List components (v0.2.0)
 from nitro.list import (
     BaseListComponent,
@@ -24,12 +30,6 @@ from nitro.security import (
     OwnershipMixin,
     PermissionMixin,
     TenantScopedMixin,
-)
-
-# Configuration (v0.4.0)
-from nitro.conf import (
-    get_all_settings,
-    get_setting,
 )
 
 __version__ = "0.6.0"

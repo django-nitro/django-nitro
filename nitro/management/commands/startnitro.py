@@ -7,8 +7,9 @@ Usage:
 
 import os
 import re
-from django.core.management.base import BaseCommand, CommandError
+
 from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):
@@ -93,7 +94,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'✓ Created component: {component_file}'))
         self.stdout.write(self.style.SUCCESS(f'✓ Created template: {template_file}'))
         self.stdout.write('\nNext steps:')
-        self.stdout.write(f'1. Edit the component and state schema')
+        self.stdout.write('1. Edit the component and state schema')
         self.stdout.write(f'2. Use in template: {{% nitro_component \'{component_name}\' %}}')
 
     def _find_app_dir(self, app_name):

@@ -11,9 +11,10 @@ This module provides template tags for common UI patterns in Nitro apps:
 Usage:
     {% load nitro_components %}
 """
+import json
+
 from django import template
 from django.utils.safestring import mark_safe
-import json
 
 register = template.Library()
 

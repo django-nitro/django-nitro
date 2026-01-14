@@ -1,10 +1,10 @@
 # nitro/templatetags/nitro_tags.py
 from django import template
-from django.template.base import Node, TemplateSyntaxError
-from django.utils.safestring import mark_safe
-from django.utils.html import escape
-from django.templatetags.static import static
 from django.conf import settings
+from django.template.base import Node, TemplateSyntaxError
+from django.templatetags.static import static
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 
 from nitro.registry import get_component_class
 from nitro.utils import build_error_path, build_safe_field
@@ -165,7 +165,7 @@ def nitro_for(parser, token):
         raise TemplateSyntaxError(
             f"{token.contents.split()[0]} tag requires format: "
             "{% nitro_for 'list_var' as 'item_var' %}"
-        )
+        ) from None
 
     # Parse until {% end_nitro_for %}
     nodelist = parser.parse(('end_nitro_for',))
@@ -227,7 +227,7 @@ def nitro_text(parser, token):
         raise TemplateSyntaxError(
             f"{token.contents.split()[0]} tag requires a single argument: "
             "{% nitro_text 'variable_name' %}"
-        )
+        ) from None
 
     return NitroTextNode(var_name)
 
@@ -660,7 +660,7 @@ def nitro_if(parser, token):
         raise TemplateSyntaxError(
             f"{token.contents.split()[0]} tag requires format: "
             "{% nitro_if 'condition' %}"
-        )
+        ) from None
 
     # Parse until {% end_nitro_if %}
     nodelist = parser.parse(('end_nitro_if',))
