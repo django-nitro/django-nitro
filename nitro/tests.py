@@ -773,7 +773,7 @@ class TestSEOTemplateTags(TestCase):
         # Should include both SEO content and Alpine template
         self.assertIn("Item 1", result)
         self.assertIn("Item 2", result)
-        self.assertIn('<template x-for=', result)
+        self.assertIn("<template x-for=", result)
         self.assertIn("nitro-seo-content", result)
 
     def test_nitro_for_with_empty_list(self):
@@ -791,7 +791,7 @@ class TestSEOTemplateTags(TestCase):
         result = template.render(context)
 
         # Should still render structure
-        self.assertIn('<template x-for=', result)
+        self.assertIn("<template x-for=", result)
 
 
 # ============================================================================
