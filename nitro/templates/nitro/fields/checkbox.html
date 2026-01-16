@@ -3,7 +3,7 @@
     <input
         type="checkbox"
         class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-        x-model="{{ safe_field }}"
+        x-model="{{ field }}"
         @change="{{ change_handler }}"
         {{ extra_attrs|safe }}
         {% if debug %}data-nitro-debug="nitro_checkbox: field='{{ field }}'"{% endif %}

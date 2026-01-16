@@ -421,10 +421,16 @@ document.addEventListener('alpine:init', () => {
                 }
             },
 
-            async call(actionName, payload = {}, file = null) {
-                this.isLoading = true;
-                this._errors = {};
-                element.setAttribute('data-loading', 'true');
+            async call(actionName, payload = {}, file = null, options = {}) {
+                // Silent mode: don't show loading indicator for background operations
+                const silent = options.silent || false;
+                const showLoading = !silent && !actionName.startsWith('_');
+
+                if (showLoading) {
+                    this.isLoading = true;
+                    this._errors = {};
+                    element.setAttribute('data-loading', 'true');
+                }
 
                 try {
                     const cleanState = this._getCleanState();
@@ -520,8 +526,9 @@ document.addEventListener('alpine:init', () => {
                     // Handle smart updates (partial state with diffs)
                     // FIX: Always use merge strategy for partial updates (including _sync_field)
                     // This prevents data loss when syncing individual fields
-                    if (data.partial && data.state) {
+                    if (data.partial && data.state && !data.merge) {
                         // Partial update - merge only changed fields
+                        // Skip if data.merge is true (client already has correct value from x-model)
                         Object.keys(data.state).forEach(key => {
                             const value = data.state[key];
                             if (value && typeof value === 'object' && 'diff' in value) {
@@ -535,10 +542,12 @@ document.addEventListener('alpine:init', () => {
                             }
                         });
                     } else if (data.merge && data.state) {
-                        // Explicit merge request (for _sync_field backward compat)
-                        Object.keys(data.state).forEach(key => {
-                            this[key] = data.state[key];
-                        });
+                        // Explicit merge request (for _sync_field)
+                        // DON'T update state - client already has correct value from x-model
+                        // Only validation errors are needed (updated below)
+                        if (NITRO_DEBUG) {
+                            console.log('[Nitro] Skipping state update for _sync_field (client already has value)');
+                        }
                     } else {
                         // Full state replacement (backward compatible)
                         Object.assign(this, data.state);
@@ -608,8 +617,10 @@ document.addEventListener('alpine:init', () => {
                         error: err.message
                     });
                 } finally {
-                    this.isLoading = false;
-                    element.removeAttribute('data-loading');
+                    if (showLoading) {
+                        this.isLoading = false;
+                        element.removeAttribute('data-loading');
+                    }
                 }
             },
 

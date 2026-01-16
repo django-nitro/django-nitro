@@ -5,6 +5,71 @@ All notable changes to Django Nitro will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2026-01-16
+
+### Fixed
+
+#### Critical UI/UX Bug Fixes
+- **Fixed loading indicator flash during field sync** - Added `silent` mode option to `call()` method in `nitro.js`
+  - Background operations like `_sync_field` no longer show loading indicator
+  - Usage: `call('action', payload, null, {silent: true})`
+  - Improves perceived performance during typing
+
+- **Fixed x-model binding in form field templates** - Changed from `safe_field` to `field`
+  - `x-model` requires direct field access for write operations
+  - `safe_field` (with optional chaining `?.`) only works for reading
+  - Affects: `nitro_input`, `nitro_select`, `nitro_checkbox`, `nitro_textarea`
+
+- **Fixed state flicker on field sync** - Improved merge behavior in `nitro.js`
+  - `_sync_field` responses now skip state update (client already has correct value from x-model)
+  - Prevents UI flicker when typing in form fields
+  - Only validation errors are processed from sync responses
+
+#### Performance Improvements
+- **Added input debouncing to field templates** - 200ms debounce on input/textarea
+  - Reduces server calls during rapid typing
+  - Consistent with `nitro_model` default debounce behavior
+
+### Changed
+- `call()` method signature: `call(actionName, payload, file, options)` - added `options` parameter
+- Form field templates now use proper x-model binding for two-way data flow
+
+## [0.6.1] - 2026-01-13
+
+### Added
+- **Comprehensive Test Suite** - 24 new tests covering v0.6.0 features
+  - Form field template tags tests (nitro_input, nitro_select, nitro_checkbox, nitro_textarea)
+  - SEO template tags tests (nitro_text, nitro_for with XSS protection)
+  - Component rendering tests (nitro_component, nitro_scripts)
+  - Utility functions tests with 100% coverage
+
+### Fixed
+- **CI/CD Pipeline** - All checks now passing
+  - Fixed ruff linting issues (import sorting, exception handling)
+  - Applied consistent code formatting across all files
+- **Test Compatibility** - Updated `test_process_action_invalid` to match graceful error handling
+
+### Improved
+- **Test Coverage** - Overall coverage: 46% → 59% (+13%)
+  - nitro_tags.py: 49% → 88% (+39%)
+  - utils.py: 44% → 100% (+56%)
+
+## [0.6.0] - 2026-01-13
+
+### Added
+- **Form Field Template Tags** - Pre-built tags for common form fields
+  - `{% nitro_input %}` - Text, email, number, date, tel inputs with error handling
+  - `{% nitro_select %}` - Dropdown with choices support
+  - `{% nitro_checkbox %}` - Checkbox with label
+  - `{% nitro_textarea %}` - Multi-line text input
+  - All tags include automatic error display and styling
+- **Default Debounce (200ms)** - `nitro_model` now includes 200ms debounce by default
+- **Code Deduplication** - New `nitro/utils.py` module with shared functions
+- **TypeAdapter Caching** - Performance optimization in `BaseListComponent`
+
+### Changed
+- Django 5.2 compatibility using `django-template-partials`
+
 ## [0.5.1] - 2026-01-04
 
 ### Fixed

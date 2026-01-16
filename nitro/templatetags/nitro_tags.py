@@ -298,8 +298,8 @@ def nitro_model(field, debounce="200ms", lazy=False, on_change=None, no_debounce
     if debounce:
         event += f".debounce.{debounce}"
 
-    # Auto-sync call
-    sync_call = f"call('_sync_field', {{field: '{field}', value: {field}}})"
+    # Auto-sync call (silent mode to prevent loading flash during typing)
+    sync_call = f"call('_sync_field', {{field: '{field}', value: {field}}}, null, {{silent: true}})"
 
     # Add optional on_change callback
     if on_change:
@@ -702,6 +702,8 @@ def nitro_input(field, label="", type="text", required=False, placeholder="", la
         **kwargs: Additional HTML attributes (step, min, max, etc.)
     """
     # Use utility functions for safe field and error path
+    # IMPORTANT: x-model needs the original field (without ?.) for write access
+    # safe_field (with ?.) is only used for reading values in events
     safe_field, is_edit_buffer = build_safe_field(field)
     error_path = build_error_path(field)
 
@@ -776,12 +778,12 @@ def nitro_checkbox(field, label="", **kwargs):
     is_edit_buffer = "edit_buffer" in field
     safe_field = field.replace(".", "?.") if is_edit_buffer else field
 
-    # For checkboxes, we need special handling for @change
+    # For checkboxes, we need special handling for @change (silent mode to prevent loading flash)
     # If edit_buffer, wrap in null check
     change_handler = (
         f"if({field.split('.')[0]}) {field} = $el.checked"
         if is_edit_buffer
-        else f"{field} = $el.checked; call('_sync_field', {{field: '{field}', value: {field}}})"
+        else f"{field} = $el.checked; call('_sync_field', {{field: '{field}', value: {field}}}, null, {{silent: true}})"
     )
 
     return {

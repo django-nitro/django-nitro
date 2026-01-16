@@ -9,11 +9,11 @@
         class="w-full rounded-lg border-gray-300"
         rows="{{ rows }}"
         {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
-        x-model="{{ safe_field }}"
+        x-model="{{ field }}"
         {% if lazy %}
-        @blur="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}})"
+        @blur="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}}, null, {silent: true})"
         {% else %}
-        @input.debounce.{{ debounce }}="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}})"
+        @input.debounce.{{ debounce }}="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}}, null, {silent: true})"
         {% endif %}
         :class="{'border-red-500': {{ error_path }}}"
         {{ extra_attrs|safe }}

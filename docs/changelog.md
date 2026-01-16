@@ -4,6 +4,35 @@ All notable changes to Django Nitro are documented here.
 
 For the complete changelog, see [CHANGELOG.md](https://github.com/django-nitro/django-nitro/blob/main/CHANGELOG.md) on GitHub.
 
+## [0.6.2] - 2026-01-16
+
+### Fixed
+
+#### Critical UI/UX Bug Fixes
+- **Fixed loading indicator flash during field sync** - Added `silent` mode option to `call()` method
+  - Background operations like `_sync_field` no longer show loading indicator
+  - Usage: `call('action', payload, null, {silent: true})`
+  - Improves perceived performance during typing
+
+- **Fixed x-model binding in form field templates** - Changed from `safe_field` to `field`
+  - `x-model` requires direct field access for write operations
+  - `safe_field` (with optional chaining `?.`) only works for reading
+  - Affects: `nitro_input`, `nitro_select`, `nitro_checkbox`, `nitro_textarea`
+
+- **Fixed state flicker on field sync** - Improved merge behavior in `nitro.js`
+  - `_sync_field` responses now skip state update (client already has correct value from x-model)
+  - Prevents UI flicker when typing in form fields
+  - Only validation errors are processed from sync responses
+
+#### Performance Improvements
+- **Added input debouncing to field templates** - 200ms debounce on input/textarea
+  - Reduces server calls during rapid typing
+  - Consistent with `nitro_model` default debounce behavior
+
+### Changed
+- `call()` method signature: `call(actionName, payload, file, options)` - added `options` parameter
+- Form field templates now use proper x-model binding for two-way data flow
+
 ## [0.6.1] - 2026-01-13
 
 ### Added
