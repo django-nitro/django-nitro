@@ -299,7 +299,8 @@ def nitro_model(field, debounce="200ms", lazy=False, on_change=None, no_debounce
         event += f".debounce.{debounce}"
 
     # Auto-sync call (silent mode to prevent loading flash during typing)
-    sync_call = f"call('_sync_field', {{field: '{field}', value: {field}}}, null, {{silent: true}})"
+    # Also track changes for dirty state
+    sync_call = f"trackChange('{field}'); call('_sync_field', {{field: '{field}', value: {field}}}, null, {{silent: true}})"
 
     # Add optional on_change callback
     if on_change:
@@ -315,7 +316,7 @@ def nitro_model(field, debounce="200ms", lazy=False, on_change=None, no_debounce
 
 
 @register.simple_tag
-def nitro_action(action, **kwargs):
+def nitro_action(action, on_success=None, confirm=None, stop=False, prevent=False, **kwargs):
     """
     Action button (wire:click equivalent).
 
@@ -325,9 +326,16 @@ def nitro_action(action, **kwargs):
         {% nitro_action 'submit' %}
         {% nitro_action 'delete' id='item.id' %}
         {% nitro_action 'update' id='task.id' status='completed' %}
+        {% nitro_action 'create_item' on_success='showCreate = false' %}
+        {% nitro_action 'delete' id='item.id' confirm='¿Eliminar?' %}
+        {% nitro_action 'start_edit' id='item.id' stop=True %}
 
     Args:
         action: Action method name
+        on_success: JavaScript code to run after successful action (optional)
+        confirm: Confirmation message before executing (optional)
+        stop: Add .stop modifier to prevent event propagation (optional)
+        prevent: Add .prevent modifier to prevent default behavior (optional)
         **kwargs: Parameters to pass to the action
 
     Returns:
@@ -341,6 +349,15 @@ def nitro_action(action, **kwargs):
             @click="call('delete', {id: item.id})"
             :disabled="isLoading"
         >Delete</button>
+
+        With on_success:
+        <button {% nitro_action 'create_item' on_success='showModal = false' %}>
+
+        Expands to:
+        <button
+            @click="call('create_item').then(() => { showModal = false })"
+            :disabled="isLoading"
+        >
     """
     attrs = []
 
@@ -350,16 +367,35 @@ def nitro_action(action, **kwargs):
         if kwargs:
             params_str = ", ".join(f"{k}={v}" for k, v in kwargs.items())
             debug_info += f", params=({params_str})"
+        if on_success:
+            debug_info += f", on_success='{on_success}'"
         attrs.append(f'data-nitro-debug="{debug_info}"')
 
     # Build params object
     if kwargs:
         params = "{" + ", ".join(f"{k}: {v}" for k, v in kwargs.items()) + "}"
-        click_handler = f"call('{action}', {params})"
+        call_expr = f"call('{action}', {params})"
     else:
-        click_handler = f"call('{action}')"
+        call_expr = f"call('{action}')"
 
-    attrs.append(f'@click="{click_handler}"')
+    # Add .then() for on_success
+    if on_success:
+        call_expr = f"{call_expr}.then(() => {{ {on_success} }})"
+
+    # Wrap with confirm if specified
+    if confirm:
+        click_handler = f"if(confirm('{confirm}')) {{ {call_expr} }}"
+    else:
+        click_handler = call_expr
+
+    # Build event directive with modifiers
+    event_directive = "@click"
+    if stop:
+        event_directive += ".stop"
+    if prevent:
+        event_directive += ".prevent"
+
+    attrs.append(f'{event_directive}="{click_handler}"')
 
     # Auto-disable during loading
     attrs.append(':disabled="isLoading"')
@@ -423,6 +459,68 @@ def nitro_class(**conditions):
     return mark_safe(f':class="{class_obj}"')
 
 
+@register.simple_tag
+def nitro_class_map(class_map):
+    """
+    Conditional CSS classes using a JSON-like mapping string.
+
+    Use this for complex Tailwind class names with spaces and dashes that
+    can't be used as Python kwargs.
+
+    Usage:
+        {% nitro_class_map "{'bg-green-100 text-green-700': item.status === 'active', 'bg-red-100 text-red-700': item.status === 'expired'}" %}
+
+    Args:
+        class_map: A JSON-like object string with class names as keys and conditions as values
+
+    Returns:
+        HTML attribute string with :class binding
+
+    Example:
+        <span {% nitro_class_map "{'bg-green-100 text-green-700 border border-green-300': item.status === 'active', 'bg-gray-200 text-gray-700': item.status === 'draft'}" %}>
+
+        Expands to:
+        <span :class="{'bg-green-100 text-green-700 border border-green-300': item.status === 'active', 'bg-gray-200 text-gray-700': item.status === 'draft'}">
+    """
+    if not class_map:
+        return ""
+
+    # The class_map should already be a valid JS object string
+    return mark_safe(f':class="{class_map}"')
+
+
+@register.simple_tag
+def nitro_bind(expression):
+    """
+    Bind text to an element using x-text (attribute-only version of nitro_text).
+
+    Use this when you already have an element and just need to bind text,
+    especially for ternary operators, template strings, or complex expressions.
+
+    Usage:
+        <span {% nitro_bind 'item.name' %}></span>
+        <span {% nitro_bind "item.status === 'active' ? 'Activo' : 'Inactivo'" %}></span>
+        <div {% nitro_bind "`Total: ${count} items`" %}></div>
+
+    Args:
+        expression: JavaScript expression to evaluate and display
+
+    Returns:
+        HTML attribute: x-text="expression"
+
+    Example:
+        <span class="status" {% nitro_bind "item.active ? 'Activo' : 'Inactivo'" %}></span>
+
+        Expands to:
+        <span class="status" x-text="item.active ? 'Activo' : 'Inactivo'"></span>
+
+    Note:
+        - Use {% nitro_text 'field' %} to render a <span> with initial value (SEO-friendly)
+        - Use {% nitro_bind 'expression' %} for attribute-only binding on existing elements
+    """
+    return mark_safe(f'x-text="{expression}"')
+
+
 # ============================================================================
 # ADVANCED ZERO JAVASCRIPT MODE - Template Tags (v0.5.0)
 # ============================================================================
@@ -459,6 +557,178 @@ def nitro_attr(attr_name, value):
         attrs.append(f'data-nitro-debug="nitro_attr: {attr_name}={value}"')
 
     attrs.append(f':{attr_name}="{value}"')
+
+    return mark_safe(" ".join(attrs))
+
+
+@register.simple_tag
+def nitro_toggle(field, stop=False):
+    """
+    Client-side toggle - Zero JS mode.
+
+    Toggles a boolean value WITHOUT server round-trip.
+    Use this for purely client-side UI state (modals, panels, etc.)
+
+    Usage:
+        <button {% nitro_toggle 'showModal' %}>Toggle Modal</button>
+        <button {% nitro_toggle 'isExpanded' stop=True %}>Expand</button>
+
+    Args:
+        field: Boolean field to toggle
+        stop: Stop event propagation
+
+    Example:
+        <button {% nitro_toggle 'showCreateForm' %}>
+            <span x-show="!showCreateForm">+ Nuevo</span>
+            <span x-show="showCreateForm">Cancelar</span>
+        </button>
+
+        Expands to:
+        <button @click="showCreateForm = !showCreateForm">...</button>
+
+    Note:
+        This is a CLIENT-SIDE ONLY operation. No server round-trip.
+        For server-side state changes, use {% nitro_action %} instead.
+    """
+    attrs = []
+
+    if NITRO_DEBUG:
+        attrs.append(f'data-nitro-debug="nitro_toggle: field=\'{field}\'"')
+
+    event = "@click"
+    if stop:
+        event += ".stop"
+
+    attrs.append(f'{event}="{field} = !{field}"')
+
+    return mark_safe(" ".join(attrs))
+
+
+@register.simple_tag
+def nitro_set(field, value, stop=False):
+    """
+    Client-side set value - Zero JS mode.
+
+    Sets a field to a specific value WITHOUT server round-trip.
+    Use this for purely client-side UI state (tabs, selections, etc.)
+
+    Usage:
+        <button {% nitro_set 'activeTab' value="'settings'" %}>Settings</button>
+        <button {% nitro_set 'selectedId' value='item.id' stop=True %}>Select</button>
+        <button {% nitro_set 'count' value='count + 1' %}>+1</button>
+
+    Args:
+        field: Field to set
+        value: Value to assign (can be a literal or expression)
+        stop: Stop event propagation
+
+    Example:
+        <!-- Tabs -->
+        <button {% nitro_set 'activeTab' value="'general'" %}>General</button>
+        <button {% nitro_set 'activeTab' value="'settings'" %}>Settings</button>
+
+        <!-- Counter -->
+        <button {% nitro_set 'count' value='count + 1' %}>+1</button>
+        <button {% nitro_set 'count' value='0' %}>Reset</button>
+
+        Expands to:
+        <button @click="activeTab = 'general'">General</button>
+        <button @click="count = count + 1">+1</button>
+
+    Note:
+        This is a CLIENT-SIDE ONLY operation. No server round-trip.
+        For server-side state changes, use {% nitro_action %} instead.
+    """
+    attrs = []
+
+    if NITRO_DEBUG:
+        attrs.append(f'data-nitro-debug="nitro_set: field=\'{field}\' value=\'{value}\'"')
+
+    event = "@click"
+    if stop:
+        event += ".stop"
+
+    attrs.append(f'{event}="{field} = {value}"')
+
+    return mark_safe(" ".join(attrs))
+
+
+@register.simple_tag
+def nitro_key(key, action, prevent=False, stop=False, window=False, **kwargs):
+    """
+    Keyboard event handler - Zero JS mode.
+
+    Triggers a server action when a specific key is pressed.
+
+    Usage:
+        <input {% nitro_model 'search' %} {% nitro_key 'enter' action='do_search' %}>
+        <div {% nitro_key 'escape' action='close_modal' window=True %}>
+        <input {% nitro_key 'ctrl+s' action='save' prevent=True %}>
+
+    Args:
+        key: Key name (enter, escape, space, tab, etc.) or combo (ctrl+s, shift+enter)
+        action: Server action to call when key is pressed
+        prevent: Prevent default browser behavior (e.g., form submit on enter)
+        stop: Stop event propagation
+        window: Listen on window instead of element (for global shortcuts)
+        **kwargs: Parameters to pass to the action
+
+    Supported keys:
+        - enter, escape, space, tab, delete, backspace
+        - up, down, left, right (arrow keys)
+        - Modifiers: ctrl+, alt+, shift+, meta+ (e.g., ctrl+s, shift+enter)
+
+    Example:
+        <input {% nitro_model 'search' %} {% nitro_key 'enter' action='search' %}>
+
+        Expands to:
+        <input ... @keydown.enter="call('search')">
+
+        With params:
+        <button {% nitro_key 'ctrl+s' action='save' prevent=True id='item.id' %}>
+
+        Expands to:
+        <button ... @keydown.ctrl.s.prevent="call('save', {id: item.id})">
+    """
+    attrs = []
+
+    # Debug info
+    if NITRO_DEBUG:
+        debug_parts = [f"key='{key}'", f"action='{action}'"]
+        if prevent:
+            debug_parts.append("prevent=True")
+        if stop:
+            debug_parts.append("stop=True")
+        if window:
+            debug_parts.append("window=True")
+        if kwargs:
+            debug_parts.append(f"params={kwargs}")
+        attrs.append(f'data-nitro-debug="nitro_key: {", ".join(debug_parts)}"')
+
+    # Parse key combo (e.g., "ctrl+s" -> ["ctrl", "s"])
+    key_parts = key.lower().replace("+", ".").split(".")
+
+    # Build event directive
+    event = "@keydown"
+    for part in key_parts:
+        event += f".{part}"
+
+    # Add modifiers
+    if prevent:
+        event += ".prevent"
+    if stop:
+        event += ".stop"
+    if window:
+        event += ".window"
+
+    # Build action call
+    if kwargs:
+        params = "{" + ", ".join(f"{k}: {v}" for k, v in kwargs.items()) + "}"
+        call_expr = f"call('{action}', {params})"
+    else:
+        call_expr = f"call('{action}')"
+
+    attrs.append(f'{event}="{call_expr}"')
 
     return mark_safe(" ".join(attrs))
 
@@ -673,7 +943,7 @@ def nitro_if(parser, token):
 
 
 @register.inclusion_tag("nitro/fields/input.html")
-def nitro_input(field, label="", type="text", required=False, placeholder="", lazy=False, debounce="200ms", **kwargs):
+def nitro_input(field, label="", type="text", required=False, placeholder="", **kwargs):
     """
     Complete form input abstraction - no Alpine.js knowledge needed.
 
@@ -682,14 +952,11 @@ def nitro_input(field, label="", type="text", required=False, placeholder="", la
     - Error validation styling
     - Consistent CSS classes
     - Labels and required indicators
-    - Debounced sync (default 200ms) or lazy sync (on blur)
 
     Usage:
         {% nitro_input field="create_buffer.name" label="Nombre" required=True %}
         {% nitro_input field="edit_buffer.email" label="Email" type="email" %}
         {% nitro_input field="edit_buffer.price" label="Precio" type="number" step="0.01" %}
-        {% nitro_input field="create_buffer.name" label="Nombre" lazy=True %}  <!-- Sync on blur -->
-        {% nitro_input field="create_buffer.search" label="Buscar" debounce="500ms" %}  <!-- Custom debounce -->
 
     Args:
         field: Field path (e.g., 'create_buffer.name', 'edit_buffer.email')
@@ -697,8 +964,6 @@ def nitro_input(field, label="", type="text", required=False, placeholder="", la
         type: Input type (text, number, email, date, etc.)
         required: Show required indicator
         placeholder: Placeholder text
-        lazy: If True, sync on blur instead of on input (default: False)
-        debounce: Debounce time for input event (default: "200ms", ignored if lazy=True)
         **kwargs: Additional HTML attributes (step, min, max, etc.)
     """
     # Use utility functions for safe field and error path
@@ -715,8 +980,6 @@ def nitro_input(field, label="", type="text", required=False, placeholder="", la
         "type": type,
         "required": required,
         "placeholder": placeholder,
-        "lazy": lazy,
-        "debounce": debounce,
         "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
         "debug": NITRO_DEBUG,
     }
@@ -762,6 +1025,83 @@ def nitro_select(field, label="", choices=None, required=False, **kwargs):
     }
 
 
+@register.inclusion_tag("nitro/fields/dynamic_select.html")
+def nitro_dynamic_select(
+    field,
+    options_var,
+    option_value="id",
+    option_label="name",
+    label="",
+    required=False,
+    placeholder="",
+    on_change=None,
+    on_change_param=None,
+    **kwargs,
+):
+    """
+    Dynamic select with options from Alpine state (x-for).
+
+    Use this for selects where options come from component state (provinces,
+    municipalities, landlords, etc.) instead of static choices.
+
+    Usage:
+        {% nitro_dynamic_select field='create_buffer.province_id' options_var='provinces' label='Provincia' %}
+        {% nitro_dynamic_select field='sector_id' options_var='sectors' on_change='load_data' on_change_param='sector_id' %}
+        {% nitro_dynamic_select field='landlord_id' options_var='landlords' option_value='id' option_label='full_name' %}
+
+    Args:
+        field: Field path for x-model binding
+        options_var: Alpine state variable containing the options array
+        option_value: Property name for option value (default: 'id')
+        option_label: Property name for option display text (default: 'name')
+        label: Field label
+        required: Show required indicator
+        placeholder: Placeholder text for empty option
+        on_change: Method to call when selection changes (instead of _sync_field)
+        on_change_param: Parameter name to pass to on_change method (uses field value)
+        **kwargs: Additional HTML attributes
+
+    Example:
+        State: provinces = [{"id": 1, "name": "Santo Domingo"}, ...]
+
+        {% nitro_dynamic_select field='province_id' options_var='provinces'
+           on_change='load_municipalities' on_change_param='province_id' %}
+
+        Generates:
+        <select x-model="province_id"
+                @change="call('load_municipalities', {province_id: $event.target.value})">
+            <template x-for="opt in provinces" :key="opt.id">
+                <option :value="opt.id" x-text="opt.name"></option>
+            </template>
+        </select>
+    """
+    safe_field, is_edit_buffer = build_safe_field(field)
+    error_path = build_error_path(field)
+
+    # Build change handler
+    if on_change:
+        param_name = on_change_param or field.split(".")[-1]
+        change_handler = f"call('{on_change}', {{{param_name}: $event.target.value}})"
+    else:
+        # Default: sync field to server
+        change_handler = f"call('_sync_field', {{field: '{field}', value: $event.target.value}}, null, {{silent: true}})"
+
+    return {
+        "field": field,
+        "safe_field": safe_field,
+        "error_path": error_path,
+        "options_var": options_var,
+        "option_value": option_value,
+        "option_label": option_label,
+        "label": label,
+        "required": required,
+        "placeholder": placeholder or "-- Seleccionar --",
+        "change_handler": change_handler,
+        "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
+        "debug": NITRO_DEBUG,
+    }
+
+
 @register.inclusion_tag("nitro/fields/checkbox.html")
 def nitro_checkbox(field, label="", **kwargs):
     """
@@ -780,10 +1120,11 @@ def nitro_checkbox(field, label="", **kwargs):
 
     # For checkboxes, we need special handling for @change (silent mode to prevent loading flash)
     # If edit_buffer, wrap in null check
+    # Also track changes for dirty state
     change_handler = (
-        f"if({field.split('.')[0]}) {field} = $el.checked"
+        f"if({field.split('.')[0]}) {{ trackChange('{field}'); {field} = $el.checked }}"
         if is_edit_buffer
-        else f"{field} = $el.checked; call('_sync_field', {{field: '{field}', value: {field}}}, null, {{silent: true}})"
+        else f"trackChange('{field}'); {field} = $el.checked; call('_sync_field', {{field: '{field}', value: {field}}}, null, {{silent: true}})"
     )
 
     return {
@@ -798,14 +1139,13 @@ def nitro_checkbox(field, label="", **kwargs):
 
 
 @register.inclusion_tag("nitro/fields/textarea.html")
-def nitro_textarea(field, label="", required=False, rows=3, placeholder="", lazy=False, debounce="200ms", **kwargs):
+def nitro_textarea(field, label="", required=False, rows=3, placeholder="", **kwargs):
     """
     Complete form textarea abstraction - no Alpine.js knowledge needed.
 
     Usage:
         {% nitro_textarea field="create_buffer.description" label="Descripción" rows=5 %}
         {% nitro_textarea field="edit_buffer.notes" label="Notas" required=True %}
-        {% nitro_textarea field="create_buffer.bio" label="Bio" lazy=True %}  <!-- Sync on blur -->
 
     Args:
         field: Field path
@@ -813,8 +1153,6 @@ def nitro_textarea(field, label="", required=False, rows=3, placeholder="", lazy
         required: Show required indicator
         rows: Number of rows
         placeholder: Placeholder text
-        lazy: If True, sync on blur instead of on input (default: False)
-        debounce: Debounce time for input event (default: "200ms", ignored if lazy=True)
     """
     # Use utility functions for safe field and error path
     safe_field, is_edit_buffer = build_safe_field(field)
@@ -828,8 +1166,6 @@ def nitro_textarea(field, label="", required=False, rows=3, placeholder="", lazy
         "required": required,
         "rows": rows,
         "placeholder": placeholder,
-        "lazy": lazy,
-        "debounce": debounce,
         "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
         "debug": NITRO_DEBUG,
     }

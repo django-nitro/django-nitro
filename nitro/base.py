@@ -523,6 +523,26 @@ class NitroComponent(Generic[S]):
         # The state will be automatically refreshed by the client
         pass
 
+    def refresh(self):
+        """
+        Refresh the component (re-render with current state).
+
+        This is a no-op for the base NitroComponent - it simply causes
+        the component to re-render with its current state. Subclasses
+        like ModelNitroComponent override this to reload data from the database.
+
+        Usage in templates:
+            <button {% nitro_action 'refresh' %}>Refresh</button>
+
+        Note:
+            - For base NitroComponent: just re-renders (no data change)
+            - For ModelNitroComponent: reloads from database
+            - Override this in your component for custom refresh logic
+        """
+        # Base implementation - no-op
+        # The action processing will return the current state, causing a re-render
+        pass
+
     def emit(self, event_name: str, data: dict[str, Any] | None = None):
         """
         Emit a custom event to be sent to the client.
