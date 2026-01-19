@@ -569,10 +569,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#new-in-v060" class="md-nav__link">
+  <a href="#new-in-v070" class="md-nav__link">
     <span class="md-ellipsis">
       
-        New in v0.6.0 ⭐
+        New in v0.7.0 ⭐
       
     </span>
   </a>
@@ -590,6 +590,17 @@
   
     <nav class="md-nav" aria-label="Previous Releases">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v060" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.6.0
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#v040" class="md-nav__link">
@@ -1755,10 +1766,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#new-in-v060" class="md-nav__link">
+  <a href="#new-in-v070" class="md-nav__link">
     <span class="md-ellipsis">
       
-        New in v0.6.0 ⭐
+        New in v0.7.0 ⭐
       
     </span>
   </a>
@@ -1776,6 +1787,17 @@
   
     <nav class="md-nav" aria-label="Previous Releases">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v060" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.6.0
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#v040" class="md-nav__link">
@@ -1866,7 +1888,7 @@
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nd">@register_component</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="k">class</span><span class="w"> </span><span class="nc">Counter</span><span class="p">(</span><span class="n">NitroComponent</span><span class="p">[</span><span class="n">CounterState</span><span class="p">]):</span>
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;components/counter.html&quot;</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">state_class</span> <span class="o">=</span> <span class="n">CounterState</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="c1"># state_class auto-inferred from Generic (v0.7.0)</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_initial_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="k">return</span> <span class="n">CounterState</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1900,18 +1922,27 @@
 <li><strong><a href="security/tenant-scoped-mixin/">TenantScopedMixin</a></strong> - Multi-tenant isolation</li>
 <li><strong><a href="security/permission-mixin/">PermissionMixin</a></strong> - Custom permission framework</li>
 </ul>
-<h3 id="new-in-v060">New in v0.6.0 ⭐<a class="headerlink" href="#new-in-v060" title="Permanent link">&para;</a></h3>
+<h3 id="new-in-v070">New in v0.7.0 ⭐<a class="headerlink" href="#new-in-v070" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Form Field Template Tags</strong> - Pre-built tags for common form fields</li>
-<li><code>{% nitro_input %}</code> - Text, email, number, date inputs with error handling</li>
-<li><code>{% nitro_select %}</code> - Dropdown with choices</li>
-<li><code>{% nitro_checkbox %}</code> - Checkbox with label</li>
-<li><code>{% nitro_textarea %}</code> - Multi-line text input</li>
-<li><strong>Default Debounce (200ms)</strong> - Automatic debouncing on <code>nitro_model</code> reduces server load</li>
-<li><strong>Performance Improvements</strong> - TypeAdapter caching and code deduplication</li>
-<li><strong>Django 5.2 Support</strong> - Compatible with Django 5.2 using <code>django-template-partials</code></li>
+<li><strong>Auto-infer <code>state_class</code></strong> - No more redundant declarations when using Generics</li>
+<li><strong>CacheMixin</strong> - Component state and HTML caching for performance</li>
+<li><strong>@cache_action decorator</strong> - Cache expensive action results</li>
+<li><strong>Unaccent Search</strong> - Accent-insensitive search for PostgreSQL (enabled by default)</li>
+<li><strong>True Zero-JS Template Tags</strong> - All logic in Python kwargs:</li>
+<li><code>{% nitro_switch %}</code> - Conditional text based on field value</li>
+<li><code>{% nitro_css %}</code> - Conditional CSS classes</li>
+<li><code>{% nitro_badge %}</code> - Combined text + styling</li>
+<li><code>{% nitro_visible %}</code> / <code>{% nitro_hidden %}</code> - Boolean visibility</li>
+<li><code>{% nitro_plural %}</code> / <code>{% nitro_count %}</code> - Pluralization</li>
+<li><code>{% nitro_format %}</code> / <code>{% nitro_date %}</code> - Value formatting</li>
 </ul>
 <h3 id="previous-releases">Previous Releases<a class="headerlink" href="#previous-releases" title="Permanent link">&para;</a></h3>
+<h4 id="v060">v0.6.0<a class="headerlink" href="#v060" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Form Field Template Tags</strong> - <code>{% nitro_input %}</code>, <code>{% nitro_select %}</code>, <code>{% nitro_checkbox %}</code>, <code>{% nitro_textarea %}</code></li>
+<li><strong>Default Debounce (200ms)</strong> - Automatic debouncing on <code>nitro_model</code></li>
+<li><strong>Django 5.2 Support</strong> - Compatible using <code>django-template-partials</code></li>
+</ul>
 <h4 id="v040">v0.4.0<a class="headerlink" href="#v040" title="Permanent link">&para;</a></h4>
 <ul>
 <li><strong><a href="core-concepts/TOAST_ADAPTERS/">Toast Notifications</a></strong> - Native toasts or integrate your favorite library</li>
@@ -1955,7 +1986,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 14, 2026 00:09:35 UTC">January 14, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 19, 2026 17:13:51 UTC">January 19, 2026</span>
   </span>
 
     
