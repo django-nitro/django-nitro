@@ -5,41 +5,144 @@ All notable changes to Django Nitro will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.7.0] - 2026-01-18
+## [0.7.0] - 2026-01-19
 
-### Added
-- **New Template Tags**:
-  - `{% nitro_class_map %}` - Conditional CSS classes for complex Tailwind class names
-  - `{% nitro_bind %}` - Bind text using x-text for ternary operators and complex expressions
-  - `{% nitro_if %}` / `{% end_nitro_if %}` - Server-side conditional blocks with Alpine reactivity
-  - `{% nitro_for %}` / `{% end_nitro_for %}` - Server-side loops with Alpine x-for integration
-  - `{% nitro_text %}` - Server-rendered text with live Alpine updates
-  - `{% nitro_attr %}` - Dynamic attribute binding
+### Philosophy Change: True Zero-JavaScript + DX Improvements
 
-- **Enhanced Form Components**:
-  - `{% nitro_file %}` - File upload with preview, validation, and progress
-  - `{% nitro_checkbox %}` - Styled checkbox with proper binding
-  - `{% nitro_textarea %}` - Auto-expanding textarea support
+This release fundamentally changes Nitro's approach. Previous versions wrapped JavaScript
+in template tags, still requiring developers to know JS syntax. **Version 0.7.0 is truly
+Zero-JS** - all logic is defined in Python, no JavaScript knowledge required.
 
-- **Component Communication**:
-  - `emit()` method for cross-component events
-  - `refresh_component()` to refresh other components by name
-  - Event handling with `@nitro-event` directives
+### Added - DX Improvements
 
-- **Security Enhancements**:
-  - Improved CSRF token handling
-  - Better error messages without exposing internals
+- **Auto-infer `state_class`** - No more redundant `state_class = MyState` when using Generics:
+  ```python
+  # Before
+  class Counter(NitroComponent[CounterState]):
+      state_class = CounterState  # REDUNDANT!
 
-### Changed
-- Improved `nitro_action` with `stop` and `prevent` modifiers
-- Better error handling in component dispatch
-- Cleaner Alpine.js integration with `x-cloak` support
-- Optimized JavaScript bundle size
+  # After (v0.7.0)
+  class Counter(NitroComponent[CounterState]):
+      pass  # state_class inferred automatically
+  ```
 
-### Fixed
-- Fixed template tag parsing for nested quotes
-- Fixed state serialization for complex Pydantic models
-- Fixed component registry thread safety
+- **`CacheMixin`** - Component state and HTML caching for performance:
+  ```python
+  from nitro import CacheMixin, NitroComponent
+
+  class MyComponent(CacheMixin, NitroComponent[MyState]):
+      cache_enabled = True
+      cache_ttl = 300  # 5 minutes
+      cache_html = True  # Also cache rendered HTML
+  ```
+
+- **`@cache_action` decorator** - Cache expensive action results:
+  ```python
+  from nitro.cache import cache_action
+
+  @cache_action(ttl=120)
+  def load_expensive_data(self):
+      return expensive_calculation()
+  ```
+
+- **`nitro_phone` / `n_phone`** - Phone input with automatic XXX-XXX-XXXX mask:
+  ```django
+  {% n_phone field="form.phone" label="Teléfono" %}
+  ```
+
+- **Unaccent search** - Accent-insensitive search (PostgreSQL):
+  ```python
+  # "maria" now finds "María", "jose" finds "José"
+  class MyList(BaseListComponent[MyState]):
+      search_fields = ['name', 'email']
+      use_unaccent = True  # Default: True
+  ```
+
+- **`nitro_text` as attribute** - Now outputs just the attribute, not a full element:
+  ```django
+  <!-- Before (broken with extra attributes) -->
+  {% nitro_text 'name' %}  <!-- Output: <span x-text="name"></span> -->
+
+  <!-- After (works anywhere) -->
+  <h1 {% nitro_text 'name' %} class="font-bold"></h1>
+  ```
+
+### Added - Zero-JS Template Tags
+
+New tags where ALL logic is defined in Python kwargs:
+
+- **`{% nitro_switch %}`** - Conditional text based on field value
+  ```django
+  {% nitro_switch 'item.status' active='Activo' expired='Vencido' default='Borrador' %}
+  ```
+
+- **`{% nitro_css %}`** - Conditional CSS classes
+  ```django
+  <div {% nitro_css 'item.status' active='bg-green-100' expired='bg-red-100' %}>
+  ```
+
+- **`{% nitro_badge %}`** - Combined text + styling for status badges
+  ```django
+  {% nitro_badge 'status' active='Activo:bg-green-100' expired='Vencido:bg-red-100' %}
+  ```
+
+- **`{% nitro_visible %}`** / **`{% nitro_hidden %}`** - Boolean visibility
+  ```django
+  <div {% nitro_visible 'item.is_active' %}>Shown when active</div>
+  ```
+
+- **`{% nitro_plural %}`** - Singular/plural text
+  ```django
+  {% nitro_plural 'count' singular='item' plural='items' zero='No items' %}
+  ```
+
+- **`{% nitro_count %}`** - Count with label
+  ```django
+  {% nitro_count 'items.length' singular='propiedad' plural='propiedades' %}
+  ```
+
+- **`{% nitro_format %}`** - Value formatting (currency, numbers)
+  ```django
+  {% nitro_format 'price' format_type='currency' prefix='$' %}
+  ```
+
+- **`{% nitro_date %}`** - Date formatting
+  ```django
+  {% nitro_date 'created_at' empty='Sin fecha' %}
+  ```
+
+- **`{% nitro_each %}`** - Zero-JS iteration
+  ```django
+  {% nitro_each 'items' as 'item' %}...{% end_nitro_each %}
+  ```
+
+- **`{% nitro_call %}`** - Call component Python methods
+  ```django
+  {% nitro_call 'get_status_display' item %}
+  ```
+
+### Deprecated
+
+The following tags still work but are deprecated (will be removed in v1.0):
+
+| Deprecated Tag | Replacement | Reason |
+|---------------|-------------|--------|
+| `{% nitro_bind "js expr" %}` | `{% nitro_switch %}` | Required JS knowledge |
+| `{% nitro_class_map "js obj" %}` | `{% nitro_css %}` | Required JS knowledge |
+
+### Migration Examples
+
+**Before (v0.6.x):**
+```django
+{% nitro_bind "item.status === 'active' ? 'Activo' : 'Inactivo'" %}
+{% nitro_class_map "{'bg-green-100': item.status === 'active'}" %}
+```
+
+**After (v0.7.0):**
+```django
+{% nitro_switch 'item.status' active='Activo' default='Inactivo' %}
+{% nitro_css 'item.status' active='bg-green-100' %}
+```
 
 ## [0.6.2] - 2025-12-15
 

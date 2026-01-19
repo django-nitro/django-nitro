@@ -59,12 +59,15 @@ class SearchMixin:
     """Mixin for search functionality in list components."""
 
     search_fields: list[str] = []  # Override in subclass
+    use_unaccent: bool = True  # Use PostgreSQL unaccent for accent-insensitive search
 
     def apply_search(self, queryset, search_query: str):
         """
         Apply search to queryset using Q objects.
 
         Searches across all fields defined in search_fields using case-insensitive contains.
+        If use_unaccent is True (default), uses PostgreSQL unaccent for accent-insensitive
+        search (e.g., "maria" matches "María").
 
         Args:
             queryset: Django queryset to filter
@@ -82,9 +85,12 @@ class SearchMixin:
         if not search_query or not self.search_fields:
             return queryset
 
+        # Use unaccent for accent-insensitive search (PostgreSQL)
+        lookup = "__unaccent__icontains" if self.use_unaccent else "__icontains"
+
         query = Q()
         for field in self.search_fields:
-            query |= Q(**{f"{field}__icontains": search_query})
+            query |= Q(**{f"{field}{lookup}": search_query})
 
         return queryset.filter(query)
 
@@ -220,6 +226,21 @@ class BaseListComponent(
     _item_adapter_cache: dict = {}
 
     @classmethod
+    def _get_state_class(cls):
+        """Get state_class, inferring from Generic if not explicitly set."""
+        if cls.state_class is not None:
+            return cls.state_class
+        # Infer from Generic type hint (v0.7.0 DX)
+        from typing import get_origin, get_args
+        for base in getattr(cls, '__orig_bases__', []):
+            origin = get_origin(base)
+            if origin is not None:
+                args = get_args(base)
+                if args and isinstance(args[0], type):
+                    return args[0]
+        return None
+
+    @classmethod
     def _get_item_adapter(cls):
         """Get cached TypeAdapter for item schema.
 
@@ -231,7 +252,10 @@ class BaseListComponent(
         """
         cache_key = cls.__name__
         if cache_key not in cls._item_adapter_cache:
-            item_type = cls.state_class.model_fields["items"].annotation.__args__[0]
+            state_cls = cls._get_state_class()
+            if state_cls is None:
+                raise ValueError(f"{cls.__name__} must define state_class or use Generic type hint")
+            item_type = state_cls.model_fields["items"].annotation.__args__[0]
             cls._item_adapter_cache[cache_key] = TypeAdapter(list[item_type])
         return cls._item_adapter_cache[cache_key]
 

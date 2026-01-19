@@ -7,6 +7,12 @@ from nitro.base import (
     NitroComponent,
 )
 
+# Cache (v0.7.0)
+from nitro.cache import (
+    CacheMixin,
+    cache_action,
+)
+
 # Configuration (v0.4.0)
 from nitro.conf import (
     get_all_settings,
@@ -39,6 +45,9 @@ __all__ = [
     "NitroComponent",
     "ModelNitroComponent",
     "CrudNitroComponent",
+    # Cache (v0.7.0)
+    "CacheMixin",
+    "cache_action",
     # List
     "PaginationMixin",
     "SearchMixin",

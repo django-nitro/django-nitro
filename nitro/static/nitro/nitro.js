@@ -352,11 +352,16 @@ document.addEventListener('alpine:init', () => {
 
             // Track field changes for dirty state
             trackChange(field) {
-                // Mark as dirty when user changes a field
-                this.markDirty();
+                // Only mark as dirty for form buffer fields (actual edits)
+                // Skip search, filter, and other non-form fields
+                if (field && (field.includes('_buffer') || field.includes('buffer.'))) {
+                    this.markDirty();
 
-                if (NITRO_DEBUG) {
-                    console.log(`[Nitro] Field changed: ${field}, component marked dirty`);
+                    if (NITRO_DEBUG) {
+                        console.log(`[Nitro] Form field changed: ${field}, component marked dirty`);
+                    }
+                } else if (NITRO_DEBUG) {
+                    console.log(`[Nitro] Non-form field changed: ${field}, skipping dirty tracking`);
                 }
             },
 
@@ -471,7 +476,10 @@ document.addEventListener('alpine:init', () => {
                         });
                     }
 
-                    const response = await fetch('/api/nitro/dispatch', {
+                    // Use different endpoint for file uploads (Django Ninja Form+File)
+                    const endpoint = file ? '/api/nitro/dispatch-file' : '/api/nitro/dispatch';
+
+                    const response = await fetch(endpoint, {
                         method: 'POST',
                         headers: headers,
                         body: requestBody
@@ -593,9 +601,10 @@ document.addEventListener('alpine:init', () => {
                     });
 
                     // Mark component as clean after successful save/update actions
-                    // Common save action names
-                    const saveActions = ['save', 'update', 'create', 'save_edit', 'create_item', 'submit'];
-                    if (saveActions.includes(actionName)) {
+                    // Common save action names - check if action name contains these keywords
+                    const saveKeywords = ['save', 'update', 'create', 'submit', 'cancel', 'toggle_form'];
+                    const isSaveAction = saveKeywords.some(keyword => actionName.toLowerCase().includes(keyword));
+                    if (isSaveAction) {
                         this.markClean();
                         if (NITRO_DEBUG) {
                             console.log(`[Nitro] Component marked clean after ${actionName}`);
@@ -819,13 +828,15 @@ document.addEventListener('alpine:init', () => {
 
 /**
  * Warn user before leaving page with unsaved changes
+ * DISABLED in v0.7.0 - this is an annoying UX pattern.
+ * The dirty state tracking is still available for components that want
+ * to use it internally (e.g., showing a "unsaved" indicator).
  */
-window.addEventListener('beforeunload', (e) => {
-    // Check if any components have unsaved changes
-    if (Alpine.store('nitro') && Alpine.store('nitro').hasAnyDirty()) {
-        const message = 'You have unsaved changes. Are you sure you want to leave?';
-        e.preventDefault();
-        e.returnValue = message; // For Chrome
-        return message; // For other browsers
-    }
-});
+// window.addEventListener('beforeunload', (e) => {
+//     if (Alpine.store('nitro') && Alpine.store('nitro').hasAnyDirty()) {
+//         const message = 'You have unsaved changes. Are you sure you want to leave?';
+//         e.preventDefault();
+//         e.returnValue = message;
+//         return message;
+//     }
+// });

@@ -55,9 +55,11 @@ def nitro_scripts():
     """
     css_path = static("nitro/nitro.css")
     js_path = static("nitro/nitro.js")
+    # Cache buster based on version
+    version = "0.7.0"
 
     return mark_safe(
-        f'<link rel="stylesheet" href="{css_path}">\n<script defer src="{js_path}"></script>'
+        f'<link rel="stylesheet" href="{css_path}?v={version}">\n<script defer src="{js_path}?v={version}"></script>'
     )
 
 
@@ -85,7 +87,9 @@ class NitroForNode(Node):
 
         # 1. Static content for SEO (hidden with CSS, not Alpine x-show)
         # Using CSS instead of x-show prevents Alpine.js dataStack initialization errors
-        output.append('<div class="nitro-seo-content" style="display: none;">')
+        # IMPORTANT: x-ignore tells Alpine to skip processing this element entirely,
+        # preventing "variable not defined" errors from x-text bindings inside
+        output.append('<div class="nitro-seo-content" style="display: none;" x-ignore>')
         for item in items:
             context.push({self.item_var: item})
             output.append(self.nodelist.render(context))
@@ -172,62 +176,25 @@ def nitro_for(parser, token):
     return NitroForNode(list_var, item_var, nodelist)
 
 
-class NitroTextNode(Node):
+@register.simple_tag
+def nitro_text(field):
     """
-    Node for {% nitro_text %} template tag.
+    x-text binding as an attribute.
 
-    Renders server-side value + Alpine.js x-text binding.
-    """
-
-    def __init__(self, var_name):
-        self.var = template.Variable(var_name)
-        self.var_name = var_name
-
-    def render(self, context):
-        # Get value from context
-        try:
-            value = self.var.resolve(context)
-        except template.VariableDoesNotExist:
-            value = ""
-
-        # Render with both server value (SEO) and x-text binding (reactivity)
-        # Escape value to prevent XSS in initial render
-        return mark_safe(f'<span x-text="{self.var_name}">{escape(value)}</span>')
-
-
-@register.tag
-def nitro_text(parser, token):
-    """
-    SEO-friendly x-text binding.
-
-    Renders static text on server (SEO) + Alpine.js x-text for reactivity.
+    Use inside any element to bind text content.
 
     Usage:
-        {% nitro_text 'item.name' %}
+        <span {% nitro_text 'item.name' %}></span>
+        <span {% nitro_text 'item.name' %} class="truncate"></span>
+        <div {% nitro_text 'count' %} class="text-lg font-bold"></div>
 
-    Results in:
-        <span x-text="item.name">John Doe</span>
+    Args:
+        field: Field path or expression to display
 
-    - SEO crawlers see "John Doe"
-    - Alpine updates the content when state changes
-
-    Example:
-        <div class="card">
-            <h3>{% nitro_text 'item.name' %}</h3>
-            <p>Email: {% nitro_text 'item.email' %}</p>
-        </div>
+    Returns:
+        x-text="field" attribute
     """
-    try:
-        tag_name, var_name = token.split_contents()
-        # Remove quotes
-        var_name = var_name.strip("'\"")
-    except ValueError:
-        raise TemplateSyntaxError(
-            f"{token.contents.split()[0]} tag requires a single argument: "
-            "{% nitro_text 'variable_name' %}"
-        ) from None
-
-    return NitroTextNode(var_name)
+    return mark_safe(f'x-text="{field}"')
 
 
 # ============================================================================
@@ -562,20 +529,22 @@ def nitro_attr(attr_name, value):
 
 
 @register.simple_tag
-def nitro_toggle(field, stop=False):
+def nitro_toggle(field, stop=False, action=None, **kwargs):
     """
     Client-side toggle - Zero JS mode.
 
-    Toggles a boolean value WITHOUT server round-trip.
-    Use this for purely client-side UI state (modals, panels, etc.)
+    Toggles a boolean value. Optionally also calls a server action.
 
     Usage:
         <button {% nitro_toggle 'showModal' %}>Toggle Modal</button>
         <button {% nitro_toggle 'isExpanded' stop=True %}>Expand</button>
+        <button {% nitro_toggle 'show_form' action='toggle_form' %}>Toggle with server sync</button>
 
     Args:
         field: Boolean field to toggle
         stop: Stop event propagation
+        action: Optional server action to call after toggle
+        **kwargs: Parameters to pass to the action
 
     Example:
         <button {% nitro_toggle 'showCreateForm' %}>
@@ -586,20 +555,37 @@ def nitro_toggle(field, stop=False):
         Expands to:
         <button @click="showCreateForm = !showCreateForm">...</button>
 
-    Note:
-        This is a CLIENT-SIDE ONLY operation. No server round-trip.
-        For server-side state changes, use {% nitro_action %} instead.
+        With action:
+        <button {% nitro_toggle 'show_form' action='toggle_form' %}>
+
+        Expands to:
+        <button @click="show_form = !show_form; call('toggle_form')">
     """
     attrs = []
 
     if NITRO_DEBUG:
-        attrs.append(f'data-nitro-debug="nitro_toggle: field=\'{field}\'"')
+        debug_info = f"nitro_toggle: field='{field}'"
+        if action:
+            debug_info += f", action='{action}'"
+        attrs.append(f'data-nitro-debug="{debug_info}"')
 
     event = "@click"
     if stop:
         event += ".stop"
 
-    attrs.append(f'{event}="{field} = !{field}"')
+    # Build the click handler
+    toggle_expr = f"{field} = !{field}"
+
+    if action:
+        # Also call server action
+        if kwargs:
+            params = "{" + ", ".join(f"{k}: {v}" for k, v in kwargs.items()) + "}"
+            call_expr = f"call('{action}', {params})"
+        else:
+            call_expr = f"call('{action}')"
+        attrs.append(f'{event}="{toggle_expr}; {call_expr}"')
+    else:
+        attrs.append(f'{event}="{toggle_expr}"')
 
     return mark_safe(" ".join(attrs))
 
@@ -767,6 +753,210 @@ def nitro_disabled(condition):
         attrs.append(f'data-nitro-debug="nitro_disabled: {condition}"')
 
     attrs.append(f':disabled="{condition}"')
+
+    return mark_safe(" ".join(attrs))
+
+
+# Transition presets - common animation patterns
+TRANSITION_PRESETS = {
+    'fade': {
+        'enter': 'ease-out duration-300',
+        'enter-start': 'opacity-0',
+        'enter-end': 'opacity-100',
+        'leave': 'ease-in duration-200',
+        'leave-start': 'opacity-100',
+        'leave-end': 'opacity-0',
+    },
+    'slide-right': {
+        'enter': 'transform transition ease-out duration-300',
+        'enter-start': 'translate-x-full',
+        'enter-end': 'translate-x-0',
+        'leave': 'transform transition ease-in duration-200',
+        'leave-start': 'translate-x-0',
+        'leave-end': 'translate-x-full',
+    },
+    'slide-left': {
+        'enter': 'transform transition ease-out duration-300',
+        'enter-start': '-translate-x-full',
+        'enter-end': 'translate-x-0',
+        'leave': 'transform transition ease-in duration-200',
+        'leave-start': 'translate-x-0',
+        'leave-end': '-translate-x-full',
+    },
+    'slide-up': {
+        'enter': 'transform transition ease-out duration-300',
+        'enter-start': 'translate-y-full',
+        'enter-end': 'translate-y-0',
+        'leave': 'transform transition ease-in duration-200',
+        'leave-start': 'translate-y-0',
+        'leave-end': 'translate-y-full',
+    },
+    'slide-down': {
+        'enter': 'transform transition ease-out duration-300',
+        'enter-start': '-translate-y-full',
+        'enter-end': 'translate-y-0',
+        'leave': 'transform transition ease-in duration-200',
+        'leave-start': 'translate-y-0',
+        'leave-end': '-translate-y-full',
+    },
+    'scale': {
+        'enter': 'ease-out duration-300',
+        'enter-start': 'opacity-0 transform scale-95',
+        'enter-end': 'opacity-100 transform scale-100',
+        'leave': 'ease-in duration-200',
+        'leave-start': 'opacity-100 transform scale-100',
+        'leave-end': 'opacity-0 transform scale-95',
+    },
+    'none': {},
+}
+
+
+@register.simple_tag
+def nitro_file_action(action, **kwargs):
+    """
+    File input that triggers a Nitro action on file selection.
+
+    Usage:
+        <input type="file" {% nitro_file_action 'upload_document' %}>
+
+    The action will receive the file as the third parameter to call().
+    The component method should access it via self.request.FILES.get('file').
+
+    Args:
+        action: The component method to call
+        **kwargs: Additional parameters to pass to the action
+
+    Example:
+        <input type="file" {% nitro_file_action 'upload_avatar' %}>
+
+        Renders:
+        <input type="file" @change="call('upload_avatar', {}, $event.target.files[0])">
+    """
+    if kwargs:
+        params = "{" + ", ".join(f"{k}: {v}" for k, v in kwargs.items()) + "}"
+    else:
+        params = "{}"
+
+    return mark_safe(f'@change="call(\'{action}\', {params}, $event.target.files[0])"')
+
+
+@register.simple_tag
+def nitro_cloak():
+    """
+    Prevent FOUC (Flash of Unstyled Content) - Zero JS mode.
+
+    Elements with x-cloak are hidden until Alpine.js initializes.
+    Requires CSS: [x-cloak] { display: none !important; }
+
+    Usage:
+        <div {% nitro_show 'showModal' %} {% nitro_cloak %}>
+            Modal content - hidden until Alpine initializes
+        </div>
+    """
+    return mark_safe('x-cloak')
+
+
+@register.simple_tag
+def nitro_stop():
+    """
+    Stop event propagation - Zero JS mode.
+
+    Add this to an element to prevent click events from bubbling up.
+    Typically used on modal/slideover content to prevent closing when clicking inside.
+
+    Usage:
+        <div {% nitro_show 'showModal' %} {% nitro_stop %}>
+            Modal content - clicks here won't close the modal
+        </div>
+
+    Example:
+        <div {% nitro_action 'close' %}>  {# Backdrop - clicking closes #}
+            <div {% nitro_stop %}>          {# Panel - clicks don't bubble #}
+                Panel content
+            </div>
+        </div>
+    """
+    return mark_safe('@click.stop')
+
+
+@register.simple_tag
+def nitro_rating(field, max_stars=5, size='text-xs'):
+    """
+    Star rating display - Zero JS mode.
+
+    Displays a star rating using the value from a numeric field (1-5).
+
+    Usage:
+        {% nitro_rating 'item.rating' %}
+        {% nitro_rating 'tenant.rating' max_stars=5 size='text-sm' %}
+
+    Args:
+        field: Numeric field path (1-5)
+        max_stars: Maximum number of stars (default: 5)
+        size: Tailwind text size class (default: 'text-xs')
+
+    Example:
+        {% nitro_rating 'tenant.rating' %}
+
+        Renders:
+        <template x-for="i in 5">
+            <span :class="i <= tenant.rating ? 'text-yellow-400' : 'text-gray-300'" class="text-xs">★</span>
+        </template>
+    """
+    return mark_safe(
+        f'<template x-for="i in {max_stars}">'
+        f'<span :class="i <= {field} ? \'text-yellow-400\' : \'text-gray-300\'" class="{size}">★</span>'
+        f'</template>'
+    )
+
+
+@register.simple_tag
+def nitro_transition(preset='fade'):
+    """
+    Transition animation preset - Zero JS mode.
+
+    Hides Alpine x-transition syntax for "Zero JavaScript" mode.
+
+    Usage:
+        <div {% nitro_show 'isOpen' %} {% nitro_transition 'fade' %}>
+        <div {% nitro_show 'show_form' %} {% nitro_transition 'slide-right' %}>
+        <div {% nitro_show 'showModal' %} {% nitro_transition 'scale' %}>
+
+    Available presets:
+        - fade: Opacity fade in/out (default)
+        - slide-right: Slide in from right (for slideovers)
+        - slide-left: Slide in from left
+        - slide-up: Slide in from bottom
+        - slide-down: Slide in from top
+        - scale: Scale + fade (for modals)
+        - none: No transition
+
+    Example:
+        <div {% nitro_show 'show_form' %} {% nitro_transition 'slide-right' %}>
+            Slideover content
+        </div>
+
+        Expands to:
+        <div x-show="show_form"
+             x-transition:enter="transform transition ease-out duration-300"
+             x-transition:enter-start="translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transform transition ease-in duration-200"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="translate-x-full">
+    """
+    transitions = TRANSITION_PRESETS.get(preset, TRANSITION_PRESETS['fade'])
+
+    if not transitions:
+        return ""
+
+    attrs = []
+
+    if NITRO_DEBUG:
+        attrs.append(f'data-nitro-debug="nitro_transition: preset=\'{preset}\'"')
+
+    for key, value in transitions.items():
+        attrs.append(f'x-transition:{key}="{value}"')
 
     return mark_safe(" ".join(attrs))
 
@@ -972,6 +1162,9 @@ def nitro_input(field, label="", type="text", required=False, placeholder="", **
     safe_field, is_edit_buffer = build_safe_field(field)
     error_path = build_error_path(field)
 
+    # Extract buffer name for null safety check (e.g., "edit_buffer" from "edit_buffer.name")
+    buffer_name = field.split(".")[0] if "." in field else ""
+
     return {
         "field": field,
         "safe_field": safe_field,
@@ -982,27 +1175,34 @@ def nitro_input(field, label="", type="text", required=False, placeholder="", **
         "placeholder": placeholder,
         "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
         "debug": NITRO_DEBUG,
+        "is_edit_buffer": is_edit_buffer,
+        "buffer_name": buffer_name,
     }
 
 
 @register.inclusion_tag("nitro/fields/select.html")
-def nitro_select(field, label="", choices=None, required=False, **kwargs):
+def nitro_select(field, label="", choices=None, required=False, multi=False, **kwargs):
     """
     Complete form select abstraction - no Alpine.js knowledge needed.
 
     Usage:
         {% nitro_select field="create_buffer.status" label="Estado" choices=status_choices %}
         {% nitro_select field="edit_buffer.property_type" label="Tipo" choices=property_types %}
+        {% nitro_select field="create_buffer.tags" label="Tags" choices=tag_choices multi=True %}
 
     Args:
         field: Field path
         label: Field label
         choices: List of (value, display) tuples or [{'value': ..., 'label': ...}]
         required: Show required indicator
+        multi: If True, allows multiple selection (field should be a list)
     """
     # Use utility functions for safe field and error path
     safe_field, is_edit_buffer = build_safe_field(field)
     error_path = build_error_path(field)
+
+    # Extract buffer name for null safety check
+    buffer_name = field.split(".")[0] if "." in field else ""
 
     # Normalize choices format
     normalized_choices = []
@@ -1020,8 +1220,11 @@ def nitro_select(field, label="", choices=None, required=False, **kwargs):
         "label": label,
         "choices": normalized_choices,
         "required": required,
+        "multi": multi,
         "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
         "debug": NITRO_DEBUG,
+        "is_edit_buffer": is_edit_buffer,
+        "buffer_name": buffer_name,
     }
 
 
@@ -1078,6 +1281,9 @@ def nitro_dynamic_select(
     safe_field, is_edit_buffer = build_safe_field(field)
     error_path = build_error_path(field)
 
+    # Extract buffer name for null safety check
+    buffer_name = field.split(".")[0] if "." in field else ""
+
     # Build change handler
     if on_change:
         param_name = on_change_param or field.split(".")[-1]
@@ -1099,6 +1305,8 @@ def nitro_dynamic_select(
         "change_handler": change_handler,
         "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
         "debug": NITRO_DEBUG,
+        "is_edit_buffer": is_edit_buffer,
+        "buffer_name": buffer_name,
     }
 
 
@@ -1118,6 +1326,9 @@ def nitro_checkbox(field, label="", **kwargs):
     is_edit_buffer = "edit_buffer" in field
     safe_field = field.replace(".", "?.") if is_edit_buffer else field
 
+    # Extract buffer name for null safety check
+    buffer_name = field.split(".")[0] if "." in field else ""
+
     # For checkboxes, we need special handling for @change (silent mode to prevent loading flash)
     # If edit_buffer, wrap in null check
     # Also track changes for dirty state
@@ -1133,6 +1344,7 @@ def nitro_checkbox(field, label="", **kwargs):
         "label": label,
         "change_handler": change_handler,
         "is_edit_buffer": is_edit_buffer,
+        "buffer_name": buffer_name,
         "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
         "debug": NITRO_DEBUG,
     }
@@ -1158,6 +1370,9 @@ def nitro_textarea(field, label="", required=False, rows=3, placeholder="", **kw
     safe_field, is_edit_buffer = build_safe_field(field)
     error_path = build_error_path(field)
 
+    # Extract buffer name for null safety check
+    buffer_name = field.split(".")[0] if "." in field else ""
+
     return {
         "field": field,
         "safe_field": safe_field,
@@ -1168,4 +1383,116 @@ def nitro_textarea(field, label="", required=False, rows=3, placeholder="", **kw
         "placeholder": placeholder,
         "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
         "debug": NITRO_DEBUG,
+        "is_edit_buffer": is_edit_buffer,
+        "buffer_name": buffer_name,
     }
+
+
+@register.inclusion_tag("nitro/fields/phone.html")
+def nitro_phone(field, label="", required=False, placeholder="", **kwargs):
+    """
+    Phone input with automatic formatting mask (XXX-XXX-XXXX).
+
+    Usage:
+        {% nitro_phone field="form_buffer.phone" label="Teléfono" %}
+        {% nitro_phone field="form_buffer.whatsapp" label="WhatsApp" placeholder="809-555-1234" %}
+
+    Args:
+        field: Field path
+        label: Field label
+        required: Show required indicator
+        placeholder: Placeholder text (default: 809-555-1234)
+    """
+    safe_field, is_edit_buffer = build_safe_field(field)
+    error_path = build_error_path(field)
+    buffer_name = field.split(".")[0] if "." in field else ""
+
+    return {
+        "field": field,
+        "safe_field": safe_field,
+        "error_path": error_path,
+        "label": label,
+        "required": required,
+        "placeholder": placeholder,
+        "extra_attrs": " ".join(f'{k}="{v}"' for k, v in kwargs.items()),
+        "debug": NITRO_DEBUG,
+        "is_edit_buffer": is_edit_buffer,
+        "buffer_name": buffer_name,
+    }
+
+
+# ============================================================================
+# TRUE ZERO-JS TEMPLATE TAGS (v0.7.0)
+# ============================================================================
+# These tags implement the TRUE Zero-JavaScript philosophy:
+# - All logic defined in Python kwargs, not JavaScript expressions
+# - Developers never write JS ternaries or Alpine expressions
+# - Templates are pure Django with Nitro tags
+
+# Import Zero-JS tags from dedicated module
+from nitro.templatetags.nitro_zero import (
+    nitro_switch,
+    nitro_class as nitro_class_zero,
+    nitro_visible,
+    # nitro_hidden REMOVED - use nitro_visible with negate=True
+    nitro_plural,
+    nitro_count,
+    nitro_format,
+    nitro_date,
+    nitro_badge,
+    # nitro_each REMOVED - use nitro_for instead (better SEO)
+    nitro_call,
+)
+
+# Register Zero-JS tags
+register.simple_tag(nitro_switch)
+register.simple_tag(nitro_class_zero, name='nitro_css')  # Value→CSS mapping
+register.simple_tag(nitro_visible)  # Use negate=True instead of nitro_hidden
+register.simple_tag(nitro_plural)
+register.simple_tag(nitro_count)
+register.simple_tag(nitro_format)
+register.simple_tag(nitro_date)
+register.simple_tag(nitro_badge)
+# nitro_for is in main tags (better SEO), nitro_each removed
+register.simple_tag(takes_context=True)(nitro_call)
+
+
+# ============================================================================
+# SHORTHAND ALIASES (v0.7.0 DX Improvement)
+# ============================================================================
+# Shorter aliases for common tags - inspired by Django Unicorn's DX
+# Use n_ prefix instead of nitro_ for faster typing
+
+# Core tags
+register.simple_tag(nitro_model, name='n_model')
+register.simple_tag(nitro_action, name='n_action')
+register.simple_tag(nitro_show, name='n_show')
+register.simple_tag(nitro_class, name='n_class')
+register.simple_tag(nitro_attr, name='n_attr')
+register.simple_tag(nitro_text, name='n_text')
+register.simple_tag(nitro_bind, name='n_bind')
+
+# Form field tags
+register.inclusion_tag("nitro/fields/input.html")(nitro_input)
+register.inclusion_tag("nitro/fields/input.html", name='n_input')(nitro_input)
+register.inclusion_tag("nitro/fields/select.html", name='n_select')(nitro_select)
+register.inclusion_tag("nitro/fields/checkbox.html", name='n_checkbox')(nitro_checkbox)
+register.inclusion_tag("nitro/fields/textarea.html", name='n_textarea')(nitro_textarea)
+register.inclusion_tag("nitro/fields/phone.html", name='n_phone')(nitro_phone)
+
+# Action/event tags
+register.simple_tag(nitro_toggle, name='n_toggle')
+register.simple_tag(nitro_set, name='n_set')
+register.simple_tag(nitro_key, name='n_key')
+register.simple_tag(nitro_disabled, name='n_disabled')
+register.simple_tag(nitro_file, name='n_file')
+
+# Zero-JS tags
+register.simple_tag(nitro_switch, name='n_switch')
+register.simple_tag(nitro_class_zero, name='n_css')
+register.simple_tag(nitro_visible, name='n_visible')
+register.simple_tag(nitro_badge, name='n_badge')
+register.simple_tag(nitro_rating, name='n_rating')
+register.simple_tag(nitro_transition, name='n_transition')
+register.simple_tag(nitro_cloak, name='n_cloak')
+register.simple_tag(nitro_stop, name='n_stop')

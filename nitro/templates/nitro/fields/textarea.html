@@ -1,4 +1,26 @@
 <!-- Nitro Textarea Field - Complete Alpine.js Abstraction -->
+{% if is_edit_buffer %}
+{# For edit_buffer fields, wrap in x-if to prevent null access errors #}
+<template x-if="{{ buffer_name }}">
+    <div>
+        {% if label %}
+        <label class="block text-xs text-gray-600 mb-1">
+            {{ label }}{% if required %} *{% endif %}
+        </label>
+        {% endif %}
+        <textarea
+            class="w-full rounded-lg border-gray-300"
+            rows="{{ rows }}"
+            {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+            x-model="{{ field }}"
+            @input.debounce.200ms="trackChange('{{ field }}'); call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}}, null, {silent: true})"
+            :class="{'border-red-500': {{ error_path }}}"
+            {{ extra_attrs|safe }}
+            {% if debug %}data-nitro-debug="nitro_textarea: field='{{ field }}'"{% endif %}
+        ></textarea>
+    </div>
+</template>
+{% else %}
 <div>
     {% if label %}
     <label class="block text-xs text-gray-600 mb-1">
@@ -10,13 +32,10 @@
         rows="{{ rows }}"
         {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
         x-model="{{ field }}"
-        {% if lazy %}
-        @blur="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}}, null, {silent: true})"
-        {% else %}
-        @input.debounce.{{ debounce }}="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}}, null, {silent: true})"
-        {% endif %}
+        @input.debounce.200ms="trackChange('{{ field }}'); call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}}, null, {silent: true})"
         :class="{'border-red-500': {{ error_path }}}"
         {{ extra_attrs|safe }}
-        {% if debug %}data-nitro-debug="nitro_textarea: field='{{ field }}' lazy={{ lazy }} debounce={{ debounce }}"{% endif %}
+        {% if debug %}data-nitro-debug="nitro_textarea: field='{{ field }}'"{% endif %}
     ></textarea>
 </div>
+{% endif %}

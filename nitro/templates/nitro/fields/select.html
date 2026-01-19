@@ -1,4 +1,33 @@
 <!-- Nitro Select Field - Complete Alpine.js Abstraction -->
+<!-- Supports multi=True for multiple selection -->
+{% if is_edit_buffer %}
+{# For edit_buffer fields, wrap in x-if to prevent null access errors #}
+<template x-if="{{ buffer_name }}">
+    <div>
+        {% if label %}
+        <label class="block text-xs text-gray-600 mb-1">
+            {{ label }}{% if required %} *{% endif %}
+        </label>
+        {% endif %}
+        <select
+            class="w-full rounded-lg border-gray-300"
+            x-model="{{ field }}"
+            @change="trackChange('{{ field }}'); call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}})"
+            :class="{'border-red-500': {{ error_path }}}"
+            {% if multi %}multiple{% endif %}
+            {{ extra_attrs|safe }}
+            {% if debug %}data-nitro-debug="nitro_select: field='{{ field }}' multi={{ multi }}"{% endif %}
+        >
+            {% for choice in choices %}
+            <option value="{{ choice.value }}">{{ choice.label }}</option>
+            {% endfor %}
+        </select>
+        {% if multi %}
+        <p class="text-xs text-gray-500 mt-1">Ctrl/Cmd + click para seleccionar múltiples</p>
+        {% endif %}
+    </div>
+</template>
+{% else %}
 <div>
     {% if label %}
     <label class="block text-xs text-gray-600 mb-1">
@@ -8,13 +37,18 @@
     <select
         class="w-full rounded-lg border-gray-300"
         x-model="{{ field }}"
-        @change="call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}})"
+        @change="trackChange('{{ field }}'); call('_sync_field', {field: '{{ field }}', value: {{ safe_field }}})"
         :class="{'border-red-500': {{ error_path }}}"
+        {% if multi %}multiple{% endif %}
         {{ extra_attrs|safe }}
-        {% if debug %}data-nitro-debug="nitro_select: field='{{ field }}'"{% endif %}
+        {% if debug %}data-nitro-debug="nitro_select: field='{{ field }}' multi={{ multi }}"{% endif %}
     >
         {% for choice in choices %}
         <option value="{{ choice.value }}">{{ choice.label }}</option>
         {% endfor %}
     </select>
+    {% if multi %}
+    <p class="text-xs text-gray-500 mt-1">Ctrl/Cmd + click para seleccionar múltiples</p>
+    {% endif %}
 </div>
+{% endif %}

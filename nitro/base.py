@@ -1,17 +1,19 @@
 import json
 import logging
+import re
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Generic, TypeVar, get_args
+from typing import Any, Generic, TypeVar, get_args, get_origin
 from uuid import UUID
 
 from django.conf import settings
 from django.core.signing import BadSignature, Signer
 from django.db import models
-from django.http import HttpRequest
-from django.shortcuts import get_object_or_404
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.views import View
 from pydantic import BaseModel, ValidationError
 
 logger = logging.getLogger(__name__)
@@ -113,6 +115,13 @@ class NitroComponent(Generic[S]):
         self._pending_messages: list[dict[str, str]] = []
         self._pending_events: list[dict[str, Any]] = []
 
+        # DX v0.7.0: Auto-infer state_class from Generic type hint
+        if self.state_class is None:
+            self.state_class = self._infer_state_class()
+
+        # DX v0.7.0: Copy secure_fields to instance to prevent class mutation
+        self.secure_fields = list(self.__class__.secure_fields)
+
         if initial_state is not None:
             if self.state_class:
                 self.state = self.state_class(**initial_state)
@@ -121,23 +130,110 @@ class NitroComponent(Generic[S]):
         else:
             self.state = self.get_initial_state(**kwargs)
 
+    @classmethod
+    def _infer_state_class(cls) -> type[S] | None:
+        """
+        DX v0.7.0: Auto-infer state_class from Generic[S] type parameter.
+
+        Allows you to skip defining state_class explicitly:
+
+        Before:
+            class Counter(NitroComponent[CounterState]):
+                state_class = CounterState  # REDUNDANT
+
+        After:
+            class Counter(NitroComponent[CounterState]):
+                pass  # state_class inferred automatically
+        """
+        for base in cls.__orig_bases__:
+            origin = get_origin(base)
+            if origin is not None and issubclass(origin, NitroComponent):
+                args = get_args(base)
+                if args and isinstance(args[0], type) and issubclass(args[0], BaseModel):
+                    return args[0]
+        return None
+
+    @classmethod
+    def _infer_template_name(cls) -> str:
+        """
+        DX v0.7.0: Auto-infer template_name from module and class name.
+
+        Convention: {app}/components/{class_name_snake}.html
+
+        Example:
+            leasing.components.TenantList -> leasing/components/tenant_list.html
+        """
+        # Get app name from module
+        module = cls.__module__
+        parts = module.split('.')
+        app_name = parts[0] if parts else 'nitro'
+
+        # Convert CamelCase to snake_case
+        class_name = cls.__name__
+        snake_name = re.sub(r'(?<!^)(?=[A-Z])', '_', class_name).lower()
+
+        return f"{app_name}/components/{snake_name}.html"
+
     def get_initial_state(self, **kwargs) -> S:
         """
         Generate the initial state for this component.
 
-        This method must be implemented by subclasses to define how
-        the component's state is initialized.
+        DX v0.7.0: Now optional! If not overridden, returns state_class()
+        with default values.
 
         Args:
             **kwargs: Context-specific arguments for state initialization
 
         Returns:
             An instance of the component's state schema
-
-        Raises:
-            NotImplementedError: This method must be overridden
         """
-        raise NotImplementedError
+        # DX v0.7.0: Default implementation - just instantiate state_class
+        if self.state_class:
+            return self.state_class()
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must either define state_class "
+            "or override get_initial_state()"
+        )
+
+    @classmethod
+    def as_view(cls, template_name: str = "nitro/component_page.html", **init_kwargs):
+        """
+        DX v0.7.0: Create a Django view from this component.
+
+        Allows direct URL routing without creating a separate view:
+
+        Before:
+            # views.py
+            def tenant_list(request):
+                component = TenantList(request=request)
+                return render(request, 'base.html', {'content': component.render()})
+
+            # urls.py
+            path('tenants/', tenant_list),
+
+        After:
+            # urls.py
+            from leasing.components import TenantList
+            path('tenants/', TenantList.as_view()),
+
+        Args:
+            template_name: Base template to wrap component (default: nitro/component_page.html)
+            **init_kwargs: Arguments passed to component __init__
+
+        Returns:
+            A Django view function
+        """
+        def view(request, **url_kwargs):
+            # Merge URL kwargs with init_kwargs
+            all_kwargs = {**init_kwargs, **url_kwargs}
+            component = cls(request=request, **all_kwargs)
+
+            return render(request, template_name, {
+                'component': component,
+                'component_html': component.render(),
+            })
+
+        return view
 
     @property
     def current_user(self):
@@ -382,7 +478,20 @@ class NitroComponent(Generic[S]):
             - This is a silent operation (no success messages)
             - Validation errors are added to _pending_errors
             - Supports nested fields with dot notation (e.g., 'user.email')
+
+        Lifecycle Hooks (v0.7.0):
+            - updating(field, value): Called BEFORE update. Return False to cancel.
+            - updated(field, value): Called AFTER successful update.
         """
+        # DX v0.7.0: Lifecycle hook - updating()
+        if hasattr(self, 'updating') and callable(self.updating):
+            result = self.updating(field, value)
+            if result is False:
+                return  # Cancel the update
+
+        # Track if update was successful for updated() hook
+        _update_successful = False
+
         # Handle nested fields (dot notation)
         if "." in field:
             # Split field path (e.g., 'user.profile.email' -> ['user', 'profile', 'email'])
@@ -425,6 +534,7 @@ class NitroComponent(Generic[S]):
                 dict_obj[final_field] = value
                 # Re-validate the entire state
                 self.state = self.state_class.model_validate(state_dict)
+                _update_successful = True
             except ValidationError as e:
                 # Pydantic validation failed
                 error_msg = str(e.errors()[0]["msg"]) if e.errors() else str(e)
@@ -455,10 +565,15 @@ class NitroComponent(Generic[S]):
                 state_dict[field] = value
                 # Re-validate the entire state
                 self.state = self.state_class.model_validate(state_dict)
+                _update_successful = True
             except ValidationError as e:
                 # Pydantic validation failed
                 error_msg = str(e.errors()[0]["msg"]) if e.errors() else str(e)
                 self._pending_errors[field] = error_msg
+
+        # DX v0.7.0: Lifecycle hook - updated()
+        if _update_successful and hasattr(self, 'updated') and callable(self.updated):
+            self.updated(field, value)
 
     def _handle_file_upload(self, field: str, uploaded_file=None):
         """
@@ -691,6 +806,14 @@ class NitroComponent(Generic[S]):
             action_method = getattr(self, action_name)
 
             try:
+                # Make uploaded file available in request.FILES for Django-style access
+                if uploaded_file and self.request:
+                    from django.utils.datastructures import MultiValueDict
+                    # Create or update FILES dict
+                    if not hasattr(self.request, '_files') or self.request._files is None:
+                        self.request._files = MultiValueDict()
+                    self.request._files['file'] = uploaded_file
+
                 # Check if action accepts uploaded_file parameter
                 import inspect
 

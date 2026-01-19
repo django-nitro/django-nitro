@@ -1,4 +1,24 @@
 <!-- Nitro Checkbox Field - Complete Alpine.js Abstraction -->
+{% if is_edit_buffer %}
+{# For edit_buffer fields, wrap in x-if to prevent null access errors #}
+<template x-if="{{ buffer_name }}">
+    <div class="flex items-center gap-2">
+        <input
+            type="checkbox"
+            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            x-model="{{ field }}"
+            @change="{{ change_handler }}"
+            {{ extra_attrs|safe }}
+            {% if debug %}data-nitro-debug="nitro_checkbox: field='{{ field }}'"{% endif %}
+        >
+        {% if label %}
+        <label class="text-sm font-medium text-gray-700">
+            {{ label }}
+        </label>
+        {% endif %}
+    </div>
+</template>
+{% else %}
 <div class="flex items-center gap-2">
     <input
         type="checkbox"
@@ -14,3 +34,4 @@
     </label>
     {% endif %}
 </div>
+{% endif %}

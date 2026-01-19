@@ -1,10 +1,15 @@
 /*
  * Django Nitro - Native Toast Styles
- * Version: 0.4.0
+ * Version: 0.7.0
  *
  * Professional toast notifications without external dependencies.
  * Supports 6 positions, 3 styles, and smooth animations.
  */
+
+/* Alpine.js x-cloak - prevents FOUC (Flash of Unstyled Content) */
+[x-cloak] {
+    display: none !important;
+}
 
 /* Toast container - fixed positioning */
 .nitro-toast-container {
