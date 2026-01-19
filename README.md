@@ -10,29 +10,54 @@ Django Nitro is a modern library for building reactive, stateful components in D
 
 ---
 
-## What's New in v0.6.0 (Latest)
+## What's New in v0.7.0 (Latest)
+
+**True Zero-JavaScript + DX Improvements:**
+
+- 🧠 **Auto-infer `state_class`** - No more redundant declarations when using Generics:
+  ```python
+  # Before (verbose)
+  class Counter(NitroComponent[CounterState]):
+      state_class = CounterState  # REDUNDANT!
+
+  # After (v0.7.0) - Just works!
+  class Counter(NitroComponent[CounterState]):
+      pass  # state_class inferred automatically
+  ```
+
+- ⚡ **`CacheMixin`** - Built-in state and HTML caching for performance:
+  ```python
+  class MyComponent(CacheMixin, NitroComponent[MyState]):
+      cache_enabled = True
+      cache_ttl = 300  # 5 minutes
+      cache_html = True  # Also cache rendered HTML
+  ```
+
+- 🎯 **`@cache_action` decorator** - Cache expensive action results
+- 📞 **`nitro_phone` / `n_phone`** - Phone input with automatic XXX-XXX-XXXX mask
+- 🔍 **Unaccent search** - Accent-insensitive search for PostgreSQL (enabled by default)
+- 📝 **`nitro_text` as attribute** - Now outputs just the attribute, works with other attributes
+
+**New Zero-JS Template Tags** (all logic defined in Python kwargs):
+- `{% nitro_switch %}` - Conditional text based on field value
+- `{% nitro_css %}` - Conditional CSS classes
+- `{% nitro_badge %}` - Combined text + styling for status badges
+- `{% nitro_visible %}` / `{% nitro_hidden %}` - Boolean visibility
+- `{% nitro_plural %}` / `{% nitro_count %}` - Pluralization
+- `{% nitro_format %}` / `{% nitro_date %}` - Value formatting
+- `{% nitro_each %}` - Zero-JS iteration
+
+## What's New in v0.6.0
 
 **Performance & Code Quality Improvements:**
-- ⚡ **TypeAdapter Caching** - 1-5ms performance boost per request by caching Pydantic TypeAdapters at class level
-- 🎯 **Default Debounce** - `nitro_model` now has 200ms debounce by default, reducing server load by ~80% on text inputs
-- 🧹 **Code Deduplication** - New `nitro.utils` module eliminates 50+ lines of repetitive code
-- 🔧 **Django 5.2 Compatibility** - Added `django-template-partials` as optional dependency for Django 5.2 users (Django 6.0+ has built-in partials)
-- 📋 **Form Field Template Tags (v0.6.0)** - Complete form abstractions: `{% nitro_input %}`, `{% nitro_select %}`, `{% nitro_checkbox %}`, `{% nitro_textarea %}`
-- 🚀 **Moved to Beta** - Framework is now stable and production-ready
-
-**Installation for Django 5.2:**
-```bash
-pip install django-nitro[django52]
-```
-
-**Installation for Django 6.0+:**
-```bash
-pip install django-nitro  # No extras needed
-```
+- ⚡ **TypeAdapter Caching** - 1-5ms performance boost per request
+- 🎯 **Default Debounce** - `nitro_model` now has 200ms debounce by default
+- 📋 **Form Field Template Tags** - `{% nitro_input %}`, `{% nitro_select %}`, `{% nitro_checkbox %}`, `{% nitro_textarea %}`
+- 🔧 **Django 5.2 Compatibility** - Added `django-template-partials` support
 
 ## What's New in v0.5.0
 
-- **Advanced Template Tags** - New `nitro_attr`, `nitro_if`, `nitro_disabled`, and `nitro_file` tags for cleaner, more expressive templates
+- **Advanced Template Tags** - New `nitro_attr`, `nitro_if`, `nitro_disabled`, and `nitro_file` tags
 - **Nested Fields Support** - Access nested state with dot notation (`user.profile.name`)
 - **File Upload System** - Streamlined file uploads with the `nitro_file` template tag
 - **Debugging Tools** - `NITRO_DEBUG` mode and Django Debug Toolbar integration panel
@@ -66,8 +91,12 @@ pip install django-nitro  # No extras needed
   - [Nested Fields (Dot Notation)](#nested-fields-dot-notation-v050)
 - [Actions & Methods](#actions--methods)
 - [Template Integration](#template-integration)
+  - [Zero-JS Template Tags (v0.7.0)](#zero-js-template-tags-v070)
   - [Advanced Template Tags (v0.5.0)](#advanced-template-tags-v050)
   - [Form Field Template Tags (v0.6.0)](#form-field-template-tags-v060)
+- [Performance](#performance)
+  - [CacheMixin (v0.7.0)](#cachemixin-v070)
+  - [Unaccent Search (v0.7.0)](#unaccent-search-v070)
 - [Security & Integrity](#security--integrity)
 - [Messages & Notifications](#messages--notifications)
 - [Events & Inter-Component Communication](#events--inter-component-communication-v040)
@@ -1210,6 +1239,89 @@ Every Nitro component template has access to:
 <button @click="call('increment')">Click</button>
 <input @keyup.enter="call('submit')">
 <input @input.debounce.500ms="call('search')">
+```
+
+### Zero-JS Template Tags (v0.7.0)
+
+Version 0.7.0 introduces **truly Zero-JavaScript** template tags. All logic is defined in Python kwargs - no JavaScript knowledge required.
+
+#### `nitro_switch` - Conditional Text
+
+Display different text based on field value:
+
+```django
+{% load nitro_tags %}
+
+{# Basic usage #}
+{% nitro_switch 'item.status' active='Activo' expired='Vencido' default='Borrador' %}
+
+{# In a table cell #}
+<td>{% nitro_switch 'item.priority' high='🔴 Alta' medium='🟡 Media' low='🟢 Baja' %}</td>
+```
+
+#### `nitro_css` - Conditional CSS Classes
+
+Apply different CSS classes based on field value:
+
+```django
+{# Color-code status badges #}
+<span {% nitro_css 'item.status' active='bg-green-100 text-green-700' expired='bg-red-100 text-red-700' default='bg-gray-100' %}>
+    {% nitro_switch 'item.status' active='Activo' expired='Vencido' %}
+</span>
+```
+
+#### `nitro_badge` - Combined Text + Styling
+
+Render complete status badges with text and classes in one tag:
+
+```django
+{% nitro_badge 'item.status'
+   active='Activo:bg-green-100 text-green-700'
+   expired='Vencido:bg-red-100 text-red-700'
+   default='Borrador:bg-gray-100'
+   base_class='px-2 py-1 rounded-full text-sm' %}
+```
+
+#### `nitro_visible` / `nitro_hidden` - Boolean Visibility
+
+Show/hide elements based on boolean fields:
+
+```django
+{# Show when active #}
+<div {% nitro_visible 'item.is_active' %}>Visible when active</div>
+
+{# Show when NOT deleted (negate) #}
+<div {% nitro_visible 'item.is_deleted' negate=True %}>Hidden when deleted</div>
+
+{# Hide when loading #}
+<div {% nitro_hidden 'isLoading' %}>Content</div>
+```
+
+#### `nitro_plural` / `nitro_count` - Pluralization
+
+Handle singular/plural text automatically:
+
+```django
+{# Basic plural #}
+{% nitro_plural 'count' singular='item' plural='items' zero='No items' %}
+
+{# Count with label: "5 propiedades", "1 propiedad", "Sin propiedades" #}
+{% nitro_count 'items.length' singular='propiedad' plural='propiedades' zero='Sin propiedades' %}
+```
+
+#### `nitro_format` / `nitro_date` - Value Formatting
+
+Format values with proper display:
+
+```django
+{# Currency formatting #}
+{% nitro_format 'item.price' format_type='currency' prefix='$' %}
+
+{# With empty state #}
+{% nitro_format 'item.value' empty='N/A' %}
+
+{# Date formatting #}
+{% nitro_date 'item.created_at' empty='Sin fecha' %}
 ```
 
 ### Advanced Template Tags (v0.5.0)
@@ -2398,6 +2510,88 @@ class TaskList(BaseListComponent[TaskListState]):
 - ✅ Live dashboards with frequent updates
 - ❌ Small lists (< 50 items) - overhead not worth it
 - ❌ Components without list state
+
+### CacheMixin (v0.7.0)
+
+Add component-level caching to improve performance for frequently accessed data:
+
+```python
+from nitro import CacheMixin, NitroComponent, register_component
+
+@register_component
+class ProductList(CacheMixin, NitroComponent[ProductListState]):
+    template_name = "components/product_list.html"
+
+    # Cache configuration
+    cache_enabled = True
+    cache_ttl = 300  # 5 minutes
+    cache_html = True  # Also cache rendered HTML
+
+    def get_cache_key_parts(self):
+        """Customize cache key (default: component name + user id)."""
+        return [
+            self.request.user.id,
+            self.state.category_filter,
+            self.state.page,
+        ]
+```
+
+For caching expensive action results:
+
+```python
+from nitro.cache import cache_action
+
+class Dashboard(NitroComponent[DashboardState]):
+    @cache_action(ttl=120)  # Cache for 2 minutes
+    def load_analytics(self):
+        # This result is cached per-user
+        return expensive_analytics_query()
+
+    @cache_action(ttl=60, vary_on=['category'])
+    def load_category_stats(self, category: str):
+        # Cache varies by category parameter
+        return get_stats_for_category(category)
+```
+
+### Unaccent Search (v0.7.0)
+
+Accent-insensitive search for PostgreSQL. Search "maria" will find "María", "jose" finds "José":
+
+```python
+from nitro import BaseListComponent, register_component
+
+@register_component
+class TenantList(BaseListComponent[TenantListState]):
+    model = Tenant
+    search_fields = ['first_name', 'last_name', 'email']
+    use_unaccent = True  # Default: True (enabled by default)
+```
+
+**Setup (PostgreSQL only):**
+
+1. Add to `INSTALLED_APPS`:
+```python
+INSTALLED_APPS = [
+    'django.contrib.postgres',  # Required for unaccent
+    # ...
+]
+```
+
+2. Create migration:
+```python
+# your_app/migrations/000X_add_unaccent.py
+from django.contrib.postgres.operations import UnaccentExtension
+from django.db import migrations
+
+class Migration(migrations.Migration):
+    dependencies = [('your_app', 'previous_migration')]
+    operations = [UnaccentExtension()]
+```
+
+3. Run migrations:
+```bash
+python manage.py migrate
+```
 
 ---
 

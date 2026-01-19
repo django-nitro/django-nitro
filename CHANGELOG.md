@@ -5,6 +5,76 @@ All notable changes to Django Nitro will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-01-19
+
+### Added - DX Improvements
+
+- **Auto-infer `state_class`** - No more redundant `state_class = MyState` when using Generics:
+  ```python
+  # Before
+  class Counter(NitroComponent[CounterState]):
+      state_class = CounterState  # REDUNDANT!
+
+  # After (v0.7.0)
+  class Counter(NitroComponent[CounterState]):
+      pass  # state_class inferred automatically
+  ```
+
+- **`CacheMixin`** - Component state and HTML caching for performance:
+  ```python
+  from nitro import CacheMixin, NitroComponent
+
+  class MyComponent(CacheMixin, NitroComponent[MyState]):
+      cache_enabled = True
+      cache_ttl = 300  # 5 minutes
+      cache_html = True  # Also cache rendered HTML
+  ```
+
+- **`@cache_action` decorator** - Cache expensive action results:
+  ```python
+  from nitro.cache import cache_action
+
+  @cache_action(ttl=120)
+  def load_expensive_data(self):
+      return expensive_calculation()
+  ```
+
+- **`nitro_phone` / `n_phone`** - Phone input with automatic XXX-XXX-XXXX mask:
+  ```django
+  {% n_phone field="form.phone" label="Teléfono" %}
+  ```
+
+- **Unaccent search** - Accent-insensitive search (PostgreSQL):
+  ```python
+  # "maria" now finds "María", "jose" finds "José"
+  class MyList(BaseListComponent[MyState]):
+      search_fields = ['name', 'email']
+      use_unaccent = True  # Default: True
+  ```
+
+- **`nitro_text` as attribute** - Now outputs just the attribute, not a full element:
+  ```django
+  <h1 {% nitro_text 'name' %} class="font-bold"></h1>
+  ```
+
+### Added - Zero-JS Template Tags
+
+New tags where ALL logic is defined in Python kwargs:
+
+- **`{% nitro_switch %}`** - Conditional text based on field value
+- **`{% nitro_css %}`** - Conditional CSS classes
+- **`{% nitro_badge %}`** - Combined text + styling for status badges
+- **`{% nitro_visible %}`** / **`{% nitro_hidden %}`** - Boolean visibility
+- **`{% nitro_plural %}`** - Singular/plural text
+- **`{% nitro_count %}`** - Count with label
+- **`{% nitro_format %}`** - Value formatting (currency, numbers)
+- **`{% nitro_date %}`** - Date formatting
+- **`{% nitro_each %}`** - Zero-JS iteration
+
+### Fixed
+
+- **`_get_state_class()` for BaseListComponent** - Generic type inference now works in classmethods
+
 ## [0.6.2] - 2026-01-16
 
 ### Fixed

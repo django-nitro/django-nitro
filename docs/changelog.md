@@ -4,6 +4,31 @@ All notable changes to Django Nitro are documented here.
 
 For the complete changelog, see [CHANGELOG.md](https://github.com/django-nitro/django-nitro/blob/main/CHANGELOG.md) on GitHub.
 
+## [0.7.0] - 2026-01-19
+
+### Added - DX Improvements
+
+- **Auto-infer `state_class`** - No more redundant declarations when using Generics
+- **`CacheMixin`** - Component state and HTML caching for performance
+- **`@cache_action` decorator** - Cache expensive action results
+- **`nitro_phone` / `n_phone`** - Phone input with automatic XXX-XXX-XXXX mask
+- **Unaccent search** - Accent-insensitive search for PostgreSQL (enabled by default)
+- **`nitro_text` as attribute** - Now outputs just the attribute, works with other attributes
+
+### Added - Zero-JS Template Tags
+
+- `{% nitro_switch %}` - Conditional text based on field value
+- `{% nitro_css %}` - Conditional CSS classes
+- `{% nitro_badge %}` - Combined text + styling for status badges
+- `{% nitro_visible %}` / `{% nitro_hidden %}` - Boolean visibility
+- `{% nitro_plural %}` / `{% nitro_count %}` - Pluralization
+- `{% nitro_format %}` / `{% nitro_date %}` - Value formatting
+- `{% nitro_each %}` - Zero-JS iteration
+
+### Fixed
+
+- `_get_state_class()` for BaseListComponent - Generic type inference now works in classmethods
+
 ## [0.6.2] - 2026-01-16
 
 ### Fixed
