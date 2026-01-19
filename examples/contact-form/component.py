@@ -8,7 +8,8 @@ This example shows how to use:
 - {% nitro_checkbox %} for boolean fields
 """
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
+
 from nitro import NitroComponent, register_component
 
 

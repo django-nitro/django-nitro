@@ -918,6 +918,172 @@ For complex logic, use Alpine directly:
 
 ---
 
+## True Zero-JS Template Tags (v0.7.0)
+
+Version 0.7.0 introduces **truly Zero-JavaScript** template tags. While previous tags like `nitro_show` still required understanding Alpine expressions (`'item.status === "active"'`), these new tags define ALL logic in Python kwargs.
+
+### The Philosophy
+
+**Before v0.7.0 (required JS knowledge):**
+```django
+{# Developer had to know JS ternary syntax #}
+<span {% nitro_bind "item.status === 'active' ? 'Activo' : 'Inactivo'" %}></span>
+<div {% nitro_class_map "{'bg-green-100': item.status === 'active'}" %}></div>
+```
+
+**After v0.7.0 (Pure Python):**
+```django
+{# All logic in kwargs - no JS knowledge needed #}
+{% nitro_switch 'item.status' active='Active' expired='Expired' default='Draft' %}
+<div {% nitro_css 'item.status' active='bg-green-100' expired='bg-red-100' %}></div>
+```
+
+---
+
+### {% nitro_switch %} - Conditional Text
+
+Display different text based on a field's value:
+
+```django
+{% load nitro_tags %}
+
+{# Basic usage #}
+{% nitro_switch 'item.status' active='Active' expired='Expired' default='Draft' %}
+
+{# Multiple values #}
+{% nitro_switch 'priority' high='🔴 High' medium='🟡 Medium' low='🟢 Low' %}
+
+{# In a table #}
+<td>{% nitro_switch 'user.role' admin='Administrator' staff='Staff' default='User' %}</td>
+```
+
+---
+
+### {% nitro_css %} - Conditional CSS Classes
+
+Apply different CSS classes based on a field's value:
+
+```django
+{# Badge styling #}
+<span {% nitro_css 'item.status' active='bg-green-100 text-green-700' expired='bg-red-100 text-red-700' %}>
+    {% nitro_switch 'item.status' active='Active' expired='Expired' %}
+</span>
+
+{# Row highlighting #}
+<tr {% nitro_css 'item.priority' high='bg-red-50' medium='bg-yellow-50' low='bg-blue-50' %}>
+```
+
+---
+
+### {% nitro_badge %} - Combined Text + Styling
+
+Render complete badges with text AND classes in one tag:
+
+```django
+{% nitro_badge 'item.status'
+   active='Active:bg-green-100 text-green-700'
+   expired='Expired:bg-red-100 text-red-700'
+   pending='Pending:bg-yellow-100 text-yellow-700'
+   default='Draft:bg-gray-100'
+   base_class='px-2 py-1 rounded-full text-sm font-medium' %}
+```
+
+**Format:** `'display_text:css_classes'`
+
+---
+
+### {% nitro_visible %} / {% nitro_hidden %} - Boolean Visibility
+
+Show/hide elements based on boolean fields (no JS expressions needed):
+
+```django
+{# Show when active #}
+<div {% nitro_visible 'item.is_active' %}>Visible when active</div>
+
+{# Show when NOT deleted (negate) #}
+<div {% nitro_visible 'item.is_deleted' negate=True %}>Hidden when deleted</div>
+
+{# Hide when loading #}
+<div {% nitro_hidden 'isLoading' %}>Content hidden during load</div>
+```
+
+---
+
+### {% nitro_plural %} / {% nitro_count %} - Pluralization
+
+Handle singular/plural automatically:
+
+```django
+{# Basic plural #}
+{% nitro_plural 'count' singular='item' plural='items' zero='No items' %}
+
+{# Count with label: "5 properties", "1 property", "No properties" #}
+{% nitro_count 'items.length' singular='property' plural='properties' zero='No properties' %}
+
+{# With number formatting #}
+{% nitro_count 'total' singular='result' plural='results' %}
+```
+
+---
+
+### {% nitro_format %} / {% nitro_date %} - Value Formatting
+
+Format values with proper display:
+
+```django
+{# Currency formatting #}
+{% nitro_format 'item.price' format_type='currency' prefix='$' %}
+
+{# With empty state #}
+{% nitro_format 'item.value' empty='N/A' %}
+
+{# Date formatting #}
+{% nitro_date 'item.created_at' empty='No date' %}
+```
+
+---
+
+### Complete Example: Property List with Zero-JS
+
+```django
+{% load nitro_tags %}
+
+<table class="w-full">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Price</th>
+            <th>Tenants</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% nitro_for 'items' as 'item' %}
+            <tr {% nitro_css 'item.status' active='bg-green-50' expired='bg-red-50' %}>
+                <td>{% nitro_text 'item.name' %}</td>
+                <td>
+                    {% nitro_badge 'item.status'
+                       active='Active:bg-green-100 text-green-700'
+                       expired='Expired:bg-red-100 text-red-700'
+                       base_class='px-2 py-1 rounded text-xs' %}
+                </td>
+                <td>{% nitro_format 'item.price' format_type='currency' prefix='$' %}</td>
+                <td>{% nitro_count 'item.tenant_count' singular='tenant' plural='tenants' %}</td>
+            </tr>
+        {% end_nitro_for %}
+    </tbody>
+</table>
+
+{# Footer with total #}
+<div class="mt-4 text-sm text-gray-500">
+    {% nitro_count 'total_count' singular='property' plural='properties' zero='No properties' %}
+</div>
+```
+
+**Notice:** No JavaScript expressions anywhere! All conditional logic is defined in Python kwargs.
+
+---
+
 ## Troubleshooting
 
 ### "Field does not exist" Error

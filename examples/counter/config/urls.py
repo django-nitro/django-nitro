@@ -1,7 +1,8 @@
-from django.urls import path
-from django.views.generic import TemplateView
-from nitro.api import api
 from counter_app.components.counter import Counter
+from django.urls import path
+
+from nitro.api import api
+
 
 def index(request):
     from django.shortcuts import render

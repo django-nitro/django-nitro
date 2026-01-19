@@ -27,7 +27,7 @@ class MyComponentState(BaseModel):
 @register_component
 class MyComponent(NitroComponent[MyComponentState]):
     template_name = "components/my_component.html"
-    state_class = MyComponentState
+    # state_class auto-inferred from Generic type (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         return MyComponentState(
@@ -485,8 +485,75 @@ class Calculator(NitroComponent[CalculatorState]):
         calculator = Calculator(request=request, initial=0)
     """
     template_name = "components/calculator.html"
-    state_class = CalculatorState
+    # state_class auto-inferred from Generic type (v0.7.0)
 ```
+
+---
+
+## CacheMixin (v0.7.0)
+
+Add component-level caching to improve performance for frequently accessed components.
+
+### Basic Usage
+
+```python
+from nitro import CacheMixin, NitroComponent, register_component
+
+@register_component
+class ProductList(CacheMixin, NitroComponent[ProductListState]):
+    template_name = "components/product_list.html"
+
+    # Cache configuration
+    cache_enabled = True
+    cache_ttl = 300  # 5 minutes
+    cache_html = True  # Also cache rendered HTML
+```
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `cache_enabled` | bool | False | Enable/disable caching |
+| `cache_ttl` | int | 300 | Cache time-to-live in seconds |
+| `cache_html` | bool | False | Cache rendered HTML in addition to state |
+
+### Custom Cache Keys
+
+Override `get_cache_key_parts()` to customize the cache key:
+
+```python
+class ProductList(CacheMixin, NitroComponent[ProductListState]):
+    cache_enabled = True
+
+    def get_cache_key_parts(self):
+        """Default: component name + user id."""
+        return [
+            self.request.user.id,
+            self.state.category_filter,
+            self.state.page,
+        ]
+```
+
+### @cache_action Decorator
+
+Cache expensive action results:
+
+```python
+from nitro.cache import cache_action
+
+class Dashboard(NitroComponent[DashboardState]):
+    @cache_action(ttl=120)  # Cache for 2 minutes
+    def load_analytics(self):
+        # This result is cached per-user
+        return expensive_analytics_query()
+
+    @cache_action(ttl=60, vary_on=['category'])
+    def load_category_stats(self, category: str):
+        # Cache varies by category parameter
+        return get_stats_for_category(category)
+```
+
+---
 
 ## See Also
 

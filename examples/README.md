@@ -81,12 +81,18 @@ Each example is self-contained and can be run independently. Most examples inclu
 All examples require:
 - Python 3.12+
 - Django 5.2+ or 6.0+
-- django-nitro 0.6.0+
+- django-nitro 0.7.0+
 
 For Django 5.2 compatibility, install:
 ```bash
 pip install django-nitro[django52]
 ```
+
+## v0.7.0 Updates
+
+All examples have been updated to use v0.7.0 features:
+- **Auto-inferred `state_class`** - No more redundant declarations when using Generics
+- Components now use `NitroComponent[StateClass]` syntax without explicit `state_class = StateClass`
 
 ## Learning Path
 

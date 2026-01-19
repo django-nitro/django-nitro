@@ -4,7 +4,6 @@ Minimal Django setup for Contact Form example.
 Run with: python app.py
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -13,7 +12,7 @@ from django.conf import settings
 from django.core.management import execute_from_command_line
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from django.urls import path, include
+from django.urls import include, path
 
 # Get the directory containing this file
 BASE_DIR = Path(__file__).resolve().parent

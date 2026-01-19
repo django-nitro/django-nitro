@@ -84,6 +84,39 @@ class ProductList(BaseListComponent[ProductListState]):
     # Searches: name LIKE %query% OR description LIKE %query% OR sku LIKE %query%
 ```
 
+### `use_unaccent: bool` (v0.7.0)
+
+Enable accent-insensitive search for PostgreSQL. When enabled, search "maria" will find "María", "jose" finds "José".
+
+```python
+class TenantList(BaseListComponent[TenantListState]):
+    search_fields = ['first_name', 'last_name', 'email']
+    use_unaccent = True  # Default: True (enabled by default)
+```
+
+!!! note "PostgreSQL Only"
+    Unaccent search requires PostgreSQL and the `django.contrib.postgres` app.
+
+    **Setup:**
+    ```python
+    # settings.py
+    INSTALLED_APPS = [
+        'django.contrib.postgres',  # Required
+        # ...
+    ]
+    ```
+
+    Then create a migration:
+    ```python
+    # your_app/migrations/000X_add_unaccent.py
+    from django.contrib.postgres.operations import UnaccentExtension
+    from django.db import migrations
+
+    class Migration(migrations.Migration):
+        dependencies = [('your_app', 'previous_migration')]
+        operations = [UnaccentExtension()]
+    ```
+
 ### `per_page: int`
 
 Default number of items per page (default: 20).

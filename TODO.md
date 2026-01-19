@@ -99,60 +99,79 @@
 
 ---
 
-## 🎨 v0.6.0 - Developer Experience (Next Release)
+## ✅ v0.6.0 - Developer Experience - COMPLETED
 
-**Target:** 1-2 months after v0.5.0
+**Released:** 2026-01-13
 
-### IDE Support
-- [ ] VSCode snippets for template tags
-  - `nitro-model` → `{% nitro_model 'field' %}`
-  - `nitro-action` → `{% nitro_action 'method' %}`
-  - `nitro-attr` → `{% nitro_attr 'attribute' 'value' %}`
-  - `nitro-if` → `{% nitro_if 'condition' %} ... {% end_nitro_if %}`
+### Form Field Template Tags
+- [x] `{% nitro_input %}` - Text, email, number, date, tel inputs
+- [x] `{% nitro_select %}` - Dropdown with choices support
+- [x] `{% nitro_checkbox %}` - Checkbox with label
+- [x] `{% nitro_textarea %}` - Multi-line text input
+- [x] Automatic error display and Bootstrap styling
+- [x] Edit buffer support for CRUD operations
 
-- [ ] PyCharm live templates
-- [ ] Syntax highlighting for {% nitro_* %} tags
+### Performance Improvements
+- [x] Default 200ms debounce on `nitro_model`
+- [x] TypeAdapter caching in BaseListComponent
+- [x] Code deduplication in nitro/utils.py
 
-### Advanced Debugging (Future)
-- [ ] Browser DevTools extension for Nitro
-  - Inspect component tree
-  - Live state editing
-  - Time-travel debugging
+### Django 5.2 Compatibility
+- [x] Added `django-template-partials` support
+- [x] Optional dependency: `pip install django-nitro[django52]`
 
-### Developer Tools
-- [ ] manage.py command: `inspectcomponent ComponentName`
-  - Show state schema
-  - List all actions
-  - Show template location
-
-- [ ] manage.py command: `validatecomponents`
-  - Check all registered components
-  - Validate state schemas
-  - Check template existence
-
-### Error Messages
-- [ ] Better error messages for common mistakes
-  ```python
-  # Before
-  AttributeError: 'CounterState' object has no attribute 'cnt'
-
-  # After
-  NitroError: Field 'cnt' does not exist in CounterState.
-  Did you mean 'count'? Available fields: count, step
-  ```
-
-- [ ] Validation error display in templates
-  ```html
-  <input {% nitro_model 'email' %}>
-  <!-- Auto-generated error display -->
-  <span class="nitro-error" x-show="errors.email" x-text="errors.email"></span>
-  ```
+### Testing & Quality
+- [x] 24 new tests (46% → 59% coverage)
+- [x] CI/CD pipeline fixes
+- [x] Ruff linting compliance
 
 ---
 
-## 🔮 v0.7.0 - Advanced Features
+## ✅ v0.7.0 - True Zero-JS & DX - COMPLETED
 
-**Target:** 3-4 months after v0.6.0
+**Released:** 2026-01-19
+
+### DX Improvements
+- [x] **Auto-infer `state_class`** from Generic type parameter
+  ```python
+  # No more redundant state_class = MyState
+  class Counter(NitroComponent[CounterState]):
+      pass  # state_class auto-inferred!
+  ```
+
+- [x] **CacheMixin** - Component state and HTML caching
+  ```python
+  class MyComponent(CacheMixin, NitroComponent[MyState]):
+      cache_enabled = True
+      cache_ttl = 300
+      cache_html = True
+  ```
+
+- [x] **@cache_action decorator** - Cache expensive action results
+- [x] **nitro_phone / n_phone** - Phone input with XXX-XXX-XXXX mask
+- [x] **Unaccent search** - Accent-insensitive search (PostgreSQL)
+- [x] **nitro_text as attribute** - Works with other HTML attributes
+
+### True Zero-JS Template Tags
+- [x] `{% nitro_switch %}` - Conditional text (no JS ternaries!)
+- [x] `{% nitro_css %}` - Conditional CSS classes
+- [x] `{% nitro_badge %}` - Combined text + styling
+- [x] `{% nitro_visible %}` / `{% nitro_hidden %}` - Boolean visibility
+- [x] `{% nitro_plural %}` / `{% nitro_count %}` - Pluralization
+- [x] `{% nitro_format %}` / `{% nitro_date %}` - Value formatting
+- [x] `{% nitro_each %}` - Zero-JS iteration
+
+### Bug Fixes
+- [x] Fixed `_get_state_class()` for BaseListComponent Generic inference
+- [x] Fixed loading indicator flash during field sync (silent mode)
+- [x] Fixed x-model binding in form field templates
+- [x] Fixed state flicker on field sync
+
+---
+
+## 🔮 v0.8.0 - Real-Time & Advanced Features
+
+**Target:** Q2 2026
 
 ### Real-Time Features
 - [ ] Polling support (wire:poll equivalent)
@@ -166,42 +185,17 @@
 - [ ] Server-sent events (SSE) for notifications
 
 ### File Upload Improvements
-- [ ] Upload progress tracking
-  ```html
-  <input {% nitro_file 'avatar' %}>
-  <div x-show="uploadProgress > 0">
-      Uploading: <span x-text="uploadProgress"></span>%
-  </div>
-  ```
-
 - [ ] Multiple file uploads
 - [ ] Drag & drop support
-- [ ] Image preview before upload
+- [ ] Chunked uploads for large files
 
 ### Advanced State Management
 - [ ] Offline state support (localStorage persistence)
-  ```python
-  class FormState(BaseModel):
-      persist_offline = True  # Auto-save to localStorage
-  ```
-
 - [ ] Undo/Redo support
-  ```python
-  self.state.history_enabled = True
-  self.undo()
-  self.redo()
-  ```
-
-- [ ] Optimistic updates (update UI before server confirms)
+- [ ] Optimistic updates
 
 ### Security Enhancements
 - [ ] Rate limiting per component/action
-  ```python
-  @rate_limit(max_calls=10, window=60)  # 10 calls per minute
-  def send_email(self):
-      pass
-  ```
-
 - [ ] CAPTCHA integration for sensitive actions
 - [ ] IP-based throttling
 
@@ -339,6 +333,6 @@
 
 ---
 
-**Last Updated:** 2025-12-29
-**Current Version:** v0.5.0
-**Next Release:** v0.6.0 (Developer Experience)
+**Last Updated:** 2026-01-19
+**Current Version:** v0.7.0
+**Next Release:** v0.8.0 (Real-Time & Advanced Features)

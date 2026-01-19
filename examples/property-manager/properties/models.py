@@ -1,8 +1,7 @@
 # properties/models.py
 from django.db import models
-
-
 from django.utils import timezone
+
 
 class Property(models.Model):
     """A property that can have multiple tenants."""

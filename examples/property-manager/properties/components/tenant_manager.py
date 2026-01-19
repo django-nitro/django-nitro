@@ -1,9 +1,10 @@
 # properties/components/tenant_manager.py
 from django.shortcuts import get_object_or_404
-from nitro.base import CrudNitroComponent
-from nitro.registry import register_component
 from properties.models import Property, Tenant
 from properties.schemas import TenantManagerState, TenantSchema
+
+from nitro.base import CrudNitroComponent
+from nitro.registry import register_component
 
 
 @register_component
@@ -19,8 +20,8 @@ class TenantManager(CrudNitroComponent[TenantManagerState]):
     - Handle IntegrityError exceptions gracefully
     """
     template_name = "components/tenant_manager.html"
-    state_class = TenantManagerState
     model = Tenant
+    # state_class auto-inferred from Generic[TenantManagerState] (v0.7.0)
 
     def get_initial_state(self, property_id: int = None, **kwargs):
         """
@@ -130,7 +131,7 @@ class TenantManager(CrudNitroComponent[TenantManagerState]):
         # Validate file size (5MB max)
         max_size = 5 * 1024 * 1024  # 5MB
         if uploaded_file.size > max_size:
-            self.error(f"Archivo muy grande (máximo 5MB)")
+            self.error("Archivo muy grande (máximo 5MB)")
             return
 
         try:

@@ -1,5 +1,5 @@
 """
-File Upload Example Component for Django Nitro v0.5.0
+File Upload Example Component for Django Nitro
 
 Demonstrates:
 - {% nitro_file %} template tag
@@ -7,6 +7,7 @@ Demonstrates:
 - File size validation
 - Image preview
 - Progress tracking
+- Auto-inferred state_class (v0.7.0)
 """
 
 from pathlib import Path
@@ -41,7 +42,7 @@ class AvatarUpload(NitroComponent[AvatarUploadState]):
     """
 
     template_name = "components/avatar_upload.html"
-    state_class = AvatarUploadState
+    # state_class auto-inferred from Generic[AvatarUploadState] (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         return AvatarUploadState()
@@ -112,7 +113,7 @@ class DocumentUpload(NitroComponent[DocumentUploadState]):
     """
 
     template_name = "components/document_upload.html"
-    state_class = DocumentUploadState
+    # state_class auto-inferred from Generic[DocumentUploadState] (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         return DocumentUploadState()

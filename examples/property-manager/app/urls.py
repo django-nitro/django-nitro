@@ -15,12 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 # my_project/urls.py
-from django.contrib import admin
-from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import path
+from properties.views import property_detail, property_list_view  # <--- Importar
+
 from nitro.api import api as nitro_api  # Importamos el API genérico
-from properties.views import property_detail, property_list_view # <--- Importar
 
 urlpatterns = [
     path('admin/', admin.site.urls),

@@ -1,9 +1,10 @@
 # properties/components/property_list.py
 from django.db.models import Count
-from nitro.list import BaseListComponent
-from nitro.registry import register_component
 from properties.models import Property
 from properties.schemas import PropertyListState
+
+from nitro.list import BaseListComponent
+from nitro.registry import register_component
 
 
 @register_component
@@ -23,8 +24,8 @@ class PropertyList(BaseListComponent[PropertyListState]):
     - Implement proper error handling
     """
     template_name = "components/property_list.html"
-    state_class = PropertyListState
     model = Property
+    # state_class auto-inferred from Generic[PropertyListState] (v0.7.0)
 
     # Configure search and pagination
     search_fields = ['name', 'address']
