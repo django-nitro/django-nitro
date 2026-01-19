@@ -1502,6 +1502,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cachemixin-v070" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CacheMixin (v0.7.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CacheMixin (v0.7.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-cache-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Cache Keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache_action-decorator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @cache_action Decorator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#see-also" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2427,6 +2488,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cachemixin-v070" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CacheMixin (v0.7.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CacheMixin (v0.7.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-cache-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Cache Keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache_action-decorator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @cache_action Decorator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#see-also" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2481,7 +2603,7 @@
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="nd">@register_component</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyComponent</span><span class="p">(</span><span class="n">NitroComponent</span><span class="p">[</span><span class="n">MyComponentState</span><span class="p">]):</span>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;components/my_component.html&quot;</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="n">state_class</span> <span class="o">=</span> <span class="n">MyComponentState</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="c1"># state_class auto-inferred from Generic type (v0.7.0)</span>
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
 <a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_initial_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        <span class="k">return</span> <span class="n">MyComponentState</span><span class="p">(</span>
@@ -2834,8 +2956,83 @@ Django model class (used by <code>ModelNitroComponent</code> and its subclasses)
 <a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="sd">        calculator = Calculator(request=request, initial=0)</span>
 <a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;components/calculator.html&quot;</span>
-<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a>    <span class="n">state_class</span> <span class="o">=</span> <span class="n">CalculatorState</span>
+<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a>    <span class="c1"># state_class auto-inferred from Generic type (v0.7.0)</span>
 </code></pre></div>
+<hr />
+<h2 id="cachemixin-v070">CacheMixin (v0.7.0)<a class="headerlink" href="#cachemixin-v070" title="Permanent link">&para;</a></h2>
+<p>Add component-level caching to improve performance for frequently accessed components.</p>
+<h3 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro</span><span class="w"> </span><span class="kn">import</span> <span class="n">CacheMixin</span><span class="p">,</span> <span class="n">NitroComponent</span><span class="p">,</span> <span class="n">register_component</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="nd">@register_component</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">ProductList</span><span class="p">(</span><span class="n">CacheMixin</span><span class="p">,</span> <span class="n">NitroComponent</span><span class="p">[</span><span class="n">ProductListState</span><span class="p">]):</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;components/product_list.html&quot;</span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>    <span class="c1"># Cache configuration</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>    <span class="n">cache_enabled</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>    <span class="n">cache_ttl</span> <span class="o">=</span> <span class="mi">300</span>  <span class="c1"># 5 minutes</span>
+<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a>    <span class="n">cache_html</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Also cache rendered HTML</span>
+</code></pre></div>
+<h3 id="configuration-options">Configuration Options<a class="headerlink" href="#configuration-options" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cache_enabled</code></td>
+<td>bool</td>
+<td>False</td>
+<td>Enable/disable caching</td>
+</tr>
+<tr>
+<td><code>cache_ttl</code></td>
+<td>int</td>
+<td>300</td>
+<td>Cache time-to-live in seconds</td>
+</tr>
+<tr>
+<td><code>cache_html</code></td>
+<td>bool</td>
+<td>False</td>
+<td>Cache rendered HTML in addition to state</td>
+</tr>
+</tbody>
+</table>
+<h3 id="custom-cache-keys">Custom Cache Keys<a class="headerlink" href="#custom-cache-keys" title="Permanent link">&para;</a></h3>
+<p>Override <code>get_cache_key_parts()</code> to customize the cache key:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ProductList</span><span class="p">(</span><span class="n">CacheMixin</span><span class="p">,</span> <span class="n">NitroComponent</span><span class="p">[</span><span class="n">ProductListState</span><span class="p">]):</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>    <span class="n">cache_enabled</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_cache_key_parts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Default: component name + user id.&quot;&quot;&quot;</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>        <span class="k">return</span> <span class="p">[</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">category_filter</span><span class="p">,</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">page</span><span class="p">,</span>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a>        <span class="p">]</span>
+</code></pre></div>
+<h3 id="cache_action-decorator">@cache_action Decorator<a class="headerlink" href="#cache_action-decorator" title="Permanent link">&para;</a></h3>
+<p>Cache expensive action results:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_action</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">Dashboard</span><span class="p">(</span><span class="n">NitroComponent</span><span class="p">[</span><span class="n">DashboardState</span><span class="p">]):</span>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>    <span class="nd">@cache_action</span><span class="p">(</span><span class="n">ttl</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>  <span class="c1"># Cache for 2 minutes</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_analytics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>        <span class="c1"># This result is cached per-user</span>
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>        <span class="k">return</span> <span class="n">expensive_analytics_query</span><span class="p">()</span>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>
+<a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>    <span class="nd">@cache_action</span><span class="p">(</span><span class="n">ttl</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">vary_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;category&#39;</span><span class="p">])</span>
+<a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_category_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>        <span class="c1"># Cache varies by category parameter</span>
+<a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a>        <span class="k">return</span> <span class="n">get_stats_for_category</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+</code></pre></div>
+<hr />
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../model-nitro-component/">ModelNitroComponent</a> - For single model instances</li>
@@ -2866,7 +3063,7 @@ Django model class (used by <code>ModelNitroComponent</code> and its subclasses)
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 13, 2026 23:34:08 UTC">January 13, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 19, 2026 17:09:31 UTC">January 19, 2026</span>
   </span>
 
     
