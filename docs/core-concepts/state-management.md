@@ -167,7 +167,7 @@ class FormState(BaseModel):
 ```python
 @register_component
 class MyComponent(NitroComponent[MyState]):
-    state_class = MyState
+    # state_class auto-inferred from Generic (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         """Called when component is created."""

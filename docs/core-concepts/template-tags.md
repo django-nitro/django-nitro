@@ -223,7 +223,7 @@ class PropertyListState(BaseListState):
 @register_component
 class PropertyList(BaseListComponent[PropertyListState]):
     template_name = "components/property_list.html"
-    state_class = PropertyListState
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Property
 
     search_fields = ['title', 'address', 'city']
@@ -353,7 +353,7 @@ class ProductCatalogState(BaseListState):
 @register_component
 class ProductCatalog(BaseListComponent[ProductCatalogState]):
     template_name = "components/product_catalog.html"
-    state_class = ProductCatalogState
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Product
 
     search_fields = ['name', 'description', 'category__name']

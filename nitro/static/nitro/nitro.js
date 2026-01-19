@@ -1,5 +1,5 @@
 /**
- * Django Nitro v0.5.0
+ * Django Nitro v0.7.0
  *
  * Client-side integration for Django Nitro components using Alpine.js.
  *

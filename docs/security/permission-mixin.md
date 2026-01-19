@@ -155,7 +155,7 @@ class ProjectManager(
     BaseListComponent[ProjectListState]
 ):
     template_name = "components/project_manager.html"
-    state_class = ProjectListState
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Project
     owner_field = 'owner'
 

@@ -165,7 +165,7 @@ class TaskListState(BaseListState):
 @register_component
 class MyTasks(OwnershipMixin, BaseListComponent[TaskListState]):
     template_name = "components/my_tasks.html"
-    state_class = TaskListState
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Task
     owner_field = 'user'  # Task.user field
 

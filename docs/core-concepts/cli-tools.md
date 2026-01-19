@@ -58,7 +58,7 @@ class Counter(NitroComponent[CounterState]):
         {% nitro_component 'Counter' %}
     """
     template_name = "components/counter.html"
-    state_class = CounterState
+    # state_class auto-inferred from Generic (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         """Initialize component state."""
@@ -146,7 +146,7 @@ class ProductList(BaseListComponent[ProductListState]):
         {% nitro_component 'ProductList' %}
     """
     template_name = "components/product_list.html"
-    state_class = ProductListState
+    # state_class auto-inferred from Generic (v0.7.0)
     # model = Product  # TODO: Uncomment and import model
 
     # Configure search and pagination

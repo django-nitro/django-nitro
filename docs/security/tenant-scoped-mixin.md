@@ -180,7 +180,7 @@ class ProjectListState(BaseListState):
 @register_component
 class OrganizationProjects(TenantScopedMixin, BaseListComponent[ProjectListState]):
     template_name = "components/organization_projects.html"
-    state_class = ProjectListState
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Project
     tenant_field = 'organization'  # Project.organization field
 

@@ -40,19 +40,240 @@ class MyComponent(NitroComponent[MyComponentState]):
         self.state.field2 += 1
 ```
 
-## Class Attributes
+## v0.7.0 DX Improvements
 
-### Required
+Version 0.7.0 introduces several developer experience improvements that reduce boilerplate and make components more concise.
+
+### Auto-Infer `state_class`
+
+The `state_class` is now automatically inferred from the Generic type parameter:
 
 ```python
-template_name: str
+# Before v0.7.0 - REDUNDANT declaration
+class Counter(NitroComponent[CounterState]):
+    template_name = "components/counter.html"
+    state_class = CounterState  # Had to repeat the type!
+
+# v0.7.0+ - Auto-inferred
+class Counter(NitroComponent[CounterState]):
+    template_name = "components/counter.html"
+    # state_class is automatically set to CounterState
+```
+
+**When you still need explicit `state_class`:**
+
+```python
+# 1. Without Generic type parameter
+class LegacyComponent(NitroComponent):
+    state_class = LegacyState  # Required - no Generic to infer from
+
+# 2. Override inferred type (rare - for subclass usage)
+class SpecialComponent(NitroComponent[BaseState]):
+    state_class = ExtendedState  # Use ExtendedState instead of BaseState
+```
+
+### Auto-Infer `template_name`
+
+Template names can be auto-inferred by convention:
+
+```python
+# File: leasing/components/tenant_list.py
+class TenantList(NitroComponent[TenantState]):
+    # template_name auto-inferred: leasing/components/tenant_list.html
+    pass
+
+# Convention: {app_name}/components/{class_name_snake_case}.html
+# Examples:
+#   properties.components.PropertyDetail -> properties/components/property_detail.html
+#   myapp.components.UserProfileEditor -> myapp/components/user_profile_editor.html
+```
+
+**Note:** Explicit `template_name` always takes precedence over the inferred value.
+
+### Optional `get_initial_state()`
+
+If your state class has sensible defaults, you can skip `get_initial_state()` entirely:
+
+```python
+class CounterState(BaseModel):
+    count: int = 0
+    step: int = 1
+
+@register_component
+class Counter(NitroComponent[CounterState]):
+    template_name = "components/counter.html"
+    # No get_initial_state() needed!
+    # Automatically creates CounterState(count=0, step=1)
+
+    def increment(self):
+        self.state.count += self.state.step
+```
+
+**When you still need `get_initial_state()`:**
+
+```python
+class Counter(NitroComponent[CounterState]):
+    def get_initial_state(self, **kwargs):
+        # Use kwargs from component initialization
+        return CounterState(
+            count=kwargs.get('initial', 0),
+            step=kwargs.get('step', 1)
+        )
+
+# Usage: Counter(request=request, initial=10, step=5)
+```
+
+### `as_view()` - Direct URL Routing
+
+Create Django views directly from components without separate view functions:
+
+```python
+# urls.py
+from django.urls import path
+from myapp.components import Counter, ContactForm, Dashboard
+
+urlpatterns = [
+    # Standard usage - component renders in default template
+    path('counter/', Counter.as_view(), name='counter'),
+
+    # Custom template wrapper
+    path('contact/', ContactForm.as_view(
+        template_name='pages/contact.html'
+    ), name='contact'),
+
+    # Pass initialization kwargs
+    path('dashboard/', Dashboard.as_view(
+        initial_tab='analytics',
+        show_sidebar=True
+    ), name='dashboard'),
+]
+```
+
+**Default template (`nitro/component_page.html`):**
+
+```html
+{% extends "base.html" %}
+{% block content %}
+    {{ component.render }}
+{% endblock %}
+```
+
+### Lifecycle Hooks
+
+Intercept field updates with `updating()` and `updated()` hooks:
+
+#### `updating(field, value) -> bool`
+
+Called **before** a field is updated via `x-model` or `_sync_field`. Return `False` to cancel the update.
+
+```python
+class PriceEditor(NitroComponent[PriceState]):
+    def updating(self, field: str, value) -> bool:
+        """Validate before update. Return False to cancel."""
+        if field == 'price':
+            if value < 0:
+                self.error("Price cannot be negative")
+                return False
+            if value > 1000000:
+                self.error("Price exceeds maximum allowed")
+                return False
+
+        if field == 'discount_percent':
+            if value < 0 or value > 100:
+                self.error("Discount must be between 0-100%")
+                return False
+
+        return True  # Allow update
+```
+
+#### `updated(field, value) -> None`
+
+Called **after** a field is successfully updated. Use for side effects, logging, or emitting events.
+
+```python
+class OrderEditor(NitroComponent[OrderState]):
+    def updated(self, field: str, value) -> None:
+        """React to successful field updates."""
+        if field == 'status':
+            # Emit event for other components
+            self.emit('order-status-changed', {
+                'order_id': self.state.id,
+                'new_status': value
+            })
+
+            # Log the change
+            logger.info(f"Order {self.state.id} status changed to {value}")
+
+        if field == 'quantity':
+            # Recalculate totals
+            self.state.total = self.state.quantity * self.state.unit_price
+```
+
+#### Combined Example
+
+```python
+class InventoryItem(NitroComponent[InventoryState]):
+    def updating(self, field: str, value) -> bool:
+        if field == 'quantity':
+            if value < 0:
+                self.error("Quantity cannot be negative")
+                return False
+            if value > self.state.max_stock:
+                self.error(f"Cannot exceed max stock of {self.state.max_stock}")
+                return False
+        return True
+
+    def updated(self, field: str, value) -> None:
+        if field == 'quantity':
+            # Check low stock warning
+            if value <= self.state.reorder_point:
+                self.info(f"Low stock alert: {value} units remaining")
+                self.emit('low-stock', {'sku': self.state.sku, 'quantity': value})
+```
+
+### Minimal Component Example
+
+With all v0.7.0 improvements, a component can be extremely concise:
+
+```python
+from pydantic import BaseModel
+from nitro import NitroComponent, register_component
+
+class CounterState(BaseModel):
+    count: int = 0
+
+@register_component
+class Counter(NitroComponent[CounterState]):
+    # template_name inferred: {app}/components/counter.html
+    # state_class inferred: CounterState
+    # get_initial_state() not needed - uses defaults
+
+    def increment(self):
+        self.state.count += 1
+
+    def decrement(self):
+        self.state.count -= 1
+```
+
+That's a fully functional reactive component in just 12 lines of Python!
+
+## Class Attributes
+
+### Required (Pre-v0.7.0) / Optional (v0.7.0+)
+
+```python
+template_name: str = ""
 ```
 Path to the component's HTML template.
 
+**v0.7.0+**: Auto-inferred from module path and class name if not specified. See [Auto-Infer `template_name`](#auto-infer-template_name) above.
+
 ```python
-state_class: Type[BaseModel]
+state_class: Type[BaseModel] = None
 ```
 Pydantic model class defining the component's state structure.
+
+**v0.7.0+**: Auto-inferred from the Generic type parameter. See [Auto-Infer `state_class`](#auto-infer-state_class) above.
 
 ### Optional
 
@@ -281,7 +502,7 @@ class ContactFormState(BaseModel):
 @register_component
 class ContactForm(NitroComponent[ContactFormState]):
     template_name = "components/contact_form.html"
-    state_class = ContactFormState
+    # state_class auto-inferred from Generic (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         return ContactFormState()

@@ -51,7 +51,7 @@ class TaskListState(BaseModel):
 @register_component
 class TaskList(CrudNitroComponent[TaskListState]):
     template_name = "components/task_list.html"
-    state_class = TaskListState
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Task
 
     def get_initial_state(self, **kwargs):
@@ -254,7 +254,7 @@ class TodoListState(BaseModel):
 @register_component
 class TodoList(CrudNitroComponent[TodoListState]):
     template_name = "components/todo_list.html"
-    state_class = TodoListState
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Todo
 
     def get_initial_state(self, **kwargs):

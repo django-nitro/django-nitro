@@ -329,7 +329,7 @@ class FileUploadState(BaseModel):
 @register_component
 class FileUpload(NitroComponent[FileUploadState]):
     template_name = "components/file_upload.html"
-    state_class = FileUploadState
+    # state_class auto-inferred from Generic (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         return FileUploadState()
@@ -412,7 +412,7 @@ class UserProfileState(BaseModel):
 @register_component
 class UserProfile(NitroComponent[UserProfileState]):
     template_name = "components/user_profile.html"
-    state_class = UserProfileState
+    # state_class auto-inferred from Generic (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         return UserProfileState()
@@ -569,7 +569,7 @@ class ContactFormState(BaseModel):
 @register_component
 class ContactForm(NitroComponent[ContactFormState]):
     template_name = "components/contact_form.html"
-    state_class = ContactFormState
+    # state_class auto-inferred from Generic (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         return ContactFormState()

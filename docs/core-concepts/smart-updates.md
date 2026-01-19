@@ -351,7 +351,7 @@ class TaskListState(BaseListState):
 @register_component
 class TaskList(BaseListComponent[TaskListState]):
     template_name = "components/task_list.html"
-    state_class = TaskListState
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Task
 
     # Enable smart updates

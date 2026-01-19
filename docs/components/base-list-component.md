@@ -63,7 +63,7 @@ class ProductListState(BaseListState):
 @register_component
 class ProductList(BaseListComponent[ProductListState]):
     template_name = "components/product_list.html"
-    state_class = ProductListState
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Product
 
     # Configure search and pagination
@@ -364,7 +364,7 @@ class CompanyListState(BaseListState):
 @register_component
 class CompanyList(BaseListComponent[CompanyListState]):
     template_name = "components/company_list.html"
-    state_class = CompanyListState
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Company
 
     # Configuration

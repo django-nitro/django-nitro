@@ -174,7 +174,7 @@ Here's a complete example of components communicating via events:
 class ProductEditor(ModelNitroComponent[ProductSchema]):
     model = Product
     template_name = "components/product_editor.html"
-    state_class = ProductSchema
+    # state_class auto-inferred from Generic (v0.7.0)
 
     def delete_product(self):
         obj = self.get_object(self.state.id)

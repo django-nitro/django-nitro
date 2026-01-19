@@ -40,7 +40,7 @@ class ProductSchema(BaseModel):
 @register_component
 class ProductEditor(ModelNitroComponent[ProductSchema]):
     template_name = "components/product_editor.html"
-    state_class = ProductSchema
+    # state_class auto-inferred from Generic (v0.7.0)
     model = Product  # Django model class
 ```
 
@@ -214,7 +214,7 @@ class BlogPostSchema(BaseModel):
 @register_component
 class BlogPostEditor(ModelNitroComponent[BlogPostSchema]):
     template_name = "components/blog_post_editor.html"
-    state_class = BlogPostSchema
+    # state_class auto-inferred from Generic (v0.7.0)
     model = BlogPost
 
     # No need to override get_initial_state - automatic!
