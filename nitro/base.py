@@ -9,11 +9,10 @@ from uuid import UUID
 from django.conf import settings
 from django.core.signing import BadSignature, Signer
 from django.db import models
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
-from django.views import View
 from pydantic import BaseModel, ValidationError
 
 logger = logging.getLogger(__name__)

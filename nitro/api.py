@@ -1,12 +1,11 @@
 import json
 import logging
-from typing import Any, Optional
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import HttpRequest
-from ninja import NinjaAPI, Schema, Form, File
+from ninja import File, Form, NinjaAPI, Schema
 from ninja.files import UploadedFile
 from pydantic import ValidationError as PydanticValidationError
 
@@ -171,7 +170,7 @@ def _process_dispatch(
     state_dict: dict,
     payload_dict: dict,
     integ: str,
-    file: Optional[UploadedFile]
+    file: UploadedFile | None
 ):
     """
     Common dispatch logic for both JSON and file upload endpoints.

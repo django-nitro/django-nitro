@@ -6,9 +6,8 @@ to reduce code duplication and improve maintainability.
 
 import os
 import re
-from typing import Optional
-from django.utils.text import slugify
 
+from django.utils.text import slugify
 
 # =============================================================================
 # FILE UPLOAD SECURITY UTILITIES
@@ -84,8 +83,8 @@ def sanitize_filename(filename: str) -> str:
 def validate_file_upload(
     uploaded_file,
     max_size: int = DEFAULT_MAX_FILE_SIZE,
-    allowed_types: Optional[set] = None,
-    allowed_extensions: Optional[set] = None,
+    allowed_types: set | None = None,
+    allowed_extensions: set | None = None,
 ) -> tuple[bool, str]:
     """
     Validate an uploaded file for security.

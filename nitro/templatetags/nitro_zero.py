@@ -29,10 +29,11 @@ Usage:
     {% nitro_hidden 'item.is_deleted' %}
 """
 
+
 from django import template
-from django.utils.safestring import mark_safe
+from django.template.base import Node, TemplateSyntaxError
 from django.utils.html import escape
-import json
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -345,8 +346,6 @@ def nitro_badge(field: str, default_class: str = 'bg-gray-100 text-gray-700', **
 # =============================================================================
 # ITERATION TAGS (Zero-JS versions)
 # =============================================================================
-
-from django.template.base import Node, TemplateSyntaxError
 
 
 class NitroEachNode(Node):

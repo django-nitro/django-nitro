@@ -1735,7 +1735,7 @@ class TestDjangoNinjaAPI(TestCase):
 
     def test_request_schemas_exist(self):
         """Test that request schemas are properly defined."""
-        from nitro.api import ActionPayload, ActionFormPayload
+        from nitro.api import ActionFormPayload, ActionPayload
 
         # Test ActionPayload schema
         payload = ActionPayload(
@@ -1781,10 +1781,8 @@ class TestDjangoNinjaAPI(TestCase):
 
     def test_exception_handlers_registered(self):
         """Test that exception handlers are registered."""
+
         from nitro.api import api
-        from django.core.exceptions import PermissionDenied
-        from django.core.exceptions import ValidationError as DjangoValidationError
-        from pydantic import ValidationError as PydanticValidationError
 
         # Check exception handlers are in place
         # Django Ninja registers handlers internally
@@ -1797,7 +1795,8 @@ class TestDjangoNinjaExceptionHandlers(TestCase):
     def test_permission_denied_handler(self):
         """Test PermissionDenied exception handler."""
         from django.core.exceptions import PermissionDenied
-        from nitro.api import permission_denied_handler, api
+
+        from nitro.api import permission_denied_handler
 
         request = RequestFactory().post("/")
         request.user = type('User', (), {'username': 'testuser'})()
@@ -1811,7 +1810,8 @@ class TestDjangoNinjaExceptionHandlers(TestCase):
     def test_django_validation_handler(self):
         """Test Django ValidationError exception handler."""
         from django.core.exceptions import ValidationError
-        from nitro.api import django_validation_handler, api
+
+        from nitro.api import django_validation_handler
 
         request = RequestFactory().post("/")
 
@@ -1823,8 +1823,10 @@ class TestDjangoNinjaExceptionHandlers(TestCase):
 
     def test_pydantic_validation_handler(self):
         """Test Pydantic ValidationError exception handler."""
-        from pydantic import ValidationError as PydanticValidationError, BaseModel
-        from nitro.api import pydantic_validation_handler, api
+        from pydantic import BaseModel
+        from pydantic import ValidationError as PydanticValidationError
+
+        from nitro.api import pydantic_validation_handler
 
         request = RequestFactory().post("/")
 

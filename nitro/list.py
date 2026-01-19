@@ -231,7 +231,7 @@ class BaseListComponent(
         if cls.state_class is not None:
             return cls.state_class
         # Infer from Generic type hint (v0.7.0 DX)
-        from typing import get_origin, get_args
+        from typing import get_args, get_origin
         for base in getattr(cls, '__orig_bases__', []):
             origin = get_origin(base)
             if origin is not None:

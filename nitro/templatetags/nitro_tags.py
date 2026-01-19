@@ -3,7 +3,6 @@ from django import template
 from django.conf import settings
 from django.template.base import Node, TemplateSyntaxError
 from django.templatetags.static import static
-from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from nitro.registry import get_component_class
@@ -1429,19 +1428,19 @@ def nitro_phone(field, label="", required=False, placeholder="", **kwargs):
 # - Developers never write JS ternaries or Alpine expressions
 # - Templates are pure Django with Nitro tags
 
-# Import Zero-JS tags from dedicated module
-from nitro.templatetags.nitro_zero import (
-    nitro_switch,
-    nitro_class as nitro_class_zero,
-    nitro_visible,
-    # nitro_hidden REMOVED - use nitro_visible with negate=True
-    nitro_plural,
-    nitro_count,
-    nitro_format,
-    nitro_date,
+# Import Zero-JS tags from dedicated module (at end to avoid circular imports)
+from nitro.templatetags.nitro_zero import (  # noqa: E402
     nitro_badge,
-    # nitro_each REMOVED - use nitro_for instead (better SEO)
     nitro_call,
+    nitro_count,
+    nitro_date,
+    nitro_format,
+    nitro_plural,
+    nitro_switch,
+    nitro_visible,
+)
+from nitro.templatetags.nitro_zero import (  # noqa: E402
+    nitro_class as nitro_class_zero,
 )
 
 # Register Zero-JS tags
