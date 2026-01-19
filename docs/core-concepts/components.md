@@ -52,7 +52,7 @@ from nitro.registry import register_component
 @register_component
 class Counter(NitroComponent[CounterState]):
     template_name = "components/counter.html"
-    state_class = CounterState
+    # state_class auto-inferred from Generic (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         return CounterState(
@@ -125,7 +125,7 @@ The `@register_component` decorator:
 ```python
 class MyComponent(NitroComponent[MyState]):
     template_name = "components/my_component.html"  # Required
-    state_class = MyState  # Required (or use Generic type hint)
+    # state_class auto-inferred from Generic[MyState] (v0.7.0)
 ```
 
 ### Optional Properties

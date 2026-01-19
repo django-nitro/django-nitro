@@ -145,8 +145,8 @@ from nitro.registry import register_component
 @register_component
 class PropertyList(BaseListComponent[PropertyListState]):
     template_name = "components/property_list.html"
-    state_class = PropertyListState
     model = Property
+    # state_class auto-inferred from Generic (v0.7.0)
 
     # Configuration
     search_fields = ['name', 'address']
@@ -380,8 +380,8 @@ Demonstrates nested components - listing tenants for a specific property.
 @register_component
 class TenantList(BaseListComponent[TenantListState]):
     template_name = "components/tenant_list.html"
-    state_class = TenantListState
     model = Tenant
+    # state_class auto-inferred from Generic (v0.7.0)
 
     search_fields = ['name', 'email', 'phone']
     per_page = 10

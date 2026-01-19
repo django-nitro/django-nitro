@@ -20,7 +20,7 @@ class CounterState(BaseModel):
 @register_component
 class Counter(NitroComponent[CounterState]):
     template_name = "components/counter.html"
-    state_class = CounterState
+    # state_class auto-inferred from Generic (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         """Initialize the component state."""

@@ -30,7 +30,7 @@ class CounterState(BaseModel):
 @register_component
 class Counter(NitroComponent[CounterState]):
     template_name = "components/counter.html"
-    state_class = CounterState
+    # state_class auto-inferred from Generic (v0.7.0)
 
     def get_initial_state(self, **kwargs):
         return CounterState(count=0)
@@ -69,18 +69,27 @@ class Counter(NitroComponent[CounterState]):
 - **[TenantScopedMixin](security/tenant-scoped-mixin.md)** - Multi-tenant isolation
 - **[PermissionMixin](security/permission-mixin.md)** - Custom permission framework
 
-### New in v0.6.0 ⭐
+### New in v0.7.0 ⭐
 
-- **Form Field Template Tags** - Pre-built tags for common form fields
-  - `{% nitro_input %}` - Text, email, number, date inputs with error handling
-  - `{% nitro_select %}` - Dropdown with choices
-  - `{% nitro_checkbox %}` - Checkbox with label
-  - `{% nitro_textarea %}` - Multi-line text input
-- **Default Debounce (200ms)** - Automatic debouncing on `nitro_model` reduces server load
-- **Performance Improvements** - TypeAdapter caching and code deduplication
-- **Django 5.2 Support** - Compatible with Django 5.2 using `django-template-partials`
+- **Auto-infer `state_class`** - No more redundant declarations when using Generics
+- **CacheMixin** - Component state and HTML caching for performance
+- **@cache_action decorator** - Cache expensive action results
+- **Unaccent Search** - Accent-insensitive search for PostgreSQL (enabled by default)
+- **True Zero-JS Template Tags** - All logic in Python kwargs:
+  - `{% nitro_switch %}` - Conditional text based on field value
+  - `{% nitro_css %}` - Conditional CSS classes
+  - `{% nitro_badge %}` - Combined text + styling
+  - `{% nitro_visible %}` / `{% nitro_hidden %}` - Boolean visibility
+  - `{% nitro_plural %}` / `{% nitro_count %}` - Pluralization
+  - `{% nitro_format %}` / `{% nitro_date %}` - Value formatting
 
 ### Previous Releases
+
+#### v0.6.0
+
+- **Form Field Template Tags** - `{% nitro_input %}`, `{% nitro_select %}`, `{% nitro_checkbox %}`, `{% nitro_textarea %}`
+- **Default Debounce (200ms)** - Automatic debouncing on `nitro_model`
+- **Django 5.2 Support** - Compatible using `django-template-partials`
 
 #### v0.4.0
 

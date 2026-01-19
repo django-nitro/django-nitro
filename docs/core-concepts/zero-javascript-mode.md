@@ -927,7 +927,7 @@ Version 0.7.0 introduces **truly Zero-JavaScript** template tags. While previous
 **Before v0.7.0 (required JS knowledge):**
 ```django
 {# Developer had to know JS ternary syntax #}
-<span {% nitro_bind "item.status === 'active' ? 'Activo' : 'Inactivo'" %}></span>
+<span {% nitro_bind "item.status === 'active' ? 'Active' : 'Inactive'" %}></span>
 <div {% nitro_class_map "{'bg-green-100': item.status === 'active'}" %}></div>
 ```
 
