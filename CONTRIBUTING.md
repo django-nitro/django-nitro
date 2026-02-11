@@ -38,24 +38,17 @@ Feature requests are welcome! Please:
    pip install -e ".[dev]"
    ```
 
-3. **Run the example project** to test your changes:
-   ```bash
-   cd example
-   python manage.py migrate
-   python manage.py runserver
-   ```
-
-4. **Make your changes:**
+3. **Make your changes:**
    - Write clean, readable code
-   - Follow PEP 8 style guidelines (we use `black` for formatting)
+   - Follow the project's code style (enforced by `ruff`)
    - Add docstrings to classes and methods
    - Update documentation if needed
 
-5. **Test your changes:**
+4. **Test your changes:**
    ```bash
-   # Format code
-   black nitro/
-   isort nitro/
+   # Lint and format
+   ruff check nitro/
+   ruff format nitro/
 
    # Type check
    mypy nitro/
@@ -64,7 +57,7 @@ Feature requests are welcome! Please:
    pytest
    ```
 
-6. **Commit your changes:**
+5. **Commit your changes:**
    ```bash
    git add .
    git commit -m "Add: brief description of changes"
@@ -78,7 +71,7 @@ Feature requests are welcome! Please:
    - `Refactor:` code refactoring
    - `Test:` test additions or changes
 
-7. **Push and create a pull request:**
+6. **Push and create a pull request:**
    ```bash
    git push origin feature/my-awesome-feature
    ```
@@ -92,17 +85,21 @@ Feature requests are welcome! Please:
 
 ### Code Style
 
-- Follow PEP 8 (enforced by `black`)
+- Enforced by `ruff` (line-length 100, Python 3.12+)
 - Use type hints where possible
 - Keep functions small and focused
 - Write descriptive variable names
 
-### Documentation
+### Architecture (v0.8)
 
-- Add docstrings to all public classes and methods
-- Update README.md if adding new features
-- Add examples for new functionality
-- Keep CHANGELOG.md updated
+Django Nitro uses **server-rendered HTML + HTMX + Alpine.js**:
+
+- **Views** (`nitro/views.py`) - `NitroListView`, `NitroFormView`, `NitroCreateView`, etc.
+- **Template tags** (`nitro/templatetags/nitro_tags.py`) - HTMX-powered search, filters, pagination
+- **Forms** (`nitro/forms.py`) - `NitroModelForm` with Tailwind CSS widgets
+- **Mixins** (`nitro/mixins.py`) - `OrganizationMixin` for multi-tenancy
+- **Static** (`nitro/static/nitro/`) - `nitro.js` (HTMX helpers) + `alpine-components.js`
+- **Templates** (`nitro/templates/nitro/components/`) - Reusable HTML components
 
 ### Testing
 
@@ -111,28 +108,15 @@ Feature requests are welcome! Please:
 - Aim for good test coverage
 - Test with multiple Python/Django versions if possible
 
-### Project Structure
-
-```
-django-nitro/
-├── nitro/              # Main package (DO modify)
-│   ├── base.py        # Component base classes
-│   ├── api.py         # Django Ninja API
-│   ├── registry.py    # Component registration
-│   └── static/        # JavaScript files
-├── examples/           # Example projects (modify if improving examples)
-├── tests/             # Test suite (DO add tests here)
-└── docs/              # Documentation (DO update)
-```
-
 ### What to Contribute
 
 **Great contributions:**
 - Bug fixes
 - Performance improvements
 - Better error messages
+- New template tags or filters
+- New reusable HTML components
 - Documentation improvements
-- New examples
 - Test coverage improvements
 
 **Needs discussion first (open an issue):**
@@ -152,4 +136,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-**Thank you for contributing to Django Nitro!** 🚀
+**Thank you for contributing to Django Nitro!**

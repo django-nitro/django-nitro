@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-nitro"
-version = "0.7.0"
-description = "Reactive Django components using AlpineJS and Django Ninja"
+version = "0.8.0"
+description = "Server-rendered Django views with HTMX + Alpine.js - No JavaScript required"
 readme = "README.md"
 authors = [
     {name = "Jearel Alcantara", email = "jeasoft@gmail.com"}
@@ -28,20 +28,13 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
 ]
-keywords = ["django", "alpinejs", "reactive", "components", "django-ninja"]
+keywords = ["django", "htmx", "alpinejs", "server-rendered", "template-tags"]
 requires-python = ">=3.12"
 dependencies = [
     "Django>=5.2",
-    "django-ninja>=1.4.0",
-    "pydantic>=2.0.0",
-    "email-validator>=2.0.0",
 ]
 
 [project.optional-dependencies]
-# For Django 5.2 compatibility (Django 6.0+ has built-in template partials)
-django52 = [
-    "django-template-partials>=24.4",
-]
 dev = [
     "pytest>=7.0.0",
     "pytest-django>=4.5.0",
@@ -58,14 +51,13 @@ Repository = "https://github.com/django-nitro/django-nitro"
 Issues = "https://github.com/django-nitro/django-nitro/issues"
 
 [tool.setuptools]
-packages = ["nitro"]
+packages = ["nitro", "nitro.templatetags", "nitro.utils", "nitro.management", "nitro.management.commands"]
 include-package-data = true
 
 [tool.setuptools.package-data]
 nitro = [
     "static/**/*",
     "templates/**/*",
-    "templatetags/**/*",
 ]
 
 [tool.ruff]
@@ -101,11 +93,6 @@ warn_unused_configs = true
 disallow_untyped_defs = false
 plugins = ["mypy_django_plugin.main"]
 
-[tool.django-stubs]
-django_settings_module = "examples.property-manager.app.settings"
-
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "app.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-pythonpath = ["examples/property-manager"]
 addopts = "-v --tb=short"

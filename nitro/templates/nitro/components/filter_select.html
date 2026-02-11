@@ -1,0 +1,12 @@
+<select name="{{ field }}"
+        hx-get="{{ request_path }}"
+        hx-trigger="change"
+        hx-target="{{ target }}"
+        hx-include=".nitro-filter-input"
+        hx-push-url="true"
+        class="nitro-filter-input px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white">
+    <option value="">{{ all_label }}</option>
+    {% for value, display in options %}
+    <option value="{{ value }}" {% if current_value == value|stringformat:"s" %}selected{% endif %}>{{ display }}</option>
+    {% endfor %}
+</select>

@@ -1,5 +1,5 @@
 site_name: Django Nitro
-site_description: Reactive Django components with AlpineJS and Django Ninja
+site_description: Server-rendered Django views with HTMX + Alpine.js
 site_author: Jearel Alcantara
 site_url: https://django-nitro.github.io/django-nitro
 
@@ -10,17 +10,15 @@ edit_uri: edit/main/docs/
 theme:
   name: material
   palette:
-    # Light mode
     - scheme: default
-      primary: indigo
-      accent: deep purple
+      primary: teal
+      accent: teal
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-    # Dark mode
     - scheme: slate
-      primary: indigo
-      accent: deep purple
+      primary: teal
+      accent: teal
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -50,19 +48,9 @@ markdown_extensions:
       alternate_style: true
   - admonition
   - pymdownx.details
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - attr_list
   - md_in_html
   - tables
-  - toc:
-      permalink: true
-
-plugins:
-  - search
-  - git-revision-date-localized:
-      enable_creation_date: true
 
 nav:
   - Home: index.md
@@ -70,37 +58,23 @@ nav:
     - Installation: getting-started/installation.md
     - Quick Start: getting-started/quick-start.md
   - Core Concepts:
-    - Components: core-concepts/components.md
-    - State Management: core-concepts/state-management.md
-    - Actions: core-concepts/actions.md
-    - Form Fields (v0.6.0): core-concepts/form-fields.md
-    - Template Tags (SEO): core-concepts/template-tags.md
-    - Events: core-concepts/events.md
-    - Smart Updates: core-concepts/smart-updates.md
-    - CLI Tools: core-concepts/cli-tools.md
-    - Toast Adapters: core-concepts/TOAST_ADAPTERS.md
-    - Debugging: core-concepts/debugging.md
-    - Zero JavaScript Mode: core-concepts/zero-javascript-mode.md
+    - Views: core-concepts/views.md
+    - Template Tags: core-concepts/template-tags.md
+    - Forms & Wizards: core-concepts/forms-wizards.md
+    - Tables & Filters: core-concepts/tables-filters.md
+    - Multi-Tenancy: core-concepts/multi-tenancy.md
   - Components:
-    - NitroComponent: components/nitro-component.md
-    - ModelNitroComponent: components/model-nitro-component.md
-    - CrudNitroComponent: components/crud-nitro-component.md
-    - BaseListComponent: components/base-list-component.md
-  - Security:
-    - Overview: security/overview.md
-    - OwnershipMixin: security/ownership-mixin.md
-    - TenantScopedMixin: security/tenant-scoped-mixin.md
-    - PermissionMixin: security/permission-mixin.md
-  - Examples:
-    - Counter: examples/counter.md
-    - Property Manager: examples/property-manager.md
-  - API Reference: api-reference.md
-  - Contributing: contributing.md
+    - Overview: components/overview.md
+    - HTML Components: components/html-components.md
+    - Alpine Components: components/alpine-components.md
+  - Utilities:
+    - Currency: utilities/currency.md
+    - Dates: utilities/dates.md
+    - Exports: utilities/exports.md
+  - Migration:
+    - From v0.7: migration/from-v07.md
   - Changelog: changelog.md
 
 extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/django-nitro/django-nitro
   version:
     provider: mike

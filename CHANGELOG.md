@@ -5,6 +5,90 @@ All notable changes to Django Nitro will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-02-03
+
+### Breaking - Complete Architecture Rewrite
+
+v0.8.0 is a ground-up rewrite. The component-based architecture (NitroComponent, Pydantic state, Django Ninja API) has been replaced with standard Django views + HTMX + Alpine.js.
+
+| v0.7 | v0.8 |
+|------|------|
+| `NitroComponent` classes | Django views (`NitroListView`, `NitroFormView`, etc.) |
+| Pydantic `BaseModel` state | Django forms and template context |
+| Django Ninja JSON API | Server-rendered HTML + HTMX swaps |
+| `@register_component` | Standard Django URL routing |
+| `call('action')` in templates | `hx-post`/`hx-get` HTMX attributes |
+| `pydantic`, `django-ninja` required | Django only (zero extra deps) |
+
+### Added - Views
+
+- **`NitroView`** - Base view with HTMX detection, toast helpers, and partial template rendering
+- **`NitroListView`** - List view with built-in search, filters, sorting, pagination, and `select_related`/`prefetch_related`
+- **`NitroModelView`** - Detail view for a single model instance
+- **`NitroFormView`** - Form handling with HTMX support
+- **`NitroCreateView`** - Create with automatic slideover close + toast + page refresh
+- **`NitroUpdateView`** - Update with same slideover/toast pattern
+- **`NitroDeleteView`** - Delete with `can_delete()` hook for validation
+- **`NitroWizard`** - Multi-step form wizard with session-based data persistence
+
+### Added - Template Tags
+
+All loaded with `{% load nitro_tags %}`:
+
+- **HTMX Action Tags**: `nitro_search`, `nitro_filter`, `nitro_pagination`, `nitro_sort`, `nitro_delete`
+- **Form Tags**: `nitro_field`, `nitro_select`, `nitro_form_footer`
+- **Component Tags**: `nitro_modal`, `nitro_slideover`, `nitro_tabs`, `nitro_empty_state`, `nitro_stats_card`, `nitro_avatar`, `nitro_file_upload`, `nitro_toast`
+- **UI Helpers**: `nitro_open_modal`, `nitro_close_modal`, `nitro_open_slideover`, `nitro_close_slideover`, `nitro_scripts`
+- **Transition Presets**: `nitro_transition` with 6 presets (fade, slide-up, slide-down, slide-right, slide-left, scale)
+- **Keyboard Shortcuts**: `nitro_key` for Alpine.js keyboard bindings
+- **Display Filters**: `currency`, `status_badge`, `priority_badge`, `phone_format`, `relative_date`, `truncate_id`, `rating`, `pluralize_es`
+
+### Added - Forms
+
+- **`NitroModelForm`** / **`NitroForm`** - Forms with automatic Tailwind CSS widget styling
+- **`PhoneField`** - Phone input with formatting
+- **`CedulaField`** - Dominican ID validation
+- **`CurrencyField`** - Currency input with formatting
+
+### Added - Multi-Tenancy
+
+- **`OrganizationMixin`** - Generic mixin for multi-tenant querysets (replaces `TenantScopedMixin`)
+- **`PermissionMixin`** - Role-based access control
+
+### Added - Alpine.js Components
+
+- **`loadingBtn`** - Spinner on submit during HTMX requests
+- **`fileUpload`** - Drag-and-drop file uploads
+- **`clipboard`** - Copy to clipboard
+- **`charCounter`** - Character counter for textareas
+- **`confirmAction`** - Confirm dialog
+- **`toggle`** - Collapsible sections
+- **`tabs`** - Client-side tabs
+- **`currencyInput`** - Auto-format currency
+- **`phoneInput`** - Auto-format phone numbers
+- **`dirtyForm`** - Unsaved changes warning
+
+### Added - Utilities
+
+- **Currency**: `format_currency`, `parse_currency`, `convert_currency`
+- **Dates**: `relative_date`, `month_name`, `add_months`, `is_overdue`, `today`
+
+### Removed
+
+- `NitroComponent`, `ModelNitroComponent`, `CrudNitroComponent`, `BaseListComponent` classes
+- Pydantic state management
+- Django Ninja API endpoint (`/api/nitro/`)
+- Component registry (`@register_component`)
+- `CacheMixin`, `@cache_action`, smart state updates
+- `OwnershipMixin`, `TenantScopedMixin` (replaced by `OrganizationMixin`)
+- `nitro_model`, `nitro_action`, `nitro_text`, `nitro_for` template tags
+- `nitro_input`, `nitro_select`, `nitro_checkbox`, `nitro_textarea` form field tags (v0.6 style)
+- `startnitro` management command
+- Debug toolbar panel
+- All dependencies except Django itself
+
+---
+
 ## [0.7.0] - 2026-01-19
 
 ### Added - DX Improvements

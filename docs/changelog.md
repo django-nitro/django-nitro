@@ -1,188 +1,123 @@
 # Changelog
 
-All notable changes to Django Nitro are documented here.
+All notable changes to Django Nitro.
 
-For the complete changelog, see [CHANGELOG.md](https://github.com/django-nitro/django-nitro/blob/main/CHANGELOG.md) on GitHub.
+## [0.8.0] - 2026-02-11
 
-## [0.7.0] - 2026-01-19
+### 🚀 Complete Architecture Rewrite
 
-### Added - DX Improvements
+v0.8.0 is a ground-up rewrite replacing the component-based architecture with standard Django views + HTMX.
 
-- **Auto-infer `state_class`** - No more redundant declarations when using Generics
-- **`CacheMixin`** - Component state and HTML caching for performance
-- **`@cache_action` decorator** - Cache expensive action results
-- **`nitro_phone` / `n_phone`** - Phone input with automatic XXX-XXX-XXXX mask
-- **Unaccent search** - Accent-insensitive search for PostgreSQL (enabled by default)
-- **`nitro_text` as attribute** - Now outputs just the attribute, works with other attributes
+### Added
 
-### Added - Zero-JS Template Tags
+**Views**
+- `NitroView` - Base view with HTMX detection, toast helpers
+- `NitroListView` - List with search, filter, sort, pagination
+- `NitroModelView` - Single object detail
+- `NitroFormView` - Form handling with HTMX support
+- `NitroCreateView` - Create with auto company/user assignment
+- `NitroUpdateView` - Edit existing
+- `NitroDeleteView` - Delete with soft-delete support
 
-- `{% nitro_switch %}` - Conditional text based on field value
-- `{% nitro_css %}` - Conditional CSS classes
-- `{% nitro_badge %}` - Combined text + styling for status badges
-- `{% nitro_visible %}` / `{% nitro_hidden %}` - Boolean visibility
-- `{% nitro_plural %}` / `{% nitro_count %}` - Pluralization
-- `{% nitro_format %}` / `{% nitro_date %}` - Value formatting
-- `{% nitro_each %}` - Zero-JS iteration
+**Forms & Wizards**
+- `NitroModelForm` - Enhanced ModelForm with Tailwind styling
+- `NitroForm` - Non-model forms
+- `NitroWizard` - Multi-step form wizard
+- `PhoneField`, `CurrencyField`, `CedulaField` - Custom form fields
 
-### Fixed
+**Tables & Filters**
+- `NitroTable` - Declarative table definition
+- `NitroFilterSet` - Faceted filter definitions
+- `SearchFilter`, `SelectFilter`, `RangeFilter`, `DateRangeFilter`
 
-- `_get_state_class()` for BaseListComponent - Generic type inference now works in classmethods
+**Mixins**
+- `OrganizationMixin` - Multi-tenant scoping
+- `OwnerRequiredMixin` - Object ownership check
+- `StaffRequiredMixin` - Staff only access
+- `PermissionRequiredMixin` - Permission checking
 
-## [0.6.2] - 2026-01-16
+**Template Tags**
+- HTMX actions: `nitro_search`, `nitro_filter`, `nitro_pagination`, `nitro_sort`, `nitro_delete`
+- Forms: `nitro_field`, `nitro_select`, `nitro_form_footer`
+- Components: `nitro_modal`, `nitro_slideover`, `nitro_tabs`, `nitro_empty_state`, `nitro_stats_card`, `nitro_avatar`, `nitro_file_upload`, `nitro_toast`
+- Filters: `currency`, `status_badge`, `priority_badge`, `phone_format`, `relative_date`, `whatsapp_link`
+- Helpers: `nitro_transition`, `nitro_key`, `nitro_scripts`
 
-### Fixed
+**HTML Components**
+- `toast.html` - Toast notifications
+- `modal.html` - Modal dialogs
+- `slideover.html` - Slide-out panels
+- `tabs.html` - Tab navigation
+- `empty_state.html` - Empty state placeholder
+- `stats_card.html` - Statistics cards
+- `avatar.html` - User avatars
+- `pagination.html` - Pagination controls
+- `search_bar.html` - Search input
+- `filter_select.html` - Filter dropdown
+- `file_upload.html` - File upload zone
+- `table.html` - Data table
+- `form_field.html` - Form field wrapper
+- `confirm.html` - Confirmation dialog
+- And more...
 
-#### Critical UI/UX Bug Fixes
-- **Fixed loading indicator flash during field sync** - Added `silent` mode option to `call()` method
-  - Background operations like `_sync_field` no longer show loading indicator
-  - Usage: `call('action', payload, null, {silent: true})`
-  - Improves perceived performance during typing
+**Alpine Components**
+- `toastManager()` - Toast queue management
+- `fileUpload()` - Drag-and-drop uploads
+- `clipboard()` - Copy to clipboard
+- `searchableSelect()` - Select with search
+- `confirmAction()` - Confirmation modal
+- `charCounter()` - Character counter
+- `currencyInput()` - Currency formatting
+- `phoneInput()` - Phone formatting
+- `dirtyForm()` - Unsaved changes warning
+- `infiniteScroll()` - Load more on scroll
 
-- **Fixed x-model binding in form field templates** - Changed from `safe_field` to `field`
-  - `x-model` requires direct field access for write operations
-  - `safe_field` (with optional chaining `?.`) only works for reading
-  - Affects: `nitro_input`, `nitro_select`, `nitro_checkbox`, `nitro_textarea`
+**Utilities**
+- `format_currency()`, `parse_currency()` - Currency handling
+- `relative_date()`, `month_name()`, `is_overdue()`, `add_months()` - Date utilities
+- `ExportMixin`, `export_csv()`, `export_excel()` - Data export
 
-- **Fixed state flicker on field sync** - Improved merge behavior in `nitro.js`
-  - `_sync_field` responses now skip state update (client already has correct value from x-model)
-  - Prevents UI flicker when typing in form fields
-  - Only validation errors are processed from sync responses
+### Removed
 
-#### Performance Improvements
-- **Added input debouncing to field templates** - 200ms debounce on input/textarea
-  - Reduces server calls during rapid typing
-  - Consistent with `nitro_model` default debounce behavior
+- `NitroComponent` class
+- `@register_component` decorator
+- Pydantic state management
+- Django Ninja JSON API
+- `nitro-model` directive
+- `nitro-action` directive
+- Client-side state synchronization
+- All v0.7 component classes
 
 ### Changed
-- `call()` method signature: `call(actionName, payload, file, options)` - added `options` parameter
-- Form field templates now use proper x-model binding for two-way data flow
 
-## [0.6.1] - 2026-01-13
+- **No Pydantic** - Use Django ModelForms instead
+- **No JSON APIs** - Server renders complete HTML
+- **Alpine for UI only** - No data fetching, just local state
+- **HTMX for everything** - Search, filter, pagination, forms
 
-### Added
-- **Comprehensive Test Suite** - 24 new tests covering v0.6.0 features
-  - Form field template tags tests (nitro_input, nitro_select, nitro_checkbox, nitro_textarea)
-  - SEO template tags tests (nitro_text, nitro_for with XSS protection)
-  - Component rendering tests (nitro_component, nitro_scripts)
-  - Conditional rendering tests (nitro_if)
-  - Utility functions tests with 100% coverage
-  - Message handling tests (success, error, info, warning)
+---
 
-### Fixed
-- **CI/CD Pipeline** - All checks now passing
-  - Fixed ruff linting issues (import sorting, exception handling)
-  - Applied consistent code formatting across all files
-  - Fixed mkdocs build warnings and broken links
-- **Test Compatibility** - Updated `test_process_action_invalid` to match graceful error handling
-  - Changed from expecting `ValueError` exception to checking error response dict
-  - Aligns with production behavior where errors return JSON instead of raising exceptions
-
-### Improved
-- **Test Coverage** - Significant coverage improvements
-  - Overall coverage: 46% → 59% (+13%)
-  - nitro_tags.py: 49% → 88% (+39%)
-  - utils.py: 44% → 100% (+56%)
-  - Total tests: 41 → 65 (+24 new tests)
-
-### Documentation
-- Updated all examples to use Nitro template tags instead of raw Alpine.js
-  - Counter example now uses `{% nitro_text %}` for display
-  - Contact form uses `{% nitro_input %}` and `{% nitro_textarea %}`
-  - CRUD examples use form field tags throughout
-- Fixed broken documentation links in smart-updates.md and zero-javascript-mode.md
-
-## [0.6.0] - 2026-01-13
+## [0.7.0] - 2025-12-15
 
 ### Added
-- **Form Field Template Tags** - Pre-built tags for common form fields
-  - `{% nitro_input %}` - Text, email, number, date, tel inputs with error handling
-  - `{% nitro_select %}` - Dropdown with choices support
-  - `{% nitro_checkbox %}` - Checkbox with label
-  - `{% nitro_textarea %}` - Multi-line text input
-  - All tags include automatic error display and Bootstrap styling
-  - Support for edit buffers and nested fields
-- **Default Debounce (200ms)** - `nitro_model` now includes 200ms debounce by default
-  - Reduces server load and improves performance
-  - Use `no_debounce=True` to disable when instant sync is needed
-- **Code Deduplication** - New `nitro/utils.py` module
-  - `build_error_path()` - Builds Alpine.js error paths with optional chaining
-  - `build_safe_field()` - Builds safe field paths for edit buffers
-  - Eliminates ~48 lines of duplicated code across template tags
-- **TypeAdapter Caching** - Performance optimization in `BaseListComponent`
-  - Class-level cache for Pydantic TypeAdapter (~1-5ms saved per request)
-  - Automatically applied in `get_initial_state()` and `refresh()` methods
+- `BaseListComponent` with auto-inferred state class
+- DX improvements for component development
 
 ### Changed
-- Django 5.2 compatibility using `django-template-partials`
-  - Install with: `pip install django-nitro[django52]`
-  - Django 6.0+ uses built-in template partials
-- Updated template tag implementations to use utility functions
-- Improved form field templates with consistent styling
+- Simplified component state inference
 
-### Documentation
-- Added comprehensive Form Field Template Tags section to README
-- New contact-form example demonstrating all form field tags
-- Updated examples README with learning path
-- Added Django 5.2 compatibility instructions
+---
 
-## [0.5.1] - 2026-01-04
-
-### Fixed
-- **Security mixins now work automatically** - No manual `get_base_queryset()` override needed
-- **Fixed Alpine.js initialization error** in `{% nitro_for %}` tag
-- **State variables unpacked to root** - Use `{{ items }}` instead of `{{ state.items }}`
-- **Custom JSON encoder** - Auto-handles UUID, datetime, date, Decimal
-- **Pydantic v2 validation** - Field validation now works correctly
-- **Added email-validator** dependency
-
-### Documentation
-- Updated security mixin docs with v0.5.1 automatic filtering
-- Added NitroJSONEncoder documentation
-- Updated BaseListComponent examples
-
-## [0.3.0] - 2025-12-28
+## [0.6.0] - 2025-11-01
 
 ### Added
-- **Security Mixins** for common authentication and authorization patterns
-  - `OwnershipMixin` - Filter querysets to show only current user's data
-  - `TenantScopedMixin` - Multi-tenant data isolation for SaaS applications
-  - `PermissionMixin` - Framework for custom permission logic
-- **Request User Helpers** in `NitroComponent` base class
-  - `current_user` property - Shortcut to `request.user` with auth check
-  - `is_authenticated` property - Check if user is authenticated
-  - `require_auth()` method - Enforce authentication with error message
-- **Examples Reorganization**
-  - Moved `example/` to `examples/property-manager/`
-  - Added `examples/counter/` - Simple counter example for beginners
-  - Each example is now a standalone Django project
+- Initial component-based architecture
+- Pydantic state management
+- Django Ninja API integration
+- Real-time state synchronization
 
-### Changed
-- Reorganized examples into separate standalone projects
-- Updated documentation with security patterns
+---
 
-### Fixed
-- Updated GitHub Actions to v4/v5 (artifact-actions deprecation)
+## License
 
-## [0.2.0] - 2025-12-27
-
-### Added
-- `BaseListComponent` for CRUD list views with pagination, search, and filters
-- `PaginationMixin` for Django queryset pagination
-- `SearchMixin` for full-text search across configurable fields
-- `FilterMixin` for dynamic queryset filtering
-- Navigation methods: `next_page()`, `previous_page()`, `go_to_page()`, `set_per_page()`
-
-## [0.1.0] - Initial Release
-
-### Added
-- `NitroComponent` base class for reactive components
-- `ModelNitroComponent` for Django ORM integration
-- `CrudNitroComponent` with pre-built CRUD operations
-- AlpineJS integration
-- Django Ninja API endpoint
-- Pydantic-based state validation
-- Built-in integrity verification
-- File upload support
-
-[View full changelog →](https://github.com/django-nitro/django-nitro/blob/main/CHANGELOG.md)
+MIT License

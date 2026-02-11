@@ -1,0 +1,43 @@
+{# Inline edit input - replaces a table cell with an editable input #}
+<form hx-post="{{ save_url }}"
+      hx-target="closest td"
+      hx-swap="innerHTML"
+      class="flex items-center gap-1">
+    {% csrf_token %}
+
+    {% if config.type == 'select' %}
+    <select name="value"
+            class="text-sm border border-primary-300 rounded-lg px-2 py-1 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+            autofocus>
+        {% for val, label in config.choices %}
+        <option value="{{ val }}" {% if val == current_value %}selected{% endif %}>
+            {{ label }}
+        </option>
+        {% endfor %}
+    </select>
+    {% else %}
+    <input type="{{ config.type|default:'text' }}"
+           name="value"
+           value="{{ current_value }}"
+           {% if config.min is not None %}min="{{ config.min }}"{% endif %}
+           {% if config.max is not None %}max="{{ config.max }}"{% endif %}
+           {% if config.step %}step="{{ config.step }}"{% endif %}
+           class="text-sm border border-primary-300 rounded-lg px-2 py-1 w-full focus:ring-1 focus:ring-primary-500 focus:outline-none"
+           autofocus>
+    {% endif %}
+
+    <button type="submit" class="text-primary-600 hover:text-primary-800 p-1" title="Guardar">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+    </button>
+    <button type="button"
+            hx-get="{{ save_url }}"
+            hx-target="closest td"
+            hx-swap="innerHTML"
+            class="text-gray-400 hover:text-gray-600 p-1" title="Cancelar">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+    </button>
+</form>

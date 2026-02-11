@@ -1,842 +1,549 @@
 /**
- * Django Nitro v0.7.0
+ * Django Nitro 0.8 - Core JS for HTMX + Alpine integration.
  *
- * Client-side integration for Django Nitro components using Alpine.js.
- *
- * DOM Events:
- * - nitro:message        → { level, text } - Each message/toast
- * - nitro:action-complete → { component, action } - Action succeeded
- * - nitro:error          → { component, action, error, status } - Error occurred
- * - nitro:* (custom)     → Custom events emitted from Python with emit()
- *
- * Toast System:
- * - Nitro includes native toasts that work without dependencies
- * - To use your favorite toast library, define window.NitroToastAdapter:
- *
- *   window.NitroToastAdapter = {
- *       show: function(message, level, config) {
- *           // message: string - Toast message
- *           // level: 'success' | 'error' | 'info' | 'warning'
- *           // config: { enabled, position, duration, style }
- *           Swal.fire({ icon: level, title: message, toast: true });
- *       }
- *   };
- *
- * Debug Mode:
- * - Set window.NITRO_DEBUG = true to enable detailed console logging
+ * Responsibilities:
+ * - CSRF token on all HTMX requests
+ * - HTMX error handling → toast notifications
+ * - HX-Trigger 'showToast' → toast component
+ * - HX-Trigger 'closeModal'/'closeSlideover' → Alpine events
+ * - Loading indicator management
+ * - NitroToast (vanilla JS fallback)
+ * - NitroUtils (clipboard, formatting, debounce)
+ * - Alpine components: toastManager, nitroModal, nitroSlideover, nitroSelect
  */
 
-// Debug mode: Set window.NITRO_DEBUG = true to enable debug logging
-const NITRO_DEBUG = typeof window !== 'undefined' && window.NITRO_DEBUG === true;
+(function () {
+  'use strict';
 
-/**
- * Get CSRF token from cookies
- */
-function getCookie(name) {
+  // ========================================================================
+  // CSRF Token for HTMX
+  // ========================================================================
+
+  function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
         }
+      }
     }
     return cookieValue;
-}
+  }
 
-/**
- * Show a toast notification
- * Checks for custom adapter or uses native implementation
- */
-function showToast(message, level, config) {
-    // Check if custom adapter is available
-    if (window.NitroToastAdapter && typeof window.NitroToastAdapter.show === 'function') {
-        window.NitroToastAdapter.show(message, level, config);
-        return;
+  // Add CSRF token to all HTMX requests
+  document.addEventListener('htmx:configRequest', function (event) {
+    const csrfToken = getCookie('csrftoken');
+    if (csrfToken) {
+      event.detail.headers['X-CSRFToken'] = csrfToken;
     }
+  });
 
-    // Fall back to native toasts
-    showNativeToast(message, level, config);
-}
+  // ========================================================================
+  // HTMX Loading Indicators
+  // ========================================================================
 
-/**
- * Native toast implementation
- * Professional toasts without external dependencies
- */
-function showNativeToast(message, level = 'info', config = {}) {
-    const {
-        position = 'top-right',
-        duration = 3000,
-        style = 'default'
-    } = config;
-
-    // Get or create toast container
-    const containerClass = `nitro-toast-container nitro-toast-${position}`;
-    let container = document.querySelector(`.${containerClass.replace(/ /g, '.')}`);
-    if (!container) {
-        container = document.createElement('div');
-        container.className = containerClass;
-        document.body.appendChild(container);
+  document.addEventListener('htmx:beforeRequest', function (event) {
+    var target = event.detail.target;
+    if (target) {
+      target.classList.add('htmx-loading');
     }
+  });
 
-    // Icon mapping
-    const icons = {
-        success: '✓',
-        error: '✕',
-        warning: '⚠',
-        info: 'ℹ'
-    };
+  document.addEventListener('htmx:afterRequest', function (event) {
+    var target = event.detail.target;
+    if (target) {
+      target.classList.remove('htmx-loading');
+    }
+  });
 
-    // Create toast element (safe from XSS)
-    const toast = document.createElement('div');
-    toast.className = `nitro-toast nitro-toast-${level} nitro-toast-${style}`;
+  // ========================================================================
+  // HTMX + Alpine Integration
+  // ========================================================================
 
-    // Icon
-    const iconSpan = document.createElement('span');
-    iconSpan.className = 'nitro-toast-icon';
-    iconSpan.textContent = icons[level] || icons.info;
+  // Ensure Alpine components initialize on HTMX-swapped content
+  // This handles cases where morph/innerHTML swaps don't trigger MutationObserver correctly
+  document.addEventListener('htmx:afterSwap', function (event) {
+    if (window.Alpine && event.detail.target) {
+      // Small delay to let DOM settle after swap
+      requestAnimationFrame(function () {
+        // Find any uninitialized Alpine components and init them
+        var uninitializedEls = event.detail.target.querySelectorAll('[x-data]:not([data-alpine-initialized])');
+        uninitializedEls.forEach(function (el) {
+          Alpine.initTree(el);
+        });
+      });
+    }
+  });
 
-    // Message (textContent prevents XSS)
-    const textSpan = document.createElement('span');
-    textSpan.className = 'nitro-toast-text';
-    textSpan.textContent = message;
+  // ========================================================================
+  // HTMX Error Handling
+  // ========================================================================
 
-    // Close button
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'nitro-toast-close';
-    closeBtn.setAttribute('aria-label', 'Close');
-    closeBtn.innerHTML = '&times;';
+  document.addEventListener('htmx:responseError', function (event) {
+    var status = event.detail.xhr.status;
+    var message = 'Error del servidor. Intente nuevamente.';
+    if (status === 403) message = 'No tienes permiso para esta acción.';
+    if (status === 404) message = 'Recurso no encontrado.';
+    if (status === 422) message = 'Error de validación.';
+    if (status === 500) message = 'Error interno del servidor.';
 
-    toast.appendChild(iconSpan);
-    toast.appendChild(textSpan);
-    toast.appendChild(closeBtn);
+    window.dispatchEvent(new CustomEvent('show-toast', {
+      detail: { message: message, type: 'error' }
+    }));
+  });
 
-    // Add to container
-    container.appendChild(toast);
+  // ========================================================================
+  // HX-Trigger: closeModal, closeSlideover
+  // Note: showToast is handled by HTMX automatically dispatching the event
+  // ========================================================================
 
-    // Close button handler
-    const removeToast = () => {
-        toast.classList.remove('nitro-toast-show');
-        toast.classList.add('nitro-toast-hide');
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-            // Remove container if empty
-            if (container.children.length === 0) {
-                container.remove();
-            }
-        }, 300);
-    };
+  document.addEventListener('htmx:afterRequest', function (event) {
+    var xhr = event.detail.xhr;
+    if (!xhr) return;
+    var trigger = xhr.getResponseHeader('HX-Trigger');
+    if (!trigger) return;
 
-    closeBtn.addEventListener('click', removeToast);
+    try {
+      var data = JSON.parse(trigger);
+      // Note: showToast is NOT handled here - HTMX dispatches it automatically
+      // and NitroToast listens via document.body.addEventListener('showToast', ...)
+      if (data.closeModal) {
+        window.dispatchEvent(new CustomEvent('close-modal', {
+          detail: data.closeModal
+        }));
+      }
+      if (data.closeSlideover) {
+        window.dispatchEvent(new CustomEvent('close-slideover', {
+          detail: data.closeSlideover
+        }));
+      }
+    } catch (e) {
+      // Not JSON, might be a simple event name
+    }
+  });
 
-    // Trigger show animation
-    requestAnimationFrame(() => {
-        toast.classList.add('nitro-toast-show');
+  // ========================================================================
+  // NitroToast (Vanilla JS - works without Alpine)
+  // ========================================================================
+
+  var NitroToast = {
+    container: null,
+    counter: 0,
+
+    init: function () {
+      if (this.container) return;
+
+      this.container = document.createElement('div');
+      this.container.id = 'nitro-toast-container';
+      this.container.className = 'fixed bottom-4 right-4 z-50 space-y-2';
+      document.body.appendChild(this.container);
+
+      var self = this;
+      // Listen for custom show-toast events (from our code)
+      window.addEventListener('show-toast', function (e) { self.show(e.detail); });
+      // Listen for HTMX HX-Trigger showToast events (bubbles from triggering element)
+      // Use capture phase and track shown messages to prevent duplicates
+      var shownMessages = new Set();
+      document.addEventListener('showToast', function (e) {
+        var key = JSON.stringify(e.detail);
+        if (!shownMessages.has(key)) {
+          shownMessages.add(key);
+          self.show(e.detail);
+          // Clear after a short delay to allow same message later
+          setTimeout(function() { shownMessages.delete(key); }, 100);
+        }
+      }, true);
+    },
+
+    show: function (opts) {
+      var message = opts.message || '';
+      var type = opts.type || 'info';
+      var duration = opts.duration !== undefined ? opts.duration : 5000;
+      var id = ++this.counter;
+
+      var colors = {
+        success: 'bg-green-50 border-green-200 text-green-800',
+        error: 'bg-red-50 border-red-200 text-red-800',
+        warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+        info: 'bg-blue-50 border-blue-200 text-blue-800'
+      };
+      var icons = { success: '\u2713', error: '\u2717', warning: '\u26A0', info: '\u2139' };
+
+      var toast = document.createElement('div');
+      toast.id = 'toast-' + id;
+      toast.className = 'flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg max-w-sm transform transition-all duration-300 translate-y-2 opacity-0 ' + (colors[type] || colors.info);
+      toast.innerHTML =
+        '<span>' + (icons[type] || icons.info) + '</span>' +
+        '<span class="flex-1">' + this.escapeHtml(message) + '</span>' +
+        '<button onclick="NitroToast.remove(' + id + ')" class="text-gray-400 hover:text-gray-600">\u00D7</button>';
+
+      this.container.appendChild(toast);
+
+      requestAnimationFrame(function () {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      if (duration > 0) {
+        var self = this;
+        setTimeout(function () { self.remove(id); }, duration);
+      }
+
+      return id;
+    },
+
+    remove: function (id) {
+      var toast = document.getElementById('toast-' + id);
+      if (toast) {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(function () { toast.remove(); }, 300);
+      }
+    },
+
+    escapeHtml: function (text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    },
+
+    success: function (message, duration) { return this.show({ message: message, type: 'success', duration: duration }); },
+    error: function (message, duration) { return this.show({ message: message, type: 'error', duration: duration }); },
+    warning: function (message, duration) { return this.show({ message: message, type: 'warning', duration: duration }); },
+    info: function (message, duration) { return this.show({ message: message, type: 'info', duration: duration }); }
+  };
+
+  // Auto-init NitroToast on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', function () { NitroToast.init(); });
+
+  // ========================================================================
+  // NitroUtils - Common JS utilities
+  // ========================================================================
+
+  var NitroUtils = {
+    copyToClipboard: function (text) {
+      return navigator.clipboard.writeText(text).then(function () {
+        NitroToast.success('Copiado al portapapeles');
+        return true;
+      }).catch(function () {
+        NitroToast.error('Error al copiar');
+        return false;
+      });
+    },
+
+    formatCurrency: function (amount, currency) {
+      currency = currency || (window.NITRO_DEFAULT_CURRENCY || 'USD');
+      var symbols = { DOP: 'RD$', USD: 'US$', EUR: '\u20AC' };
+      var symbol = symbols[currency] || currency;
+      return symbol + ' ' + parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2 });
+    },
+
+    formatPhone: function (phone) {
+      var digits = phone.replace(/\D/g, '');
+      if (digits.length === 10) {
+        return '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6);
+      }
+      return phone;
+    },
+
+    formatFileSize: function (bytes) {
+      if (bytes === 0) return '0 Bytes';
+      var k = 1024;
+      var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      var i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    },
+
+    debounce: function (func, wait) {
+      var timeout;
+      return function () {
+        var args = arguments;
+        var context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(function () { func.apply(context, args); }, wait);
+      };
+    },
+
+    whatsappLink: function (phone, message) {
+      var cleanPhone = phone.replace(/\D/g, '');
+      var url = 'https://wa.me/' + cleanPhone;
+      if (message) {
+        url += '?text=' + encodeURIComponent(message);
+      }
+      return url;
+    }
+  };
+
+  // ========================================================================
+  // Loading Button Styles
+  // ========================================================================
+
+  var style = document.createElement('style');
+  style.textContent =
+    '.nitro-btn-loading .nitro-spinner { display: inline-block; }' +
+    '.nitro-btn-loading .nitro-btn-text { opacity: 0.7; }' +
+    '.nitro-btn-loading { pointer-events: none; }' +
+    '.nitro-spinner { display: none; }';
+  document.head.appendChild(style);
+
+  // Expose globally
+  window.NitroToast = NitroToast;
+  window.NitroUtils = NitroUtils;
+
+  // ========================================================================
+  // Global Event Helpers (for use in templates)
+  // ========================================================================
+
+  window.Nitro = {
+    openSlideover: function (id) {
+      window.dispatchEvent(new CustomEvent('open-slideover', { detail: id }));
+    },
+    closeSlideover: function (id) {
+      window.dispatchEvent(new CustomEvent('close-slideover', { detail: id || '' }));
+    },
+    openModal: function (id) {
+      window.dispatchEvent(new CustomEvent('open-modal', { detail: id }));
+    },
+    closeModal: function (id) {
+      window.dispatchEvent(new CustomEvent('close-modal', { detail: id || '' }));
+    }
+  };
+
+  // ========================================================================
+  // Alpine Components
+  // ========================================================================
+
+  document.addEventListener('alpine:init', function () {
+
+    // Toast Manager (Alpine version) - DEPRECATED: Use NitroToast instead
+    // This component is kept for backwards compatibility but doesn't listen to events
+    // NitroToast (vanilla JS) handles all toast notifications
+    Alpine.data('toastManager', function () {
+      return {
+        toasts: [],
+        addToast: function (message, type) {
+          var id = Date.now();
+          type = type || 'success';
+          this.toasts.push({ id: id, message: message, type: type });
+          var self = this;
+          setTimeout(function () {
+            self.toasts = self.toasts.filter(function (t) { return t.id !== id; });
+          }, 4000);
+        },
+        init: function () {
+          // NitroToast handles show-toast events - this is kept for manual Alpine usage only
+        }
+      };
     });
 
-    // Auto-remove after duration
-    if (duration > 0) {
-        setTimeout(removeToast, duration);
-    }
-}
+    // Modal Component
+    Alpine.data('nitroModal', function (modalId) {
+      return {
+        open: false,
+        modalId: modalId,
+        init: function () {
+          var self = this;
+          window.addEventListener('open-modal', function (e) {
+            if (e.detail === self.modalId) self.open = true;
+          });
+          window.addEventListener('close-modal', function (e) {
+            if (e.detail === self.modalId) self.open = false;
+          });
+        }
+      };
+    });
 
-/**
- * Apply list diff for smart updates
- * Updates array in-place based on diff operations
- */
-function applyListDiff(currentArray, diff) {
-    if (!diff) return;
+    // Slideover Component
+    Alpine.data('nitroSlideover', function (slideoverId) {
+      return {
+        open: false,
+        slideoverId: slideoverId,
+        init: function () {
+          var self = this;
+          window.addEventListener('open-slideover', function (e) {
+            if (e.detail === self.slideoverId) self.open = true;
+          });
+          window.addEventListener('close-slideover', function (e) {
+            if (!e.detail || e.detail === self.slideoverId) self.open = false;
+          });
+        }
+      };
+    });
 
-    // Remove items
-    if (diff.removed && diff.removed.length > 0) {
-        diff.removed.forEach(id => {
-            const index = currentArray.findIndex(item => item.id === id);
-            if (index !== -1) {
-                currentArray.splice(index, 1);
-            }
-        });
-    }
+    // Searchable Select Component (with optional cascade support)
+    Alpine.data('nitroSelect', function (config) {
+      return {
+        open: false,
+        search: '',
+        selectedValue: config.value || '',
+        selectedLabel: config.label || '',
+        options: config.options || [],
+        filteredOptions: [],
+        searchUrl: config.searchUrl || '',
+        loading: false,
+        highlightIndex: -1,
+        parentInput: config.parentInput || '',
+        cascadeParam: config.cascadeParam || 'parent',
 
-    // Update items
-    if (diff.updated && diff.updated.length > 0) {
-        diff.updated.forEach(updatedItem => {
-            const index = currentArray.findIndex(item => item.id === updatedItem.id);
-            if (index !== -1) {
-                Object.assign(currentArray[index], updatedItem);
-            }
-        });
-    }
-
-    // Add items (to the end by default)
-    if (diff.added && diff.added.length > 0) {
-        diff.added.forEach(item => {
-            currentArray.push(item);
-        });
-    }
-}
-
-/**
- * Setup event listeners with modifiers support
- * Handles nitro:click.prevent.stop="action_name" attributes
- */
-function setupEventModifiers(element) {
-    // Find all elements with nitro:click or similar attributes
-    const eventTypes = ['click', 'submit', 'change', 'input'];
-
-    eventTypes.forEach(eventType => {
-        const selector = `[nitro\\:${eventType}], [nitro\\:${eventType}\\.prevent], [nitro\\:${eventType}\\.stop], [nitro\\:${eventType}\\.self]`;
-        const elements = element.querySelectorAll(selector);
-
-        elements.forEach(el => {
-            // Get all attributes that start with nitro:{eventType}
-            Array.from(el.attributes).forEach(attr => {
-                if (attr.name.startsWith(`nitro:${eventType}`)) {
-                    const fullAttr = attr.name;
-                    const actionName = attr.value;
-
-                    // Parse modifiers from attribute name
-                    // e.g., "nitro:click.prevent.stop" -> ['prevent', 'stop']
-                    const parts = fullAttr.split('.');
-                    const modifiers = parts.slice(1); // Everything after "nitro:click"
-
-                    if (NITRO_DEBUG && modifiers.length > 0) {
-                        console.log(`[Nitro] Setting up ${eventType} with modifiers:`, modifiers, 'for action:', actionName);
-                    }
-
-                    // Add event listener with modifiers
-                    el.addEventListener(eventType, (event) => {
-                        // Apply modifiers
-                        if (modifiers.includes('prevent')) {
-                            event.preventDefault();
+        init: function () {
+          var self = this;
+          this.filteredOptions = this.options;
+          if (this.selectedValue) {
+            var found = this.options.find(function (o) { return o.value === config.value; });
+            if (found) this.selectedLabel = found.label;
+          }
+          // Watch parent for cascade (search within same form, not globally)
+          if (this.parentInput) {
+            // Use $nextTick to ensure all Alpine components have initialized
+            this.$nextTick(function () {
+              // Find the form this component belongs to
+              var form = self.$el.closest('form');
+              var parentEl = form
+                ? form.querySelector(self.parentInput)
+                : document.querySelector(self.parentInput);
+              if (parentEl) {
+                // If parent already has a value, load children (preserving current selection)
+                if (parentEl.value && self.searchUrl) {
+                  var savedValue = self.selectedValue;
+                  var savedLabel = self.selectedLabel;
+                  self.loading = true;
+                  fetch(self._buildUrl())
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                      self.options = data.results || [];
+                      self.filteredOptions = self.options;
+                      // Restore saved selection if it's in the loaded options
+                      if (savedValue) {
+                        var found = self.options.find(function (o) { return o.value === savedValue; });
+                        if (found) {
+                          self.selectedValue = savedValue;
+                          self.selectedLabel = found.label;
                         }
-                        if (modifiers.includes('stop')) {
-                            event.stopPropagation();
-                        }
-                        if (modifiers.includes('self')) {
-                            // Only trigger if event.target === event.currentTarget
-                            if (event.target !== event.currentTarget) {
-                                return;
-                            }
-                        }
-
-                        // Find the Alpine component and call the action
-                        // This is handled by Alpine's x-data, so we just need to ensure modifiers work
-                        // The actual action call is handled by Alpine's @click directive
-                    });
+                      }
+                      self.loading = false;
+                      // Notify dependent selects that this one is ready
+                      self.$refs.hiddenInput.dispatchEvent(new Event('cascade-ready', { bubbles: true }));
+                    })
+                    .catch(function () { self.loading = false; });
                 }
+                // Listen for future changes
+                parentEl.addEventListener('change', function () {
+                  self.clear();
+                  if (self.searchUrl && parentEl.value) {
+                    self.loadChildren(parentEl.value);
+                  } else {
+                    self.options = [];
+                    self.filteredOptions = [];
+                  }
+                });
+                // Also listen for cascade-ready from parent (for chained cascades)
+                parentEl.addEventListener('cascade-ready', function () {
+                  if (self.searchUrl && parentEl.value && !self.selectedValue) {
+                    self.loadChildren(parentEl.value);
+                  }
+                });
+              }
             });
-        });
+          }
+        },
+
+        _buildUrl: function (extraParams) {
+          var url = this.searchUrl;
+          if (this.parentInput) {
+            var form = this.$el.closest('form');
+            var parentEl = form
+              ? form.querySelector(this.parentInput)
+              : document.querySelector(this.parentInput);
+            if (parentEl && parentEl.value) {
+              var sep = url.indexOf('?') !== -1 ? '&' : '?';
+              url += sep + this.cascadeParam + '=' + encodeURIComponent(parentEl.value);
+            }
+          }
+          if (extraParams) {
+            var sep2 = url.indexOf('?') !== -1 ? '&' : '?';
+            url += sep2 + extraParams;
+          }
+          return url;
+        },
+
+        loadChildren: function (parentValue) {
+          var self = this;
+          if (!parentValue || !self.searchUrl) return;
+          self.loading = true;
+          fetch(self._buildUrl())
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              self.options = data.results || [];
+              self.filteredOptions = self.options;
+              self.loading = false;
+            })
+            .catch(function () { self.loading = false; });
+        },
+
+        filter: function () {
+          var self = this;
+          self.highlightIndex = -1;
+          if (self.searchUrl) {
+            self.loading = true;
+            fetch(self._buildUrl('q=' + encodeURIComponent(self.search)))
+              .then(function (r) { return r.json(); })
+              .then(function (data) {
+                self.filteredOptions = data.results || [];
+                self.loading = false;
+              })
+              .catch(function () { self.loading = false; });
+          } else {
+            var q = self.search.toLowerCase();
+            if (!q) {
+              self.filteredOptions = self.options;
+            } else {
+              self.filteredOptions = self.options.filter(function (o) {
+                return o.label.toLowerCase().indexOf(q) !== -1;
+              });
+            }
+          }
+        },
+
+        select: function (value, label) {
+          this.selectedValue = value;
+          this.selectedLabel = label;
+          this.open = false;
+          this.search = '';
+          this.filteredOptions = this.options;
+          this.$refs.hiddenInput.value = value;
+          this.$refs.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        },
+
+        clear: function () {
+          this.selectedValue = '';
+          this.selectedLabel = '';
+          this.search = '';
+          this.filteredOptions = this.options;
+          this.$refs.hiddenInput.value = '';
+          this.$refs.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        },
+
+        onKeydown: function (event) {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            if (this.highlightIndex < this.filteredOptions.length - 1) this.highlightIndex++;
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (this.highlightIndex > 0) this.highlightIndex--;
+          } else if (event.key === 'Enter') {
+            event.preventDefault();
+            if (this.highlightIndex >= 0 && this.filteredOptions[this.highlightIndex]) {
+              var opt = this.filteredOptions[this.highlightIndex];
+              this.select(opt.value, opt.label);
+            }
+          } else if (event.key === 'Escape') {
+            this.open = false;
+          }
+        }
+      };
     });
-}
+  });
 
-/**
- * Alpine.js component initialization
- */
-document.addEventListener('alpine:init', () => {
-    // Create global store for dirty state tracking and component registry
-    Alpine.store('nitro', {
-        dirtyComponents: [],
-        componentRegistry: {},
-
-        markDirty(componentId) {
-            if (!this.dirtyComponents.includes(componentId)) {
-                this.dirtyComponents.push(componentId);
-                if (NITRO_DEBUG) {
-                    console.log('[Nitro] Component marked as dirty:', componentId);
-                }
-            }
-        },
-
-        markClean(componentId) {
-            const index = this.dirtyComponents.indexOf(componentId);
-            if (index !== -1) {
-                this.dirtyComponents.splice(index, 1);
-                if (NITRO_DEBUG) {
-                    console.log('[Nitro] Component marked as clean:', componentId);
-                }
-            }
-        },
-
-        isDirty(componentId) {
-            return this.dirtyComponents.includes(componentId);
-        },
-
-        hasAnyDirty() {
-            return this.dirtyComponents.length > 0;
-        },
-
-        // Register component for parent-child access
-        registerComponent(componentId, component, parentId) {
-            this.componentRegistry[componentId] = {
-                component: component,
-                parentId: parentId
-            };
-            if (NITRO_DEBUG) {
-                console.log(`[Nitro] Registered component: ${componentId}`, parentId ? `with parent: ${parentId}` : '(no parent)');
-            }
-        },
-
-        // Get component by ID
-        getComponent(componentId) {
-            const entry = this.componentRegistry[componentId];
-            return entry ? entry.component : null;
-        },
-
-        // Get parent component
-        getParent(componentId) {
-            const entry = this.componentRegistry[componentId];
-            if (entry && entry.parentId) {
-                return this.getComponent(entry.parentId);
-            }
-            return null;
-        }
-    });
-
-    Alpine.data('nitro', (componentName, element) => {
-        // Parse state from data attribute
-        const initialPayload = JSON.parse(element.dataset.nitroState || '{}');
-
-        // Validate we got data
-        if (!initialPayload.state) {
-            console.error('[Nitro] No state found in data attribute for', componentName);
-            initialPayload.state = {};
-        }
-
-        if (NITRO_DEBUG) {
-            console.log('[Nitro] Initializing', componentName, 'with state:', initialPayload.state);
-        }
-
-        // Setup event modifiers for nitro:click attributes
-        setTimeout(() => setupEventModifiers(element), 0);
-
-        return {
-            // Spread state into component root
-            ...initialPayload.state,
-
-            // Internal variables
-            _errors: initialPayload.errors || {},
-            _integrity: initialPayload.integrity || null,
-            _messages: initialPayload.messages || [],
-            _toast_config: initialPayload.toast_config || {},
-            _events: [],
-            isLoading: false,
-            _pollInterval: null,
-            _isDirty: false,
-            _originalState: null,
-
-            get errors() { return this._errors; },
-            get messages() { return this._messages; },
-            get events() { return this._events; },
-            get isDirty() { return this._isDirty; },
-
-            // Mark component as dirty
-            markDirty() {
-                if (!this._isDirty) {
-                    this._isDirty = true;
-                    Alpine.store('nitro').markDirty(element.id);
-                }
-            },
-
-            // Mark component as clean
-            markClean() {
-                if (this._isDirty) {
-                    this._isDirty = false;
-                    Alpine.store('nitro').markClean(element.id);
-                }
-            },
-
-            // Track field changes for dirty state
-            trackChange(field) {
-                // Only mark as dirty for form buffer fields (actual edits)
-                // Skip search, filter, and other non-form fields
-                if (field && (field.includes('_buffer') || field.includes('buffer.'))) {
-                    this.markDirty();
-
-                    if (NITRO_DEBUG) {
-                        console.log(`[Nitro] Form field changed: ${field}, component marked dirty`);
-                    }
-                } else if (NITRO_DEBUG) {
-                    console.log(`[Nitro] Non-form field changed: ${field}, skipping dirty tracking`);
-                }
-            },
-
-            // $parent accessor for child components
-            get $parent() {
-                const parent = Alpine.store('nitro').getParent(element.id);
-                if (!parent) {
-                    console.warn(`[Nitro] No parent component found for ${element.id}`);
-                    return null;
-                }
-                return parent;
-            },
-
-            // Initialize polling if configured
-            init() {
-                // Register this component in the global registry
-                const parentId = element.dataset.nitroParent || null;
-                Alpine.store('nitro').registerComponent(element.id, this, parentId);
-
-                // Store original state for dirty checking
-                this._originalState = JSON.stringify(this._getCleanState());
-                const pollInterval = element.dataset.nitroPoll;
-                if (pollInterval && parseInt(pollInterval) > 0) {
-                    const interval = parseInt(pollInterval);
-                    if (NITRO_DEBUG) {
-                        console.log(`[Nitro] Setting up polling for ${componentName} every ${interval}ms`);
-                    }
-
-                    // Start polling
-                    this._pollInterval = setInterval(() => {
-                        if (!this.isLoading) {
-                            if (NITRO_DEBUG) {
-                                console.log(`[Nitro] Polling refresh for ${componentName}`);
-                            }
-                            // Call refresh action if it exists, otherwise just re-fetch state
-                            if (typeof this.refresh === 'function') {
-                                this.refresh();
-                            } else {
-                                // Default: call a _poll action that components can implement
-                                this.call('_poll').catch(() => {
-                                    // Ignore errors for polling - component might not have _poll action
-                                });
-                            }
-                        }
-                    }, interval);
-                }
-            },
-
-            // Cleanup polling on component destroy
-            destroy() {
-                if (this._pollInterval) {
-                    clearInterval(this._pollInterval);
-                    if (NITRO_DEBUG) {
-                        console.log(`[Nitro] Cleared polling interval for ${componentName}`);
-                    }
-                }
-
-                // Unregister component
-                delete Alpine.store('nitro').componentRegistry[element.id];
-                if (NITRO_DEBUG) {
-                    console.log(`[Nitro] Unregistered component: ${element.id}`);
-                }
-            },
-
-            async call(actionName, payload = {}, file = null, options = {}) {
-                // Silent mode: don't show loading indicator for background operations
-                const silent = options.silent || false;
-                const showLoading = !silent && !actionName.startsWith('_');
-
-                if (showLoading) {
-                    this.isLoading = true;
-                    this._errors = {};
-                    element.setAttribute('data-loading', 'true');
-                }
-
-                try {
-                    const cleanState = this._getCleanState();
-
-                    if (NITRO_DEBUG) {
-                        console.log('[Nitro] Calling action:', actionName);
-                        console.log('[Nitro] State being sent:', cleanState);
-                        console.log('[Nitro] Payload:', payload);
-                        console.log('[Nitro] File:', file);
-                    }
-
-                    let requestBody;
-                    let headers = {
-                        'X-CSRFToken': getCookie('csrftoken')
-                    };
-
-                    if (file) {
-                        // Use FormData for file uploads
-                        const formData = new FormData();
-                        formData.append('component_name', componentName);
-                        formData.append('action', actionName);
-                        formData.append('state', JSON.stringify(cleanState));
-                        formData.append('payload', JSON.stringify(payload));
-                        formData.append('integrity', this._integrity || '');
-                        formData.append('file', file);
-
-                        requestBody = formData;
-                        // Don't set Content-Type - FormData sets it with boundary
-                    } else {
-                        // Use JSON for normal requests
-                        headers['Content-Type'] = 'application/json';
-                        requestBody = JSON.stringify({
-                            component_name: componentName,
-                            action: actionName,
-                            state: cleanState,
-                            payload: payload,
-                            integrity: this._integrity
-                        });
-                    }
-
-                    // Use different endpoint for file uploads (Django Ninja Form+File)
-                    const endpoint = file ? '/api/nitro/dispatch-file' : '/api/nitro/dispatch';
-
-                    const response = await fetch(endpoint, {
-                        method: 'POST',
-                        headers: headers,
-                        body: requestBody
-                    });
-
-                    if (response.status === 403) {
-                        this._dispatchEvent('nitro:error', {
-                            action: actionName,
-                            error: 'Security verification failed',
-                            status: 403
-                        });
-                        alert("⚠️ Security: Data has been tampered with.");
-                        return;
-                    }
-
-                    if (!response.ok) {
-                        const txt = await response.text();
-                        console.error("[Nitro] Server Error:", txt);
-                        this._dispatchEvent('nitro:error', {
-                            action: actionName,
-                            error: txt,
-                            status: response.status
-                        });
-                        throw new Error(`Server error: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-
-                    // Check for error response from server
-                    if (data.error) {
-                        // Show error toast
-                        const errorConfig = {
-                            position: this._toast_config.position || 'top-right',
-                            duration: 5000,  // 5 seconds for errors
-                            style: this._toast_config.style || 'default'
-                        };
-                        showToast(data.message || 'An error occurred', 'error', errorConfig);
-
-                        // Dispatch error event
-                        this._dispatchEvent('nitro:error', {
-                            action: actionName,
-                            error: data.message,
-                            status: response.status
-                        });
-
-                        if (NITRO_DEBUG) {
-                            console.error('[Nitro] Action error:', data.message);
-                        }
-                        return;
-                    }
-
-                    // Handle smart updates (partial state with diffs)
-                    // FIX: Always use merge strategy for partial updates (including _sync_field)
-                    // This prevents data loss when syncing individual fields
-                    if (data.partial && data.state && !data.merge) {
-                        // Partial update - merge only changed fields
-                        // Skip if data.merge is true (client already has correct value from x-model)
-                        Object.keys(data.state).forEach(key => {
-                            const value = data.state[key];
-                            if (value && typeof value === 'object' && 'diff' in value) {
-                                // Apply list diff
-                                if (Array.isArray(this[key])) {
-                                    applyListDiff(this[key], value.diff);
-                                }
-                            } else {
-                                // Regular update - only update keys that are present in response
-                                this[key] = value;
-                            }
-                        });
-                    } else if (data.merge && data.state) {
-                        // Explicit merge request (for _sync_field)
-                        // DON'T update state - client already has correct value from x-model
-                        // Only validation errors are needed (updated below)
-                        if (NITRO_DEBUG) {
-                            console.log('[Nitro] Skipping state update for _sync_field (client already has value)');
-                        }
-                    } else {
-                        // Full state replacement (backward compatible)
-                        Object.assign(this, data.state);
-                    }
-
-                    this._errors = data.errors || {};
-                    this._integrity = data.integrity;
-                    this._messages = data.messages || [];
-
-                    // Update toast config if provided
-                    if (data.toast_config) {
-                        this._toast_config = data.toast_config;
-                    }
-
-                    // Show toast messages
-                    if (this._toast_config.enabled && data.messages && data.messages.length > 0) {
-                        data.messages.forEach(msg => {
-                            showToast(msg.text, msg.level, this._toast_config);
-                        });
-                    }
-
-                    // Emit message events (for custom handling)
-                    if (data.messages && data.messages.length > 0) {
-                        data.messages.forEach(msg => {
-                            this._dispatchEvent('nitro:message', {
-                                level: msg.level,
-                                text: msg.text
-                            });
-                        });
-                    }
-
-                    // Process and emit custom events from server
-                    if (data.events && data.events.length > 0) {
-                        data.events.forEach(event => {
-                            this._dispatchEvent(event.name, event.data || {});
-                        });
-                    }
-
-                    // Emit action complete event
-                    this._dispatchEvent('nitro:action-complete', {
-                        action: actionName,
-                        state: data.state
-                    });
-
-                    // Mark component as clean after successful save/update actions
-                    // Common save action names - check if action name contains these keywords
-                    const saveKeywords = ['save', 'update', 'create', 'submit', 'cancel', 'toggle_form'];
-                    const isSaveAction = saveKeywords.some(keyword => actionName.toLowerCase().includes(keyword));
-                    if (isSaveAction) {
-                        this.markClean();
-                        if (NITRO_DEBUG) {
-                            console.log(`[Nitro] Component marked clean after ${actionName}`);
-                        }
-                    }
-
-                    // Log messages to console in debug mode
-                    if (NITRO_DEBUG && data.messages && data.messages.length > 0) {
-                        data.messages.forEach(msg => {
-                            const icon = msg.level === 'success' ? '✅' : msg.level === 'error' ? '❌' : '🔔';
-                            console.log(`${icon} [${msg.level}]: ${msg.text}`);
-                        });
-                    }
-
-                } catch (err) {
-                    console.error('Nitro Error:', err);
-                    this._dispatchEvent('nitro:error', {
-                        action: actionName,
-                        error: err.message
-                    });
-                } finally {
-                    if (showLoading) {
-                        this.isLoading = false;
-                        element.removeAttribute('data-loading');
-                    }
-                }
-            },
-
-            _getCleanState() {
-                // Use JSON serialization to get all enumerable properties
-                const serialized = JSON.parse(JSON.stringify(this));
-
-                // Remove forbidden internal fields and Alpine internals
-                const forbidden = ['_errors', '_integrity', '_messages', '_toast_config', '_events', 'isLoading', 'errors', 'messages', 'events'];
-                forbidden.forEach(key => delete serialized[key]);
-
-                // Remove Alpine internal properties (start with $)
-                Object.keys(serialized).forEach(key => {
-                    if (key.startsWith('$')) {
-                        delete serialized[key];
-                    }
-                });
-
-                return serialized;
-            },
-
-            _dispatchEvent(eventName, detail = {}) {
-                const event = new CustomEvent(eventName, {
-                    detail: {
-                        component: componentName,
-                        ...detail
-                    },
-                    bubbles: true,
-                    cancelable: true
-                });
-                window.dispatchEvent(event);
-
-                if (NITRO_DEBUG) {
-                    console.log(`[Nitro] Event: ${eventName}`, detail);
-                }
-            },
-
-            /**
-             * Handle file upload with progress tracking and preview
-             * Used by {% nitro_file %} template tag
-             */
-            async handleFileUpload(event, fieldName, options = {}) {
-                const file = event.target.files?.[0];
-                if (!file) {
-                    if (NITRO_DEBUG) {
-                        console.log('[Nitro] No file selected');
-                    }
-                    return;
-                }
-
-                if (NITRO_DEBUG) {
-                    console.log('[Nitro] File selected:', file.name, file.size, 'bytes');
-                }
-
-                // Validate file size if maxSize specified
-                if (options.maxSize) {
-                    const maxBytes = this._parseFileSize(options.maxSize);
-                    if (file.size > maxBytes) {
-                        const maxSizeFormatted = this._formatFileSize(maxBytes);
-                        const fileSizeFormatted = this._formatFileSize(file.size);
-                        this._errors[fieldName] = `File is too large (${fileSizeFormatted}). Maximum allowed: ${maxSizeFormatted}`;
-
-                        // Dispatch error event
-                        this._dispatchEvent('nitro:file-error', {
-                            field: fieldName,
-                            error: 'File too large',
-                            size: file.size,
-                            maxSize: maxBytes
-                        });
-
-                        if (NITRO_DEBUG) {
-                            console.error('[Nitro] File too large:', fileSizeFormatted, '>', maxSizeFormatted);
-                        }
-                        return;
-                    }
-                }
-
-                // Generate preview for images if requested
-                if (options.preview && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        // Store preview URL in state
-                        this[`${fieldName}Preview`] = e.target.result;
-
-                        // Dispatch preview ready event
-                        this._dispatchEvent('nitro:file-preview', {
-                            field: fieldName,
-                            preview: e.target.result,
-                            file: { name: file.name, size: file.size, type: file.type }
-                        });
-                    };
-                    reader.readAsDataURL(file);
-                }
-
-                // Initialize upload progress
-                this[`${fieldName}UploadProgress`] = 0;
-                this[`${fieldName}Uploading`] = true;
-
-                try {
-                    // Dispatch upload start event
-                    this._dispatchEvent('nitro:file-upload-start', {
-                        field: fieldName,
-                        file: { name: file.name, size: file.size, type: file.type }
-                    });
-
-                    // Upload file using XMLHttpRequest for progress tracking
-                    const uploadedFile = await this._uploadFileWithProgress(file, fieldName);
-
-                    // Store file info in state
-                    this[fieldName] = {
-                        name: file.name,
-                        size: file.size,
-                        type: file.type,
-                        url: uploadedFile.url || null
-                    };
-
-                    // Dispatch upload complete event
-                    this._dispatchEvent('nitro:file-upload-complete', {
-                        field: fieldName,
-                        file: this[fieldName]
-                    });
-
-                    if (NITRO_DEBUG) {
-                        console.log('[Nitro] File upload complete:', this[fieldName]);
-                    }
-
-                } catch (error) {
-                    this._errors[fieldName] = error.message || 'Upload failed';
-
-                    // Dispatch error event
-                    this._dispatchEvent('nitro:file-error', {
-                        field: fieldName,
-                        error: error.message
-                    });
-
-                    if (NITRO_DEBUG) {
-                        console.error('[Nitro] File upload error:', error);
-                    }
-                } finally {
-                    this[`${fieldName}Uploading`] = false;
-                }
-            },
-
-            /**
-             * Upload file with progress tracking using the call() method
-             */
-            async _uploadFileWithProgress(file, fieldName) {
-                // Call the upload action with the file
-                // The server should handle the file upload
-                await this.call('_handle_file_upload', { field: fieldName }, file);
-
-                // Update progress to 100%
-                this[`${fieldName}UploadProgress`] = 100;
-
-                return { url: null }; // Server will handle storing the file
-            },
-
-            /**
-             * Parse file size string (e.g., "5MB", "1GB") to bytes
-             */
-            _parseFileSize(sizeStr) {
-                const units = {
-                    'B': 1,
-                    'KB': 1024,
-                    'MB': 1024 * 1024,
-                    'GB': 1024 * 1024 * 1024,
-                    'TB': 1024 * 1024 * 1024 * 1024
-                };
-
-                const match = sizeStr.match(/^(\d+(?:\.\d+)?)\s*([A-Z]+)$/i);
-                if (!match) {
-                    console.error('[Nitro] Invalid file size format:', sizeStr);
-                    return 0;
-                }
-
-                const value = parseFloat(match[1]);
-                const unit = match[2].toUpperCase();
-                return value * (units[unit] || 1);
-            },
-
-            /**
-             * Format bytes to human-readable size
-             */
-            _formatFileSize(bytes) {
-                if (bytes === 0) return '0 B';
-
-                const k = 1024;
-                const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            }
-        };
-    })
-});
-
-/**
- * Warn user before leaving page with unsaved changes
- * DISABLED in v0.7.0 - this is an annoying UX pattern.
- * The dirty state tracking is still available for components that want
- * to use it internally (e.g., showing a "unsaved" indicator).
- */
-// window.addEventListener('beforeunload', (e) => {
-//     if (Alpine.store('nitro') && Alpine.store('nitro').hasAnyDirty()) {
-//         const message = 'You have unsaved changes. Are you sure you want to leave?';
-//         e.preventDefault();
-//         e.returnValue = message;
-//         return message;
-//     }
-// });
+})();

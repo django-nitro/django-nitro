@@ -1,0 +1,130 @@
+{# Nitro Photo Gallery with Lightbox #}
+{# Uses Alpine.js photoGallery() component from alpine-components.js #}
+
+<div x-data="photoGallery({{ photos_json }})" class="nitro-gallery">
+    {# Photo Grid #}
+    {% if photos %}
+    <div class="grid gap-{{ gap }} {{ grid_classes }}">
+        {% for photo in photos %}
+        <div class="relative group cursor-pointer overflow-hidden rounded-lg {{ aspect_class }}"
+             @click="openLightbox({{ forloop.counter0 }})">
+            {# Thumbnail image with lazy loading #}
+            <img src="{{ photo.thumbnail_url|default:photo.url }}"
+                 alt="{{ photo.caption|default:photo.alt|default:'Foto' }}"
+                 loading="lazy"
+                 class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+
+            {# Category label (top-left) #}
+            {% if photo.category %}
+            <span class="absolute top-2 left-2 px-2 py-0.5 text-xs font-medium bg-black/60 text-white rounded">
+                {{ photo.category }}
+            </span>
+            {% endif %}
+
+            {# Main photo badge (top-right) #}
+            {% if photo.is_main %}
+            <span class="absolute top-2 right-2 px-2 py-0.5 text-xs font-medium bg-primary-500 text-white rounded flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/>
+                </svg>
+                Principal
+            </span>
+            {% endif %}
+
+            {# Hover overlay with zoom icon #}
+            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                </svg>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    {# Empty state #}
+    <div class="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <p class="mt-2 text-sm font-medium text-gray-900">{{ empty_title|default:'Sin fotos' }}</p>
+        <p class="mt-1 text-sm text-gray-500">{{ empty_message|default:'No hay fotos disponibles.' }}</p>
+    </div>
+    {% endif %}
+
+    {# Lightbox Modal #}
+    {% if enable_lightbox %}
+    <div x-show="lightboxOpen"
+         x-cloak
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+         @click.self="closeLightbox()"
+         @touchstart="handleTouchStart($event)"
+         @touchmove="handleTouchMove($event)"
+         @touchend="handleTouchEnd()">
+
+        {# Close button #}
+        <button @click="closeLightbox()"
+                class="absolute top-4 right-4 z-10 p-2 text-white/80 hover:text-white bg-black/40 hover:bg-black/60 rounded-full transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+
+        {# Photo counter #}
+        <div class="absolute top-4 left-4 z-10 px-3 py-1 text-sm text-white/80 bg-black/40 rounded-full">
+            <span x-text="currentIndex + 1"></span> / <span x-text="photos.length"></span>
+        </div>
+
+        {# Previous button #}
+        <button @click.stop="prev()"
+                x-show="photos.length > 1"
+                class="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 text-white/80 hover:text-white bg-black/40 hover:bg-black/60 rounded-full transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+
+        {# Main image #}
+        <div class="max-w-full max-h-full p-4 md:p-12">
+            <img :src="currentPhoto.url"
+                 :alt="currentPhoto.caption || currentPhoto.alt || 'Foto'"
+                 class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                 @click.stop>
+
+            {# Caption #}
+            <template x-if="currentPhoto.caption">
+                <div class="mt-4 text-center">
+                    <p class="text-white text-sm md:text-base" x-text="currentPhoto.caption"></p>
+                    <template x-if="currentPhoto.category">
+                        <span class="inline-block mt-2 px-2 py-0.5 text-xs font-medium bg-white/20 text-white rounded" x-text="currentPhoto.category"></span>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        {# Next button #}
+        <button @click.stop="next()"
+                x-show="photos.length > 1"
+                class="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 text-white/80 hover:text-white bg-black/40 hover:bg-black/60 rounded-full transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
+
+        {# Dots navigation #}
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2"
+             x-show="photos.length > 1 && photos.length <= 12">
+            <template x-for="(photo, index) in photos" :key="index">
+                <button @click.stop="goTo(index)"
+                        :class="index === currentIndex ? 'bg-white' : 'bg-white/40 hover:bg-white/60'"
+                        class="w-2 h-2 rounded-full transition-colors"></button>
+            </template>
+        </div>
+    </div>
+    {% endif %}
+</div>

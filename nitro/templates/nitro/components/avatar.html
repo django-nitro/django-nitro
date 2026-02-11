@@ -1,0 +1,7 @@
+{% if image_url %}
+<img src="{{ image_url }}" alt="{{ name }}" class="{{ size_class }} rounded-full object-cover" title="{{ name }}">
+{% else %}
+<span class="{{ size_class }} rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-white font-semibold inline-flex items-center justify-center" title="{{ name }}">
+    {{ initials }}
+</span>
+{% endif %}

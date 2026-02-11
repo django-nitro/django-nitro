@@ -1,109 +1,118 @@
 # Quick Start
 
-Let's build a simple counter component to understand Django Nitro basics.
+Build a property list with search, filters, and pagination in 5 minutes.
 
-## 1. Define the Component
+## 1. Create the View
 
 ```python
-# myapp/components/counter.py
-from pydantic import BaseModel
-from nitro.base import NitroComponent
-from nitro.registry import register_component
+# views.py
+from nitro.views import NitroListView
 
+class PropertyListView(NitroListView):
+    model = Property
+    template_name = 'properties/list.html'
+    partial_template = 'properties/partials/list_content.html'
+    search_fields = ['name', 'address']
+    filter_fields = ['status', 'property_type']
+    sortable_fields = ['name', 'rent_amount', 'created_at']
+    paginate_by = 20
+    default_sort = '-created_at'
 
-class CounterState(BaseModel):
-    """State schema for the counter component."""
-    count: int = 0
-    step: int = 1
-
-
-@register_component
-class Counter(NitroComponent[CounterState]):
-    template_name = "components/counter.html"
-    # state_class auto-inferred from Generic (v0.7.0)
-
-    def get_initial_state(self, **kwargs):
-        """Initialize the component state."""
-        return CounterState(
-            count=kwargs.get('initial', 0),
-            step=kwargs.get('step', 1)
-        )
-
-    def increment(self):
-        """Action: increment the counter."""
-        self.state.count += self.state.step
-        self.success(f"Count increased to {self.state.count}")
-
-    def decrement(self):
-        """Action: decrement the counter."""
-        self.state.count -= self.state.step
-
-    def reset(self):
-        """Action: reset to zero."""
-        self.state.count = 0
+    def get_filter_options(self):
+        return {
+            'status': [('active', 'Activo'), ('inactive', 'Inactivo')],
+            'property_type': [('house', 'Casa'), ('apartment', 'Apartamento')],
+        }
 ```
 
-## 2. Create the Template
+## 2. Create the Main Template
 
 ```html
-<!-- templates/components/counter.html -->
+<!-- templates/properties/list.html -->
+{% extends "base.html" %}
 {% load nitro_tags %}
 
-<div class="counter-widget">
-    <h2>Counter: {% nitro_text 'count' %}</h2>
-
-    <div class="controls">
-        <button @click="call('decrement')" :disabled="isLoading">-</button>
-        <button @click="call('reset')" :disabled="isLoading">Reset</button>
-        <button @click="call('increment')" :disabled="isLoading">+</button>
+{% block content %}
+<div class="p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Propiedades</h1>
+        <a href="{% url 'property_create' %}" class="btn btn-primary">
+            + Nueva Propiedad
+        </a>
     </div>
 
-    <!-- Show loading state -->
-    <div x-show="isLoading" class="loading">Updating...</div>
+    <div class="flex gap-4 mb-4">
+        {% nitro_search target='#property-list' placeholder='Buscar...' %}
+        {% nitro_filter field='status' options=filter_options.status target='#property-list' %}
+        {% nitro_filter field='property_type' options=filter_options.property_type target='#property-list' %}
+    </div>
 
-    <!-- Show messages -->
-    <template x-for="msg in messages" :key="msg.text">
-        <div class="alert" x-text="msg.text"></div>
-    </template>
+    <div id="property-list">
+        {% include "properties/partials/list_content.html" %}
+    </div>
 </div>
-```
-
-## 3. Use in Your View
-
-```python
-# myapp/views.py
-from django.shortcuts import render
-from myapp.components.counter import Counter
-
-def counter_page(request):
-    # Initialize the component with custom values
-    component = Counter(request=request, initial=10, step=5)
-    return render(request, 'counter_page.html', {'counter': component})
-```
-
-```html
-<!-- templates/counter_page.html -->
-{% extends "base.html" %}
-
-{% block content %}
-    <h1>Counter Demo</h1>
-    {{ counter.render }}
 {% endblock %}
 ```
 
-## That's it! 🎉
+## 3. Create the Partial Template
 
-You now have a fully reactive counter component without writing any JavaScript.
+```html
+<!-- templates/properties/partials/list_content.html -->
+{% load nitro_tags %}
 
-## What's Happening?
+{% if object_list %}
+<div class="grid gap-4">
+    {% for property in object_list %}
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="flex justify-between">
+            <div>
+                <h3 class="font-semibold">{{ property.name }}</h3>
+                <p class="text-gray-600">{{ property.address }}</p>
+            </div>
+            <div class="text-right">
+                <p class="font-bold">{{ property.rent_amount|currency }}</p>
+                {{ property.status|status_badge }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
-1. **State** is defined as a Pydantic model (`CounterState`)
-2. **Actions** are Python methods (`increment`, `decrement`, `reset`)
-3. **Template** uses Alpine.js directives (`x-text`, `@click`, `x-show`)
-4. **Reactivity** is handled automatically by Nitro + Alpine
+{% nitro_pagination page_obj target='#property-list' %}
+
+{% else %}
+{% nitro_empty_state
+    icon="🏠"
+    title="Sin propiedades"
+    message="Agrega tu primera propiedad"
+    action_url="/properties/create/"
+    action_text="Crear propiedad"
+%}
+{% endif %}
+```
+
+## 4. Wire the URL
+
+```python
+# urls.py
+from django.urls import path
+from .views import PropertyListView
+
+urlpatterns = [
+    path('properties/', PropertyListView.as_view(), name='property_list'),
+]
+```
+
+## How It Works
+
+1. **Initial load**: Django renders the full page with `list.html`
+2. **Search/Filter**: HTMX sends GET request, Django returns only `list_content.html`
+3. **Pagination**: Same pattern - HTMX swaps just the list content
+
+No JavaScript written. Search has 300ms debounce. Filters update immediately. Pagination preserves search/filter state.
 
 ## Next Steps
 
-- [Learn about Components](../core-concepts/components.md)
-- [Explore CRUD operations](../components/crud-nitro-component.md)
-- [Try more examples](../examples/counter.md)
+- [Views Reference](../core-concepts/views.md) - All view classes
+- [Template Tags](../core-concepts/template-tags.md) - All template tags
+- [Multi-Tenancy](../core-concepts/multi-tenancy.md) - Add organization scoping

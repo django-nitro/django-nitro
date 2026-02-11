@@ -1,0 +1,24 @@
+{% if form.errors %}
+<div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+    <p class="text-sm text-red-700">Por favor corrige los errores indicados.</p>
+</div>
+{% endif %}
+
+{# Form footer - sticky on mobile for slideover forms #}
+<div class="{% if slideover %}sticky bottom-0 bg-white -mx-4 sm:-mx-6 px-4 sm:px-6 pb-safe{% endif %} flex flex-col sm:flex-row sm:justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+    {% if slideover %}
+    <button @click="$dispatch('close-slideover', '{{ slideover }}')" type="button"
+            class="order-2 sm:order-1 w-full sm:w-auto px-4 py-2.5 sm:py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+        {{ cancel_label }}
+    </button>
+    {% endif %}
+    <button type="submit" x-data="loadingBtn()" :disabled="loading"
+            :class="{ 'nitro-btn-loading': loading }"
+            class="order-1 sm:order-2 w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 disabled:opacity-50">
+        <svg x-show="loading" class="nitro-spinner animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="nitro-btn-text">{{ label }}</span>
+    </button>
+</div>

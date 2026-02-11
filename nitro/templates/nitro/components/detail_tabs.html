@@ -1,0 +1,35 @@
+{% if tabs %}
+<div class="border-b border-gray-200 mb-4"
+     x-data="{
+        activeTab: new URLSearchParams(window.location.search).get('tab') || '{{ tabs.0.name }}',
+        updateActive() {
+            this.activeTab = new URLSearchParams(window.location.search).get('tab') || '{{ tabs.0.name }}';
+        }
+     }"
+     @htmx:pushed-into-history.window="updateActive()">
+    <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+        {% for tab in tabs %}
+        <button type="button"
+                hx-get="{{ request.path }}?tab={{ tab.name }}"
+                hx-target="{{ target }}"
+                hx-swap="innerHTML"
+                hx-push-url="true"
+                @click="activeTab = '{{ tab.name }}'"
+                :class="activeTab === '{{ tab.name }}' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">
+            {{ tab.label }}
+            {% if tab.badge_count is not None and tab.badge_count > 0 %}
+            <span class="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium
+                {% if tab.badge_color == 'primary' %}bg-primary-100 text-primary-700
+                {% elif tab.badge_color == 'red' %}bg-red-100 text-red-700
+                {% elif tab.badge_color == 'amber' %}bg-amber-100 text-amber-700
+                {% elif tab.badge_color == 'green' %}bg-green-100 text-green-700
+                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                {{ tab.badge_count }}
+            </span>
+            {% endif %}
+        </button>
+        {% endfor %}
+    </nav>
+</div>
+{% endif %}

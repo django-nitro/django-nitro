@@ -1,0 +1,325 @@
+{% load nitro_tags %}
+
+{# ==================== QUICK ACTION HOVER STYLES ==================== #}
+<style>
+.row-quick-actions {
+    opacity: 0;
+    transition: opacity 150ms ease-in-out;
+}
+tr:hover .row-quick-actions,
+tr:focus-within .row-quick-actions {
+    opacity: 1;
+}
+@media (max-width: 1024px) {
+    .row-quick-actions {
+        opacity: 1;
+    }
+}
+</style>
+
+{% if object_list %}
+{# ==================== DESKTOP TABLE ==================== #}
+<div class="hidden lg:block overflow-hidden bg-white shadow ring-1 ring-black/5 rounded-lg">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                {% for column in columns %}
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider {{ column.css_class }}">
+                    {% if column.sortable %}
+                        {% nitro_sort column.field column.label current_sort=current_sort target=target %}
+                    {% else %}
+                        {{ column.label }}
+                    {% endif %}
+                </th>
+                {% endfor %}
+                {% if row_actions or quick_actions %}
+                <th scope="col" class="relative px-4 py-3">
+                    <span class="sr-only">Acciones</span>
+                </th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for obj in object_list %}
+            <tr class="hover:bg-gray-50 group">
+                {% for column in columns %}
+                <td class="px-4 py-3 text-sm {{ column.css_class }}">
+                    <div class="flex items-center gap-1.5">
+                        {% if column.link %}
+                        <a href="{{ obj|resolve_url:column.link }}" class="text-primary-600 hover:text-primary-800 font-medium">
+                            {{ obj|table_cell:column }}
+                        </a>
+                        {% else %}
+                            {{ obj|table_cell:column }}
+                        {% endif %}
+                        {% if column.icon and column.icon_field and column.icon_link %}
+                            {% if obj|has_icon_field:column %}
+                            <a href="{{ obj|resolve_url:column.icon_link }}" class="text-primary-500 hover:text-primary-700" title="Ver en mapa">
+                                {% if column.icon == 'location' %}
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                                {% endif %}
+                            </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    {% if column.subtitle_field %}
+                    {% with subtitle=obj|get_subtitle:column %}
+                    {% if subtitle %}
+                    <div class="text-xs text-gray-500 mt-0.5">{{ subtitle }}</div>
+                    {% endif %}
+                    {% endwith %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+                {% if row_actions or quick_actions %}
+                <td class="px-4 py-3 text-right text-sm font-medium whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1">
+                        {# Quick Actions - Icon buttons on hover #}
+                        {% if quick_actions %}
+                        <div class="row-quick-actions flex items-center gap-1 mr-2">
+                            {% for action in quick_actions %}
+                                {% if obj|quick_action_visible:action %}
+                                    {% with external_url=obj|quick_action_url:action %}
+                                    {% if external_url %}
+                                    {# External URL (e.g., WhatsApp wa.me link) #}
+                                    <a href="{{ external_url }}"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors {{ action.css_class|default:'text-gray-500 hover:text-gray-700' }}"
+                                       title="{{ action.tooltip }}">
+                                        {% quick_action_icon action.icon %}
+                                    </a>
+                                    {% elif action.hx_post %}
+                                    {# HTMX POST action #}
+                                    <button type="button"
+                                            hx-post="{{ obj|resolve_url:action.hx_post }}"
+                                            hx-target="{{ target }}"
+                                            hx-swap="outerHTML"
+                                            {% if action.confirm %}hx-confirm="{{ action.confirm }}"{% endif %}
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors {{ action.css_class|default:'text-gray-500 hover:text-gray-700' }}"
+                                            title="{{ action.tooltip }}">
+                                        {% quick_action_icon action.icon %}
+                                    </button>
+                                    {% elif action.hx_get %}
+                                    {# HTMX GET action (slideover) #}
+                                    <button type="button"
+                                            hx-get="{{ obj|resolve_url:action.hx_get }}"
+                                            hx-target="#{{ action.slideover }}-body"
+                                            hx-swap="innerHTML"
+                                            {% if action.slideover %}onclick="Nitro.openSlideover('{{ action.slideover }}')"{% endif %}
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors {{ action.css_class|default:'text-gray-500 hover:text-gray-700' }}"
+                                            title="{{ action.tooltip }}">
+                                        {% quick_action_icon action.icon %}
+                                    </button>
+                                    {% elif action.url_name %}
+                                    {# Regular link #}
+                                    <a href="{{ obj|resolve_url:action.url_name }}"
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors {{ action.css_class|default:'text-gray-500 hover:text-gray-700' }}"
+                                       title="{{ action.tooltip }}">
+                                        {% quick_action_icon action.icon %}
+                                    </a>
+                                    {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        {# Row Actions - Text buttons #}
+                        {% if row_actions %}
+                        <div class="flex items-center gap-2">
+                            {% for action in row_actions %}
+                                {% if action.method == 'post' %}
+                                <button type="button"
+                                        hx-post="{{ obj|resolve_url:action.url_name }}"
+                                        hx-target="{{ target }}"
+                                        {% if action.confirm %}hx-confirm="{{ action.confirm }}"{% endif %}
+                                        class="{{ action.css_class|default:'text-gray-600 hover:text-gray-900' }}">
+                                    {{ action.label }}
+                                </button>
+                                {% elif action.method == 'link' %}
+                                <a href="{{ obj|resolve_url:action.url_name }}"
+                                   class="{{ action.css_class|default:'text-primary-600 hover:text-primary-800' }}">
+                                    {{ action.label }}
+                                </a>
+                                {% else %}{# method == 'get' -> slideover/HTMX #}
+                                <button type="button"
+                                        hx-get="{{ obj|resolve_url:action.url_name }}"
+                                        hx-target="#{{ action.slideover }}-body"
+                                        hx-swap="innerHTML"
+                                        {% if action.slideover %}onclick="Nitro.openSlideover('{{ action.slideover }}')"{% endif %}
+                                        class="{{ action.css_class|default:'text-primary-600 hover:text-primary-800' }}">
+                                    {{ action.label }}
+                                </button>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# ==================== MOBILE CARDS ==================== #}
+<div class="lg:hidden space-y-3">
+    {% for obj in object_list %}
+    <div class="bg-white shadow rounded-lg p-4">
+        <div class="space-y-2">
+            {% for column in columns %}
+            {% if column.mobile %}
+                {% if forloop.first and column.link %}
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <a href="{{ obj|resolve_url:column.link }}" class="text-base font-semibold text-primary-600 hover:text-primary-800">
+                            {{ obj|table_cell:column }}
+                        </a>
+                        {% if column.icon and column.icon_field and column.icon_link %}
+                            {% if obj|has_icon_field:column %}
+                            <a href="{{ obj|resolve_url:column.icon_link }}" class="text-primary-500 hover:text-primary-700" title="Ver en mapa">
+                                {% if column.icon == 'location' %}
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                                {% endif %}
+                            </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    {% if column.subtitle_field %}
+                    {% with subtitle=obj|get_subtitle:column %}
+                    {% if subtitle %}
+                    <div class="text-sm text-gray-500">{{ subtitle }}</div>
+                    {% endif %}
+                    {% endwith %}
+                    {% endif %}
+                </div>
+                {% elif forloop.first %}
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-base font-semibold text-gray-900">{{ obj|table_cell:column }}</span>
+                        {% if column.icon and column.icon_field and column.icon_link %}
+                            {% if obj|has_icon_field:column %}
+                            <a href="{{ obj|resolve_url:column.icon_link }}" class="text-primary-500 hover:text-primary-700" title="Ver en mapa">
+                                {% if column.icon == 'location' %}
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                                {% endif %}
+                            </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    {% if column.subtitle_field %}
+                    {% with subtitle=obj|get_subtitle:column %}
+                    {% if subtitle %}
+                    <div class="text-sm text-gray-500">{{ subtitle }}</div>
+                    {% endif %}
+                    {% endwith %}
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="flex items-center justify-between text-sm">
+                    {% if column.mobile_label %}
+                    <span class="text-gray-500">{{ column.label }}</span>
+                    {% endif %}
+                    <span class="text-gray-900 {{ column.css_class }}">{{ obj|table_cell:column }}</span>
+                </div>
+                {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        {# Mobile: Quick Actions as icon buttons + Row Actions #}
+        {% if quick_actions or row_actions %}
+        <div class="mt-3 pt-3 border-t border-gray-100">
+            {# Quick Actions - Icon row #}
+            {% if quick_actions %}
+            <div class="flex items-center gap-2 mb-3">
+                {% for action in quick_actions %}
+                    {% if obj|quick_action_visible:action %}
+                        {% with external_url=obj|quick_action_url:action %}
+                        {% if external_url %}
+                        <a href="{{ external_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors {{ action.css_class|default:'text-gray-600' }}"
+                           title="{{ action.tooltip }}">
+                            {% quick_action_icon action.icon %}
+                        </a>
+                        {% elif action.hx_post %}
+                        <button type="button"
+                                hx-post="{{ obj|resolve_url:action.hx_post }}"
+                                hx-target="{{ target }}"
+                                hx-swap="outerHTML"
+                                {% if action.confirm %}hx-confirm="{{ action.confirm }}"{% endif %}
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors {{ action.css_class|default:'text-gray-600' }}"
+                                title="{{ action.tooltip }}">
+                            {% quick_action_icon action.icon %}
+                        </button>
+                        {% elif action.hx_get %}
+                        <button type="button"
+                                hx-get="{{ obj|resolve_url:action.hx_get }}"
+                                hx-target="#{{ action.slideover }}-body"
+                                hx-swap="innerHTML"
+                                {% if action.slideover %}onclick="Nitro.openSlideover('{{ action.slideover }}')"{% endif %}
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors {{ action.css_class|default:'text-gray-600' }}"
+                                title="{{ action.tooltip }}">
+                            {% quick_action_icon action.icon %}
+                        </button>
+                        {% elif action.url_name %}
+                        <a href="{{ obj|resolve_url:action.url_name }}"
+                           class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors {{ action.css_class|default:'text-gray-600' }}"
+                           title="{{ action.tooltip }}">
+                            {% quick_action_icon action.icon %}
+                        </a>
+                        {% endif %}
+                        {% endwith %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# Row Actions - Text buttons #}
+            {% if row_actions %}
+            <div class="flex items-center gap-3">
+                {% for action in row_actions %}
+                    {% if action.method == 'post' %}
+                    <button type="button"
+                            hx-post="{{ obj|resolve_url:action.url_name }}"
+                            hx-target="{{ target }}"
+                            {% if action.confirm %}hx-confirm="{{ action.confirm }}"{% endif %}
+                            class="text-sm font-medium {{ action.css_class|default:'text-gray-600 hover:text-gray-900' }}">
+                        {{ action.label }}
+                    </button>
+                    {% elif action.method == 'link' %}
+                    <a href="{{ obj|resolve_url:action.url_name }}"
+                       class="text-sm font-medium {{ action.css_class|default:'text-primary-600 hover:text-primary-800' }}">
+                        {{ action.label }}
+                    </a>
+                    {% else %}
+                    <button type="button"
+                            hx-get="{{ obj|resolve_url:action.url_name }}"
+                            hx-target="#{{ action.slideover }}-body"
+                            hx-swap="innerHTML"
+                            {% if action.slideover %}onclick="Nitro.openSlideover('{{ action.slideover }}')"{% endif %}
+                            class="text-sm font-medium {{ action.css_class|default:'text-primary-600 hover:text-primary-800' }}">
+                        {{ action.label }}
+                    </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+{# ==================== PAGINATION ==================== #}
+{% if page_obj %}
+{% nitro_pagination page_obj target=target %}
+{% endif %}
+
+{% else %}
+{% nitro_empty_state %}
+{% endif %}

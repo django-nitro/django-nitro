@@ -1,0 +1,111 @@
+{% load i18n %}
+
+{# Signature Pad Component - Touch-friendly signature capture #}
+<div x-data="signaturePad({
+        name: '{{ name }}',
+        lineColor: '{{ line_color }}',
+        lineWidth: {{ line_width }},
+        backgroundColor: '{{ background_color }}',
+        width: {{ width }},
+        height: {{ height }},
+        required: {{ required|yesno:"true,false" }}
+     })"
+     x-init="init()"
+     class="signature-pad-container">
+
+    {% if label %}
+    <label class="block text-sm font-medium text-surface-700 mb-2">
+        {{ label }}
+        {% if required %}<span class="text-red-500 ml-0.5">*</span>{% endif %}
+    </label>
+    {% endif %}
+
+    <!-- Canvas Container -->
+    <div class="relative border-2 border-dashed rounded-xl bg-white overflow-hidden transition-colors"
+         :class="{
+             'border-primary-500': isDrawing,
+             'border-red-500': hasError,
+             'border-surface-300': !isDrawing && !hasError
+         }">
+
+        <!-- Canvas Element -->
+        <canvas x-ref="canvas"
+                width="{{ width }}"
+                height="{{ height }}"
+                class="touch-none cursor-crosshair w-full block"
+                style="max-width: {{ width }}px; height: auto; aspect-ratio: {{ width }}/{{ height }};"
+                @mousedown="startDrawing($event)"
+                @mousemove="draw($event)"
+                @mouseup="stopDrawing()"
+                @mouseleave="stopDrawing()"
+                @touchstart.prevent="startDrawingTouch($event)"
+                @touchmove.prevent="drawTouch($event)"
+                @touchend="stopDrawing()">
+        </canvas>
+
+        <!-- Signature Line Indicator -->
+        <div class="absolute bottom-8 left-4 right-4 border-b border-surface-300 pointer-events-none"></div>
+        <span class="absolute bottom-2 left-4 text-xs text-surface-400 pointer-events-none select-none">
+            {% trans "Firme aqui" %}
+        </span>
+
+        <!-- X marker -->
+        <span class="absolute bottom-2 left-4 text-surface-300 text-lg font-light pointer-events-none select-none"
+              x-show="isEmpty">
+            X
+        </span>
+
+        <!-- Clear Button -->
+        <button type="button"
+                @click="confirmClear()"
+                x-show="!isEmpty"
+                x-transition:enter="transition ease-out duration-150"
+                x-transition:enter-start="opacity-0 scale-90"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-100"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-90"
+                class="absolute top-2 right-2 p-1.5 bg-surface-100 hover:bg-surface-200 rounded-lg transition-colors shadow-sm"
+                title="{% trans 'Borrar firma' %}">
+            <svg class="w-4 h-4 text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+        </button>
+
+        <!-- Saving Indicator -->
+        <div x-show="isSaving"
+             x-transition
+             class="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-white/90 rounded-lg shadow-sm text-xs text-surface-600">
+            <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{% trans "Guardando..." %}</span>
+        </div>
+    </div>
+
+    <!-- Hidden Input for Form Submission -->
+    <input type="hidden"
+           name="{{ name }}"
+           x-ref="input"
+           :value="signatureData"
+           {% if required %}required{% endif %}>
+
+    <!-- Timestamp Hidden Input -->
+    <input type="hidden"
+           name="{{ name }}_timestamp"
+           x-ref="timestampInput"
+           :value="signatureTimestamp">
+
+    <!-- Error Message -->
+    <p x-show="hasError"
+       x-text="errorMessage"
+       x-transition
+       class="mt-1 text-sm text-red-600">
+    </p>
+
+    <!-- Help Text -->
+    <p class="mt-1 text-xs text-surface-500">
+        {% trans "Use el mouse o el dedo para firmar" %}
+    </p>
+</div>

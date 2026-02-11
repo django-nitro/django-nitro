@@ -1,0 +1,17 @@
+{% load l10n %}<div x-data="nitroMap({
+    endpoint: '{{ endpoint }}',
+    zoom: {% localize off %}{{ zoom|default:10 }}{% endlocalize %},
+    center: [{% localize off %}{{ center_lon|default:"0" }}, {{ center_lat|default:"0" }}{% endlocalize %}]
+})"
+x-init="$nextTick(() => init())"
+style="height: {{ height }}"
+class="rounded-xl border border-surface-200 overflow-hidden relative">
+    <div x-ref="mapContainer" class="w-full h-full"></div>
+    <!-- Loading state -->
+    <div x-show="!map" class="absolute inset-0 bg-surface-100 flex items-center justify-center">
+        <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+            <p class="mt-2 text-surface-500 text-sm">Cargando mapa...</p>
+        </div>
+    </div>
+</div>

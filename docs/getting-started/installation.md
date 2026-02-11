@@ -3,37 +3,15 @@
 ## Requirements
 
 - Python 3.12+
-- Django 5.2+ or 6.0+
-- django-ninja 1.4.0+
-- pydantic 2.0+
+- Django 5.2+
 
-## Install from PyPI
-
-### Django 6.0+
+## Install via pip
 
 ```bash
 pip install django-nitro
 ```
 
-### Django 5.2
-
-For Django 5.2 compatibility, install with the `django52` extra:
-
-```bash
-pip install django-nitro[django52]
-```
-
-This installs `django-template-partials` which provides template partial support (built-in in Django 6.0+).
-
-## Install from Source
-
-```bash
-git clone https://github.com/django-nitro/django-nitro.git
-cd django-nitro
-pip install -e .
-```
-
-## Setup
+## Configuration
 
 ### 1. Add to INSTALLED_APPS
 
@@ -42,52 +20,68 @@ pip install -e .
 INSTALLED_APPS = [
     # ...
     'nitro',
-    # your apps here
 ]
 ```
 
-### 2. Include Nitro API URLs
+### 2. Optional settings
 
 ```python
-# urls.py
-from django.urls import path
-from nitro.api import api
-
-urlpatterns = [
-    # ...
-    path("api/nitro/", api.urls),  # Important: must be under /api/nitro/
-]
+# settings.py
+NITRO = {
+    'DEFAULT_PAGINATION': 20,
+    'TOAST_DURATION': 5000,
+    'TOAST_POSITION': 'top-right',
+}
 ```
 
-### 3. Add Alpine and Nitro JS to your base template
+### 3. Include static files in base template
 
 ```html
-<!-- templates/base.html -->
+{% load nitro_tags %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My App</title>
-    <!-- Alpine JS (required) -->
+    {% nitro_scripts %}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     {% block content %}{% endblock %}
-
-    <!-- Nitro JS (load AFTER Alpine) -->
-    {% load static %}
-    <script src="{% static 'nitro/nitro.js' %}"></script>
+    {% nitro_toast %}
 </body>
 </html>
 ```
 
-### 4. Run collectstatic (production)
+`{% nitro_scripts %}` includes:
 
-```bash
-python manage.py collectstatic
-```
+- HTMX from CDN
+- `nitro.js` - HTMX configuration and toast handling
+- `alpine-components.js` - Reusable Alpine.js components
 
-## Next Steps
+## What's Included
 
-- [Quick Start Tutorial](quick-start.md)
-- [Core Concepts](../core-concepts/components.md)
-- [Examples](../examples/counter.md)
+### Views
+
+- `NitroView` - Base view with HTMX detection and toast helpers
+- `NitroListView` - List with search, filter, sort, pagination
+- `NitroModelView` - Single object detail
+- `NitroFormView` - Form handling
+- `NitroCreateView` / `NitroUpdateView` / `NitroDeleteView` - CRUD operations
+- `NitroWizard` - Multi-step forms
+
+### Template Tags
+
+- HTMX action tags: `{% nitro_search %}`, `{% nitro_filter %}`, `{% nitro_pagination %}`
+- Form tags: `{% nitro_field %}`, `{% nitro_select %}`
+- Component tags: `{% nitro_modal %}`, `{% nitro_slideover %}`, `{% nitro_tabs %}`
+- Display filters: `{{ amount|currency }}`, `{{ status|status_badge }}`
+
+### Components
+
+- 20+ HTML components: toast, modal, slideover, tabs, empty_state, stats_card, etc.
+- 10+ Alpine.js components: fileUpload, clipboard, searchableSelect, etc.
+
+### Utilities
+
+- Currency formatting (multi-currency support)
+- Date utilities and relative dates
+- CSV/Excel export helpers

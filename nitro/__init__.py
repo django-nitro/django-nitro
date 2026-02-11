@@ -1,66 +1,42 @@
-"""Django Nitro - Reactive components for Django with AlpineJS."""
+"""Django Nitro 0.8 - Server-rendered views with HTMX + Alpine."""
 
-# Base components
-from nitro.base import (
-    CrudNitroComponent,
-    ModelNitroComponent,
-    NitroComponent,
-)
+__version__ = "0.8.0"
 
-# Cache (v0.7.0)
-from nitro.cache import (
-    CacheMixin,
-    cache_action,
-)
 
-# Configuration (v0.4.0)
-from nitro.conf import (
-    get_all_settings,
-    get_setting,
-)
+def __getattr__(name):
+    """Lazy imports to avoid AppRegistryNotReady during app loading."""
+    if name in ("NitroView", "NitroListView", "NitroModelView", "NitroFormView"):
+        from nitro.views import NitroView, NitroListView, NitroModelView, NitroFormView
+        return locals()[name]
+    if name in ("OrganizationMixin", "PermissionMixin"):
+        from nitro.mixins import OrganizationMixin, PermissionMixin
+        return locals()[name]
+    if name in ("NitroFormMixin", "NitroModelForm", "NitroForm",
+                "PhoneField", "CedulaField", "CurrencyField"):
+        from nitro.forms import (
+            NitroFormMixin, NitroModelForm, NitroForm,
+            PhoneField, CedulaField, CurrencyField,
+        )
+        return locals()[name]
+    if name in ("NitroWizard", "WizardStep"):
+        from nitro.wizards import NitroWizard, WizardStep
+        return locals()[name]
+    raise AttributeError(f"module 'nitro' has no attribute {name!r}")
 
-# List components (v0.2.0)
-from nitro.list import (
-    BaseListComponent,
-    BaseListState,
-    FilterMixin,
-    PaginationMixin,
-    SearchMixin,
-)
-
-# Registry
-from nitro.registry import register_component
-
-# Security mixins (v0.3.0)
-from nitro.security import (
-    OwnershipMixin,
-    PermissionMixin,
-    TenantScopedMixin,
-)
-
-__version__ = "0.7.0"
 
 __all__ = [
-    # Base
-    "NitroComponent",
-    "ModelNitroComponent",
-    "CrudNitroComponent",
-    # Cache (v0.7.0)
-    "CacheMixin",
-    "cache_action",
-    # List
-    "PaginationMixin",
-    "SearchMixin",
-    "FilterMixin",
-    "BaseListState",
-    "BaseListComponent",
-    # Security
-    "OwnershipMixin",
-    "TenantScopedMixin",
+    "NitroView",
+    "NitroListView",
+    "NitroModelView",
+    "NitroFormView",
+    "OrganizationMixin",
     "PermissionMixin",
-    # Registry
-    "register_component",
-    # Configuration
-    "get_setting",
-    "get_all_settings",
+    "NitroFormMixin",
+    "NitroModelForm",
+    "NitroForm",
+    "PhoneField",
+    "CedulaField",
+    "CurrencyField",
+    "NitroWizard",
+    "WizardStep",
 ]

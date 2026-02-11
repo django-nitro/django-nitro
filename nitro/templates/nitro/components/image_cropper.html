@@ -1,0 +1,211 @@
+{# Nitro Image Cropper Component - Crop images with Cropper.js #}
+{# Uses Alpine.js imageCropper() component from alpine-components.js #}
+
+<div x-data="imageCropper({
+    aspectRatio: '{{ aspect_ratio }}',
+    minWidth: {{ min_width }},
+    maxSizeMB: {{ max_size_mb }},
+    currentImage: '{{ current_image|escapejs }}'
+})">
+
+    {# Label #}
+    {% if label %}
+    <label class="block text-sm font-medium text-gray-700 mb-2">
+        {{ label }}
+        {% if required %}<span class="text-red-500">*</span>{% endif %}
+    </label>
+    {% endif %}
+
+    {# Preview area / select button #}
+    <div class="relative">
+        {# Current/cropped image preview #}
+        <template x-if="croppedImage">
+            <div class="relative inline-block">
+                <img :src="croppedImage"
+                     alt="Vista previa"
+                     class="rounded-lg border border-gray-200 object-cover"
+                     style="width: {{ preview_size }}; height: {{ preview_size }};">
+
+                {# Remove button #}
+                <button type="button"
+                        @click="clear()"
+                        class="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-sm transition-colors"
+                        title="Eliminar imagen">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+
+                {# Change button overlay #}
+                <button type="button"
+                        @click="$refs.fileInput.click()"
+                        class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-lg">
+                    <span class="text-white text-sm font-medium">Cambiar</span>
+                </button>
+            </div>
+        </template>
+
+        {# Placeholder when no image #}
+        <template x-if="!croppedImage">
+            <div @click="$refs.fileInput.click()"
+                 class="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-500 hover:bg-primary-50/50 transition-colors"
+                 style="width: {{ preview_size }}; min-height: {{ preview_size }};">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p class="mt-2 text-sm font-medium text-gray-700">Seleccionar imagen</p>
+                <p class="text-xs text-gray-500 mt-1">Max {{ max_size_mb }} MB</p>
+            </div>
+        </template>
+
+        {# Hidden file input #}
+        <input type="file"
+               x-ref="fileInput"
+               @change="handleFileSelect($event)"
+               accept="image/*"
+               class="hidden">
+
+        {# Hidden input for form submission (contains base64 data) #}
+        <input type="hidden"
+               name="{{ name }}"
+               :value="croppedData">
+    </div>
+
+    {# Error message #}
+    <template x-if="error">
+        <p class="mt-2 text-sm text-red-600" x-text="error"></p>
+    </template>
+
+    {# Help text #}
+    {% if help_text %}
+    <p class="mt-2 text-sm text-gray-500">{{ help_text }}</p>
+    {% endif %}
+
+    {# Cropper Modal #}
+    <template x-teleport="body">
+        <div x-show="showCropper"
+             x-cloak
+             class="fixed inset-0 z-[100] overflow-y-auto"
+             @keydown.escape.window="cancelCrop()">
+
+            {# Backdrop #}
+            <div x-show="showCropper"
+                 x-transition:enter="ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @click="cancelCrop()"
+                 class="fixed inset-0 bg-gray-900/80"></div>
+
+            {# Modal panel #}
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div x-show="showCropper"
+                     x-transition:enter="ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="ease-in duration-150"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     @click.stop
+                     class="relative bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+
+                    {# Header #}
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Recortar imagen</h3>
+                        <button type="button"
+                                @click="cancelCrop()"
+                                class="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    {# Cropper area #}
+                    <div class="flex-1 overflow-hidden p-4 bg-gray-100">
+                        <div class="relative w-full" style="max-height: 60vh;">
+                            <img x-ref="cropImage"
+                                 :src="originalImage"
+                                 alt="Imagen para recortar"
+                                 class="max-w-full max-h-full block"
+                                 style="max-height: 60vh;">
+                        </div>
+
+                        {# Loading overlay #}
+                        <div x-show="loading"
+                             class="absolute inset-0 flex items-center justify-center bg-white/80">
+                            <svg class="animate-spin h-8 w-8 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    {# Toolbar #}
+                    <div class="flex items-center justify-center gap-2 px-4 py-2 border-t border-gray-200 bg-gray-50">
+                        <button type="button"
+                                @click="rotate(-90)"
+                                class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
+                                title="Rotar izquierda">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                            </svg>
+                        </button>
+                        <button type="button"
+                                @click="rotate(90)"
+                                class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
+                                title="Rotar derecha">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"/>
+                            </svg>
+                        </button>
+                        <div class="w-px h-6 bg-gray-300 mx-1"></div>
+                        <button type="button"
+                                @click="zoom(0.1)"
+                                class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
+                                title="Acercar">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+                            </svg>
+                        </button>
+                        <button type="button"
+                                @click="zoom(-0.1)"
+                                class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
+                                title="Alejar">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/>
+                            </svg>
+                        </button>
+                        <div class="w-px h-6 bg-gray-300 mx-1"></div>
+                        <button type="button"
+                                @click="reset()"
+                                class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
+                                title="Restablecer">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    {# Footer actions #}
+                    <div class="flex items-center justify-end gap-3 px-4 py-3 border-t border-gray-200">
+                        <button type="button"
+                                @click="cancelCrop()"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="button"
+                                @click="applyCrop()"
+                                :disabled="loading"
+                                class="px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 disabled:opacity-50 transition-colors">
+                            <span x-show="!loading">Aplicar recorte</span>
+                            <span x-show="loading">Procesando...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>
