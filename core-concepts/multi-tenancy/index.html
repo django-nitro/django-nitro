@@ -12,13 +12,13 @@
         <meta name="author" content="Jearel Alcantara">
       
       
-        <link rel="canonical" href="https://django-nitro.github.io/django-nitro/core-concepts/template-tags/">
+        <link rel="canonical" href="https://django-nitro.github.io/django-nitro/core-concepts/multi-tenancy/">
       
       
-        <link rel="prev" href="../views/">
+        <link rel="prev" href="../tables-filters/">
       
       
-        <link rel="next" href="../forms-wizards/">
+        <link rel="next" href="../../components/overview/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Template Tags - Django Nitro</title>
+        <title>Multi-Tenancy - Django Nitro</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#template-tags" class="md-skip">
+        <a href="#multi-tenancy" class="md-skip">
           Skip to content
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Template Tags
+              Multi-Tenancy
             
           </span>
         </div>
@@ -643,37 +643,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Template Tags
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../template-tags/" class="md-nav__link">
         
   
   
@@ -689,364 +662,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#htmx-action-tags" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTMX Action Tags
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="HTMX Action Tags">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#nitro_search" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_search
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_filter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_filter
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_pagination" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_pagination
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_sort" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_sort
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_delete" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_delete
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#form-tags" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Form Tags
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Form Tags">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#nitro_field" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_field
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_select" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_select
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_form_footer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_form_footer
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#component-tags" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Component Tags
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Component Tags">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#nitro_modal" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_modal
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_slideover" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_slideover
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_tabs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_tabs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_empty_state" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_empty_state
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_stats_card" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_stats_card
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_avatar" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_avatar
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_file_upload" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_file_upload
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_toast" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_toast
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#display-filters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Display Filters
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Display Filters">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#currency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Currency
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#status-badges" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status Badges
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#formatting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Formatting
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#whatsapp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        WhatsApp
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ui-helpers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        UI Helpers
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="UI Helpers">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#transitions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Transitions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#keyboard-shortcuts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Keyboard Shortcuts
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#scripts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Scripts
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1112,10 +727,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../multi-tenancy/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Tenancy
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1131,6 +773,198 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#organizationmixin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OrganizationMixin
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-in-views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using in Views
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How It Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#automatic-queryset-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic Queryset Filtering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-assignment-on-create" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic Assignment on Create
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-organization-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Organization Field
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-based-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session-Based Organization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional Organization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-mixins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related Mixins
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Related Mixins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ownerrequiredmixin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OwnerRequiredMixin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#staffrequiredmixin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StaffRequiredMixin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permissionrequiredmixin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PermissionRequiredMixin
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1576,22 +1410,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#htmx-action-tags" class="md-nav__link">
+  <a href="#organizationmixin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTMX Action Tags
+        OrganizationMixin
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="HTMX Action Tags">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-in-views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using in Views
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How It Works">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#nitro_search" class="md-nav__link">
+  <a href="#automatic-queryset-filtering" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nitro_search
+        Automatic Queryset Filtering
       
     </span>
   </a>
@@ -1599,43 +1455,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#nitro_filter" class="md-nav__link">
+  <a href="#automatic-assignment-on-create" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nitro_filter
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_pagination" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_pagination
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_sort" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_sort
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_delete" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_delete
+        Automatic Assignment on Create
       
     </span>
   </a>
@@ -1648,22 +1471,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#form-tags" class="md-nav__link">
+  <a href="#advanced-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Form Tags
+        Advanced Configuration
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Form Tags">
+    <nav class="md-nav" aria-label="Advanced Configuration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#nitro_field" class="md-nav__link">
+  <a href="#custom-organization-field" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nitro_field
+        Custom Organization Field
       
     </span>
   </a>
@@ -1671,10 +1494,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#nitro_select" class="md-nav__link">
+  <a href="#session-based-organization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nitro_select
+        Session-Based Organization
       
     </span>
   </a>
@@ -1682,10 +1505,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#nitro_form_footer" class="md-nav__link">
+  <a href="#optional-organization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nitro_form_footer
+        Optional Organization
       
     </span>
   </a>
@@ -1698,22 +1521,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#component-tags" class="md-nav__link">
+  <a href="#related-mixins" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Component Tags
+        Related Mixins
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Component Tags">
+    <nav class="md-nav" aria-label="Related Mixins">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#nitro_modal" class="md-nav__link">
+  <a href="#ownerrequiredmixin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nitro_modal
+        OwnerRequiredMixin
       
     </span>
   </a>
@@ -1721,10 +1544,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#nitro_slideover" class="md-nav__link">
+  <a href="#staffrequiredmixin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nitro_slideover
+        StaffRequiredMixin
       
     </span>
   </a>
@@ -1732,65 +1555,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#nitro_tabs" class="md-nav__link">
+  <a href="#permissionrequiredmixin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nitro_tabs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_empty_state" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_empty_state
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_stats_card" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_stats_card
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_avatar" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_avatar
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_file_upload" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_file_upload
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nitro_toast" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        nitro_toast
+        PermissionRequiredMixin
       
     </span>
   </a>
@@ -1803,113 +1571,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#display-filters" class="md-nav__link">
+  <a href="#security-best-practices" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Display Filters
+        Security Best Practices
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Display Filters">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#currency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Currency
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#status-badges" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status Badges
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#formatting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Formatting
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#whatsapp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        WhatsApp
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ui-helpers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        UI Helpers
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="UI Helpers">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#transitions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Transitions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#keyboard-shortcuts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Keyboard Shortcuts
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#scripts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Scripts
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1933,255 +1601,129 @@
   
 
 
-<h1 id="template-tags">Template Tags</h1>
-<p>Load with <code>{% load nitro_tags %}</code>.</p>
-<h2 id="htmx-action-tags">HTMX Action Tags</h2>
-<h3 id="nitro_search">nitro_search</h3>
-<p>Search input with debounce.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>{% nitro_search target=&#39;#list-content&#39; %}
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>{% nitro_search target=&#39;#list-content&#39; placeholder=&#39;Buscar...&#39; debounce=500 %}
+<h1 id="multi-tenancy">Multi-Tenancy</h1>
+<p>Nitro provides mixins for building multi-tenant applications where data is scoped to organizations (companies, teams, etc.).</p>
+<h2 id="organizationmixin">OrganizationMixin</h2>
+<p>Base mixin for organization-scoped views.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.mixins</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrganizationMixin</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">CompanyMixin</span><span class="p">(</span><span class="n">OrganizationMixin</span><span class="p">):</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Your app-specific implementation.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">org_field</span> <span class="o">=</span> <span class="s1">&#39;company&#39;</span>  <span class="c1"># Field name on models</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_organization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the current organization.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">company</span>
 </code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>target</code></td>
-<td>required</td>
-<td>CSS selector to update</td>
-</tr>
-<tr>
-<td><code>placeholder</code></td>
-<td>"Buscar..."</td>
-<td>Input placeholder</td>
-</tr>
-<tr>
-<td><code>debounce</code></td>
-<td>300</td>
-<td>Debounce in ms</td>
-</tr>
-</tbody>
-</table>
-<h3 id="nitro_filter">nitro_filter</h3>
-<p>Filter dropdown.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>{% nitro_filter field=&#39;status&#39; options=filter_options.status target=&#39;#list-content&#39; %}
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>{% nitro_filter field=&#39;status&#39; options=opts label=&#39;Estado&#39; include_all=True %}
+<h2 id="using-in-views">Using in Views</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyListView</span><span class="p">(</span><span class="n">CompanyMixin</span><span class="p">,</span> <span class="n">NitroListView</span><span class="p">):</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="c1"># Queryset automatically filtered by company</span>
 </code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>field</code></td>
-<td>required</td>
-<td>Filter field name</td>
-</tr>
-<tr>
-<td><code>options</code></td>
-<td>required</td>
-<td>List of (value, label) tuples</td>
-</tr>
-<tr>
-<td><code>target</code></td>
-<td>"#list-content"</td>
-<td>CSS selector to update</td>
-</tr>
-<tr>
-<td><code>label</code></td>
-<td>None</td>
-<td>Dropdown label</td>
-</tr>
-<tr>
-<td><code>include_all</code></td>
-<td>True</td>
-<td>Include "Todos" option</td>
-</tr>
-</tbody>
-</table>
-<h3 id="nitro_pagination">nitro_pagination</h3>
-<p>Pagination controls.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>{% nitro_pagination page_obj target=&#39;#list-content&#39; %}
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>{% nitro_pagination page_obj target=&#39;#list&#39; show_count=True %}
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyCreateView</span><span class="p">(</span><span class="n">CompanyMixin</span><span class="p">,</span> <span class="n">NitroCreateView</span><span class="p">):</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">form_class</span> <span class="o">=</span> <span class="n">PropertyForm</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="c1"># obj.company automatically set on save</span>
 </code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>page_obj</code></td>
-<td>required</td>
-<td>Django Page object</td>
-</tr>
-<tr>
-<td><code>target</code></td>
-<td>"#list-content"</td>
-<td>CSS selector to update</td>
-</tr>
-<tr>
-<td><code>show_count</code></td>
-<td>False</td>
-<td>Show "Mostrando X de Y"</td>
-</tr>
-</tbody>
-</table>
-<h3 id="nitro_sort">nitro_sort</h3>
-<p>Sortable column header.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>{% nitro_sort &#39;name&#39; &#39;Nombre&#39; target=&#39;#list-content&#39; %}
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>{% nitro_sort &#39;created_at&#39; &#39;Fecha&#39; target=&#39;#list&#39; current=current_sort %}
+<h2 id="how-it-works">How It Works</h2>
+<h3 id="automatic-queryset-filtering">Automatic Queryset Filtering</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Without mixin:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="k">return</span> <span class="n">Property</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">company</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">company</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1"># With mixin (automatic):</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyListView</span><span class="p">(</span><span class="n">CompanyMixin</span><span class="p">,</span> <span class="n">NitroListView</span><span class="p">):</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="c1"># Queryset already filtered by company</span>
 </code></pre></div>
-<h3 id="nitro_delete">nitro_delete</h3>
-<p>Delete button/link attributes.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">&lt;</span><span class="nt">button</span> <span class="err">{%</span> <span class="na">nitro_delete</span> <span class="na">url</span><span class="o">=</span><span class="s">delete_url</span> <span class="na">target</span><span class="o">=</span><span class="s">&#39;#list&#39;</span> <span class="na">confirm</span><span class="o">=</span><span class="s">&#39;¿Eliminar?&#39;</span> <span class="err">%}</span><span class="p">&gt;</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    Eliminar
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+<h3 id="automatic-assignment-on-create">Automatic Assignment on Create</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Without mixin:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">obj</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">obj</span><span class="o">.</span><span class="n">company</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">company</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># With mixin (automatic):</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyCreateView</span><span class="p">(</span><span class="n">CompanyMixin</span><span class="p">,</span> <span class="n">NitroCreateView</span><span class="p">):</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="n">form_class</span> <span class="o">=</span> <span class="n">PropertyForm</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="c1"># company field automatically set</span>
 </code></pre></div>
-<hr />
-<h2 id="form-tags">Form Tags</h2>
-<h3 id="nitro_field">nitro_field</h3>
-<p>Styled form field with label and errors.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>{% nitro_field form.name %}
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>{% nitro_field form.email placeholder=&#39;correo@ejemplo.com&#39; %}
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>{% nitro_field form.amount class=&#39;w-full&#39; %}
+<h2 id="advanced-configuration">Advanced Configuration</h2>
+<h3 id="custom-organization-field">Custom Organization Field</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">TeamMixin</span><span class="p">(</span><span class="n">OrganizationMixin</span><span class="p">):</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">org_field</span> <span class="o">=</span> <span class="s1">&#39;team&#39;</span>  <span class="c1"># Models use &#39;team&#39; instead of &#39;company&#39;</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_organization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">team</span>
 </code></pre></div>
-<h3 id="nitro_select">nitro_select</h3>
-<p>Searchable select dropdown.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>{% nitro_select form.category %}
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>{% nitro_select form.property search_url=&#39;/api/properties/search/&#39; %}
+<h3 id="session-based-organization">Session-Based Organization</h3>
+<p>For superusers who can switch between organizations:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CompanyMixin</span><span class="p">(</span><span class="n">OrganizationMixin</span><span class="p">):</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">org_field</span> <span class="o">=</span> <span class="s1">&#39;company&#39;</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_organization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="c1"># Check session first (for superusers)</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>            <span class="n">company_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;current_company_id&#39;</span><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>            <span class="k">if</span> <span class="n">company_id</span><span class="p">:</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>                <span class="k">return</span> <span class="n">Company</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">company_id</span><span class="p">)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="c1"># Fall back to user&#39;s company</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">company</span>
 </code></pre></div>
-<h3 id="nitro_form_footer">nitro_form_footer</h3>
-<p>Form submit buttons for slideover/modal.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>{% nitro_form_footer slideover=&#39;create-property&#39; %}
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>{% nitro_form_footer modal=&#39;edit-tenant&#39; label=&#39;Guardar&#39; cancel_label=&#39;Cancelar&#39; %}
+<h3 id="optional-organization">Optional Organization</h3>
+<p>Some models may not require organization scoping:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyListView</span><span class="p">(</span><span class="n">CompanyMixin</span><span class="p">,</span> <span class="n">NitroListView</span><span class="p">):</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>        <span class="n">qs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>        <span class="c1"># Additional filtering</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>        <span class="k">return</span> <span class="n">qs</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">is_published</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
-<hr />
-<h2 id="component-tags">Component Tags</h2>
-<h3 id="nitro_modal">nitro_modal</h3>
-<p>Modal dialog.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>{% nitro_modal id=&#39;create-property&#39; title=&#39;Nueva Propiedad&#39; %}
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="p">&lt;</span><span class="nt">form</span> <span class="na">method</span><span class="o">=</span><span class="s">&quot;post&quot;</span><span class="p">&gt;</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>        {% csrf_token %}
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        {{ form.as_p }}
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        {% nitro_form_footer modal=&#39;create-property&#39; %}
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>{% end_nitro_modal %}
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="cm">&lt;!-- Open button --&gt;</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="p">&lt;</span><span class="nt">button</span> <span class="err">{%</span> <span class="na">nitro_open_modal</span> <span class="err">&#39;</span><span class="na">create-property</span><span class="err">&#39;</span> <span class="err">%}</span><span class="p">&gt;</span>Crear<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+<h2 id="related-mixins">Related Mixins</h2>
+<h3 id="ownerrequiredmixin">OwnerRequiredMixin</h3>
+<p>Ensure user owns the object.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.mixins</span><span class="w"> </span><span class="kn">import</span> <span class="n">OwnerRequiredMixin</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">ProfileUpdateView</span><span class="p">(</span><span class="n">OwnerRequiredMixin</span><span class="p">,</span> <span class="n">NitroUpdateView</span><span class="p">):</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Profile</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">owner_field</span> <span class="o">=</span> <span class="s1">&#39;user&#39;</span>  <span class="c1"># Profile.user must match request.user</span>
 </code></pre></div>
-<h3 id="nitro_slideover">nitro_slideover</h3>
-<p>Slide-out panel.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>{% nitro_slideover id=&#39;edit-tenant&#39; title=&#39;Editar&#39; size=&#39;lg&#39; %}
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    ...content...
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>{% end_nitro_slideover %}
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="cm">&lt;!-- Open button --&gt;</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="p">&lt;</span><span class="nt">button</span> <span class="err">{%</span> <span class="na">nitro_open_slideover</span> <span class="err">&#39;</span><span class="na">edit-tenant</span><span class="err">&#39;</span> <span class="err">%}</span><span class="p">&gt;</span>Editar<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+<h3 id="staffrequiredmixin">StaffRequiredMixin</h3>
+<p>Require staff status.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.mixins</span><span class="w"> </span><span class="kn">import</span> <span class="n">StaffRequiredMixin</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">AdminDashboardView</span><span class="p">(</span><span class="n">StaffRequiredMixin</span><span class="p">,</span> <span class="n">NitroView</span><span class="p">):</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;admin/dashboard.html&#39;</span>
 </code></pre></div>
-<p>Sizes: <code>sm</code>, <code>md</code>, <code>lg</code>, <code>xl</code>, <code>full</code></p>
-<h3 id="nitro_tabs">nitro_tabs</h3>
-<p>Tab navigation.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>{% nitro_tabs id=&#39;property-tabs&#39; target=&#39;#tab-content&#39; %}
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    {% nitro_tab name=&#39;info&#39; label=&#39;Información&#39; active=True %}
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    {% nitro_tab name=&#39;leases&#39; label=&#39;Contratos&#39; %}
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    {% nitro_tab name=&#39;photos&#39; label=&#39;Fotos&#39; badge=photo_count %}
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>{% end_nitro_tabs %}
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;tab-content&quot;</span><span class="p">&gt;</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    {% include &quot;properties/partials/info_tab.html&quot; %}
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<h3 id="permissionrequiredmixin">PermissionRequiredMixin</h3>
+<p>Require specific permissions.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.mixins</span><span class="w"> </span><span class="kn">import</span> <span class="n">PermissionRequiredMixin</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyDeleteView</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">NitroDeleteView</span><span class="p">):</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">permission_required</span> <span class="o">=</span> <span class="s1">&#39;leasing.delete_property&#39;</span>
 </code></pre></div>
-<h3 id="nitro_empty_state">nitro_empty_state</h3>
-<p>Empty state placeholder.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>{% nitro_empty_state
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    icon=&quot;📭&quot;
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    title=&quot;Sin resultados&quot;
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    message=&quot;No se encontraron propiedades&quot;
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    action_url=&quot;/properties/create/&quot;
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    action_text=&quot;Crear propiedad&quot;
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>%}
-</code></pre></div>
-<h3 id="nitro_stats_card">nitro_stats_card</h3>
-<p>Statistics card.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>{% nitro_stats_card
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    icon=&quot;💰&quot;
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    label=&quot;Ingresos&quot;
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    value=total_income|currency
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    change=&quot;+12%&quot;
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    change_type=&quot;positive&quot;
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>%}
-</code></pre></div>
-<h3 id="nitro_avatar">nitro_avatar</h3>
-<p>User avatar.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>{% nitro_avatar user %}
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>{% nitro_avatar user size=&#39;lg&#39; %}
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>{% nitro_avatar user size=&#39;sm&#39; show_name=True %}
-</code></pre></div>
-<p>Sizes: <code>xs</code>, <code>sm</code>, <code>md</code>, <code>lg</code>, <code>xl</code></p>
-<h3 id="nitro_file_upload">nitro_file_upload</h3>
-<p>File upload with drag-and-drop.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>{% nitro_file_upload
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    upload_url=&#39;/api/upload/&#39;
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    field_name=&#39;document&#39;
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    accept=&#39;.pdf,.doc,.docx&#39;
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    multiple=True
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    max_size=10
-<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>%}
-</code></pre></div>
-<h3 id="nitro_toast">nitro_toast</h3>
-<p>Toast container (include once in base template).</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>{% nitro_toast %}
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>{% nitro_toast position=&#39;bottom-right&#39; %}
-</code></pre></div>
-<hr />
-<h2 id="display-filters">Display Filters</h2>
-<h3 id="currency">Currency</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>{{ amount|currency }}           {# RD$ 15,000.00 #}
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>{{ amount|currency:&#39;USD&#39; }}     {# US$ 15,000.00 #}
-</code></pre></div>
-<h3 id="status-badges">Status Badges</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>{{ item.status|status_badge }}      {# Colored badge #}
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>{{ ticket.priority|priority_badge }} {# Priority badge #}
-</code></pre></div>
-<h3 id="formatting">Formatting</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>{{ phone|phone_format }}        {# (809) 555-1234 #}
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>{{ date|relative_date }}        {# Hoy, Ayer, Hace 3 días #}
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>{{ uuid|truncate_id:8 }}        {# First 8 chars #}
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>{{ 4.5|rating }}                {# Star rating SVG #}
-<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>{{ count|pluralize_es:&#39;item,items&#39; }}
-</code></pre></div>
-<h3 id="whatsapp">WhatsApp</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>{{ phone|whatsapp_link }}
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>{{ phone|whatsapp_link:&#39;Hola!&#39; }}
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{ phone|whatsapp_link:&#39;Hola&#39; }}&quot;</span><span class="p">&gt;</span>WhatsApp<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
-</code></pre></div>
-<hr />
-<h2 id="ui-helpers">UI Helpers</h2>
-<h3 id="transitions">Transitions</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="p">&lt;</span><span class="nt">div</span> <span class="na">x-show</span><span class="o">=</span><span class="s">&quot;open&quot;</span> <span class="err">{%</span> <span class="na">nitro_transition</span> <span class="err">&#39;</span><span class="na">fade</span><span class="err">&#39;</span> <span class="err">%}</span><span class="p">&gt;</span>...<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="p">&lt;</span><span class="nt">div</span> <span class="na">x-show</span><span class="o">=</span><span class="s">&quot;open&quot;</span> <span class="err">{%</span> <span class="na">nitro_transition</span> <span class="err">&#39;</span><span class="na">slide-up</span><span class="err">&#39;</span> <span class="err">&#39;</span><span class="na">200</span><span class="err">&#39;</span> <span class="err">%}</span><span class="p">&gt;</span>...<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-</code></pre></div>
-<p>Presets: <code>fade</code>, <code>slide-up</code>, <code>slide-down</code>, <code>slide-left</code>, <code>slide-right</code>, <code>scale</code></p>
-<h3 id="keyboard-shortcuts">Keyboard Shortcuts</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="p">&lt;</span><span class="nt">body</span> <span class="err">{%</span> <span class="na">nitro_key</span> <span class="err">&#39;</span><span class="na">meta</span><span class="err">.</span><span class="na">k</span><span class="err">&#39;</span> <span class="err">&quot;$</span><span class="na">dispatch</span><span class="err">(&#39;</span><span class="na">focus-search</span><span class="err">&#39;)&quot;</span> <span class="err">%}</span><span class="p">&gt;</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="p">&lt;</span><span class="nt">div</span> <span class="err">{%</span> <span class="na">nitro_key</span> <span class="err">&#39;</span><span class="na">escape</span><span class="err">&#39;</span> <span class="err">&#39;</span><span class="na">open </span><span class="o">=</span> <span class="s">false&#39;</span> <span class="err">%}</span><span class="p">&gt;</span>
-</code></pre></div>
-<h3 id="scripts">Scripts</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>{% nitro_scripts %}  {# Include HTMX + Nitro JS #}
+<h2 id="security-best-practices">Security Best Practices</h2>
+<ol>
+<li><strong>Always use organization mixins</strong> for tenant-scoped data</li>
+<li><strong>Validate in forms</strong> that related objects belong to same organization</li>
+<li><strong>Check permissions</strong> before sensitive operations</li>
+<li><strong>Audit sensitive actions</strong> with logging</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">LeaseCreateView</span><span class="p">(</span><span class="n">CompanyMixin</span><span class="p">,</span> <span class="n">NitroCreateView</span><span class="p">):</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Lease</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">form_class</span> <span class="o">=</span> <span class="n">LeaseForm</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_form</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form_class</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>        <span class="n">form</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_form</span><span class="p">(</span><span class="n">form_class</span><span class="p">)</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>        <span class="c1"># Limit property choices to current company</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        <span class="n">form</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;property&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">queryset</span> <span class="o">=</span> <span class="n">Property</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>            <span class="n">company</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">organization</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>        <span class="p">)</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>        <span class="k">return</span> <span class="n">form</span>
 </code></pre></div>
 
 

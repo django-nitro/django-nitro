@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Reactive Django components with AlpineJS and Django Ninja">
+        <meta name="description" content="Server-rendered Django views with HTMX + Alpine.js">
       
       
         <meta name="author" content="Jearel Alcantara">
@@ -69,7 +69,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -129,7 +129,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -139,7 +139,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -272,7 +272,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="core-concepts/components/" class="md-tabs__link">
+        <a href="core-concepts/views/" class="md-tabs__link">
           
   
   
@@ -292,7 +292,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="components/nitro-component/" class="md-tabs__link">
+        <a href="components/overview/" class="md-tabs__link">
           
   
   
@@ -312,11 +312,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="security/overview/" class="md-tabs__link">
+        <a href="utilities/currency/" class="md-tabs__link">
           
   
   
-  Security
+  Utilities
 
         </a>
       </li>
@@ -332,53 +332,15 @@
     
     
       <li class="md-tabs__item">
-        <a href="examples/counter/" class="md-tabs__link">
+        <a href="migration/from-v07/" class="md-tabs__link">
           
   
   
-  Examples
+  Migration
 
         </a>
       </li>
     
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="api-reference/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  API Reference
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="contributing/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Contributing
-
-      </a>
-    </li>
   
 
       
@@ -524,33 +486,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-example" class="md-nav__link">
+  <a href="#quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Example
+        Quick Start
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Features
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Features">
+    <nav class="md-nav" aria-label="Quick Start">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#component-types" class="md-nav__link">
+  <a href="#1-install" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Component Types
+        1. Install
       
     </span>
   </a>
@@ -558,10 +509,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#security-authentication" class="md-nav__link">
+  <a href="#2-add-to-settings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Security &amp; Authentication
+        2. Add to settings
       
     </span>
   </a>
@@ -569,10 +520,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#new-in-v070" class="md-nav__link">
+  <a href="#3-include-scripts-in-base-template" class="md-nav__link">
     <span class="md-ellipsis">
       
-        New in v0.7.0 ⭐
+        3. Include scripts in base template
       
     </span>
   </a>
@@ -580,22 +531,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#previous-releases" class="md-nav__link">
+  <a href="#4-create-a-view" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Previous Releases
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Previous Releases">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#v060" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        v0.6.0
+        4. Create a view
       
     </span>
   </a>
@@ -603,10 +542,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#v040" class="md-nav__link">
+  <a href="#5-create-template" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.4.0
+        5. Create template
       
     </span>
   </a>
@@ -617,17 +556,12 @@
     </nav>
   
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
         <li class="md-nav__item">
-  <a href="#getting-started" class="md-nav__link">
+  <a href="#requirements" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Getting Started
+        Requirements
       
     </span>
   </a>
@@ -635,10 +569,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#community" class="md-nav__link">
+  <a href="#license" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Community
+        License
       
     </span>
   </a>
@@ -831,98 +765,14 @@
   
   
     <li class="md-nav__item">
-      <a href="core-concepts/components/" class="md-nav__link">
+      <a href="core-concepts/views/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Components
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="core-concepts/state-management/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    State Management
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="core-concepts/actions/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Actions
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="core-concepts/form-fields/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Form Fields (v0.6.0)
+    Views
   
 
     
@@ -950,7 +800,7 @@
   <span class="md-ellipsis">
     
   
-    Template Tags (SEO)
+    Template Tags
   
 
     
@@ -971,14 +821,14 @@
   
   
     <li class="md-nav__item">
-      <a href="core-concepts/events/" class="md-nav__link">
+      <a href="core-concepts/forms-wizards/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Events
+    Forms & Wizards
   
 
     
@@ -999,14 +849,14 @@
   
   
     <li class="md-nav__item">
-      <a href="core-concepts/smart-updates/" class="md-nav__link">
+      <a href="core-concepts/tables-filters/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Smart Updates
+    Tables & Filters
   
 
     
@@ -1027,98 +877,14 @@
   
   
     <li class="md-nav__item">
-      <a href="core-concepts/cli-tools/" class="md-nav__link">
+      <a href="core-concepts/multi-tenancy/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    CLI Tools
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="core-concepts/TOAST_ADAPTERS/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Toast Adapters
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="core-concepts/debugging/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Debugging
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="core-concepts/zero-javascript-mode/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Zero JavaScript Mode
+    Multi-Tenancy
   
 
     
@@ -1200,14 +966,14 @@
   
   
     <li class="md-nav__item">
-      <a href="components/nitro-component/" class="md-nav__link">
+      <a href="components/overview/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    NitroComponent
+    Overview
   
 
     
@@ -1228,14 +994,14 @@
   
   
     <li class="md-nav__item">
-      <a href="components/model-nitro-component/" class="md-nav__link">
+      <a href="components/html-components/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ModelNitroComponent
+    HTML Components
   
 
     
@@ -1256,42 +1022,14 @@
   
   
     <li class="md-nav__item">
-      <a href="components/crud-nitro-component/" class="md-nav__link">
+      <a href="components/alpine-components/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    CrudNitroComponent
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="components/base-list-component/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    BaseListComponent
+    Alpine Components
   
 
     
@@ -1344,7 +1082,7 @@
   <span class="md-ellipsis">
     
   
-    Security
+    Utilities
   
 
     
@@ -1360,7 +1098,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Security
+    Utilities
   
 
           </label>
@@ -1373,14 +1111,14 @@
   
   
     <li class="md-nav__item">
-      <a href="security/overview/" class="md-nav__link">
+      <a href="utilities/currency/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Overview
+    Currency
   
 
     
@@ -1401,14 +1139,14 @@
   
   
     <li class="md-nav__item">
-      <a href="security/ownership-mixin/" class="md-nav__link">
+      <a href="utilities/dates/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    OwnershipMixin
+    Dates
   
 
     
@@ -1429,42 +1167,14 @@
   
   
     <li class="md-nav__item">
-      <a href="security/tenant-scoped-mixin/" class="md-nav__link">
+      <a href="utilities/exports/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    TenantScopedMixin
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="security/permission-mixin/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    PermissionMixin
+    Exports
   
 
     
@@ -1517,7 +1227,7 @@
   <span class="md-ellipsis">
     
   
-    Examples
+    Migration
   
 
     
@@ -1533,7 +1243,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Examples
+    Migration
   
 
           </label>
@@ -1546,42 +1256,14 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/counter/" class="md-nav__link">
+      <a href="migration/from-v07/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Counter
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="examples/property-manager/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Property Manager
+    From v0.7
   
 
     
@@ -1598,60 +1280,6 @@
           </ul>
         </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="api-reference/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Reference
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="contributing/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Contributing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1721,33 +1349,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-example" class="md-nav__link">
+  <a href="#quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Example
+        Quick Start
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Features
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Features">
+    <nav class="md-nav" aria-label="Quick Start">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#component-types" class="md-nav__link">
+  <a href="#1-install" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Component Types
+        1. Install
       
     </span>
   </a>
@@ -1755,10 +1372,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#security-authentication" class="md-nav__link">
+  <a href="#2-add-to-settings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Security &amp; Authentication
+        2. Add to settings
       
     </span>
   </a>
@@ -1766,10 +1383,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#new-in-v070" class="md-nav__link">
+  <a href="#3-include-scripts-in-base-template" class="md-nav__link">
     <span class="md-ellipsis">
       
-        New in v0.7.0 ⭐
+        3. Include scripts in base template
       
     </span>
   </a>
@@ -1777,22 +1394,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#previous-releases" class="md-nav__link">
+  <a href="#4-create-a-view" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Previous Releases
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Previous Releases">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#v060" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        v0.6.0
+        4. Create a view
       
     </span>
   </a>
@@ -1800,10 +1405,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#v040" class="md-nav__link">
+  <a href="#5-create-template" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v0.4.0
+        5. Create template
       
     </span>
   </a>
@@ -1814,17 +1419,12 @@
     </nav>
   
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
         <li class="md-nav__item">
-  <a href="#getting-started" class="md-nav__link">
+  <a href="#requirements" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Getting Started
+        Requirements
       
     </span>
   </a>
@@ -1832,10 +1432,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#community" class="md-nav__link">
+  <a href="#license" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Community
+        License
       
     </span>
   </a>
@@ -1862,108 +1462,82 @@
   
 
 
-<h1 id="django-nitro">Django Nitro 🚀<a class="headerlink" href="#django-nitro" title="Permanent link">&para;</a></h1>
-<p><strong>Build reactive Django components with AlpineJS - No JavaScript required</strong></p>
-<p>Django Nitro is a modern library for building reactive, stateful components in Django applications. Inspired by Django Unicorn and Laravel Livewire, but built on top of AlpineJS and Django Ninja for a lightweight, performant experience.</p>
-<p><a href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
-<a href="https://www.python.org/downloads/"><img alt="Python 3.12+" src="https://img.shields.io/badge/python-3.12+-blue.svg" /></a>
-<a href="https://www.djangoproject.com/"><img alt="Django 5.2+" src="https://img.shields.io/badge/django-5.2+-green.svg" /></a></p>
-<h2 id="why-django-nitro">Why Django Nitro?<a class="headerlink" href="#why-django-nitro" title="Permanent link">&para;</a></h2>
+<h1 id="django-nitro">Django Nitro</h1>
+<p><strong>Server-rendered Django views with HTMX + Alpine.js - No JavaScript required</strong></p>
+<p>Django Nitro is a library of views, template tags, and components for building reactive Django applications. Server renders HTML, HTMX swaps it, Alpine handles local UI.</p>
+<hr />
+<h2 id="why-django-nitro">Why Django Nitro?</h2>
 <ul>
-<li>✅ <strong>Zero JavaScript</strong> - Write reactive UIs entirely in Python</li>
-<li>✅ <strong>Type-Safe</strong> - Full Pydantic integration with generics for bulletproof state management</li>
-<li>✅ <strong>Secure by Default</strong> - Built-in integrity verification prevents client-side tampering</li>
-<li>✅ <strong>Lightweight</strong> - AlpineJS (~15KB) vs Morphdom (~50KB)</li>
-<li>✅ <strong>Fast</strong> - Django Ninja API layer for optimal performance</li>
-<li>✅ <strong>DRY</strong> - Pre-built CRUD operations and security mixins</li>
-</ul>
-<h2 id="quick-example">Quick Example<a class="headerlink" href="#quick-example" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">NitroComponent</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_component</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">CounterState</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nd">@register_component</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="k">class</span><span class="w"> </span><span class="nc">Counter</span><span class="p">(</span><span class="n">NitroComponent</span><span class="p">[</span><span class="n">CounterState</span><span class="p">]):</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;components/counter.html&quot;</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="c1"># state_class auto-inferred from Generic (v0.7.0)</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_initial_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="k">return</span> <span class="n">CounterState</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">increment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Count: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="cm">&lt;!-- templates/components/counter.html --&gt;</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>{% load nitro_tags %}
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">&lt;</span><span class="nt">div</span><span class="p">&gt;</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>{% nitro_text &#39;count&#39; %}<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="p">&lt;</span><span class="nt">button</span> <span class="err">@</span><span class="na">click</span><span class="o">=</span><span class="s">&quot;call(&#39;increment&#39;)&quot;</span> <span class="na">:disabled</span><span class="o">=</span><span class="s">&quot;isLoading&quot;</span><span class="p">&gt;</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        Increment
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-</code></pre></div>
-<p><strong>That's it!</strong> No JavaScript required, fully reactive.</p>
-<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
-<h3 id="component-types">Component Types<a class="headerlink" href="#component-types" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong><a href="components/nitro-component/">NitroComponent</a></strong> - Base component for custom logic</li>
-<li><strong><a href="components/model-nitro-component/">ModelNitroComponent</a></strong> - Django ORM integration</li>
-<li><strong><a href="components/crud-nitro-component/">CrudNitroComponent</a></strong> - Pre-built CRUD operations</li>
-<li><strong><a href="components/base-list-component/">BaseListComponent</a></strong> - Pagination, search, and filters</li>
-</ul>
-<h3 id="security-authentication">Security &amp; Authentication<a class="headerlink" href="#security-authentication" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong><a href="security/ownership-mixin/">OwnershipMixin</a></strong> - Filter to current user's data</li>
-<li><strong><a href="security/tenant-scoped-mixin/">TenantScopedMixin</a></strong> - Multi-tenant isolation</li>
-<li><strong><a href="security/permission-mixin/">PermissionMixin</a></strong> - Custom permission framework</li>
-</ul>
-<h3 id="new-in-v070">New in v0.7.0 ⭐<a class="headerlink" href="#new-in-v070" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Auto-infer <code>state_class</code></strong> - No more redundant declarations when using Generics</li>
-<li><strong>CacheMixin</strong> - Component state and HTML caching for performance</li>
-<li><strong>@cache_action decorator</strong> - Cache expensive action results</li>
-<li><strong>Unaccent Search</strong> - Accent-insensitive search for PostgreSQL (enabled by default)</li>
-<li><strong>True Zero-JS Template Tags</strong> - All logic in Python kwargs:</li>
-<li><code>{% nitro_switch %}</code> - Conditional text based on field value</li>
-<li><code>{% nitro_css %}</code> - Conditional CSS classes</li>
-<li><code>{% nitro_badge %}</code> - Combined text + styling</li>
-<li><code>{% nitro_visible %}</code> / <code>{% nitro_hidden %}</code> - Boolean visibility</li>
-<li><code>{% nitro_plural %}</code> / <code>{% nitro_count %}</code> - Pluralization</li>
-<li><code>{% nitro_format %}</code> / <code>{% nitro_date %}</code> - Value formatting</li>
-</ul>
-<h3 id="previous-releases">Previous Releases<a class="headerlink" href="#previous-releases" title="Permanent link">&para;</a></h3>
-<h4 id="v060">v0.6.0<a class="headerlink" href="#v060" title="Permanent link">&para;</a></h4>
-<ul>
-<li><strong>Form Field Template Tags</strong> - <code>{% nitro_input %}</code>, <code>{% nitro_select %}</code>, <code>{% nitro_checkbox %}</code>, <code>{% nitro_textarea %}</code></li>
-<li><strong>Default Debounce (200ms)</strong> - Automatic debouncing on <code>nitro_model</code></li>
-<li><strong>Django 5.2 Support</strong> - Compatible using <code>django-template-partials</code></li>
-</ul>
-<h4 id="v040">v0.4.0<a class="headerlink" href="#v040" title="Permanent link">&para;</a></h4>
-<ul>
-<li><strong><a href="core-concepts/TOAST_ADAPTERS/">Toast Notifications</a></strong> - Native toasts or integrate your favorite library</li>
-<li><strong><a href="core-concepts/events/">Events System</a></strong> - Component-to-component communication with <code>emit()</code> and <code>refresh_component()</code></li>
-<li><strong><a href="core-concepts/cli-tools/">CLI Scaffolding</a></strong> - Generate components with <code>python manage.py startnitro</code></li>
-<li><strong><a href="core-concepts/template-tags/">SEO Template Tags</a></strong> - Server-side rendering with <code>{% nitro_for %}</code> and <code>{% nitro_text %}</code></li>
-<li><strong><a href="core-concepts/smart-updates/">Smart State Updates</a></strong> - Performance optimization with state diffing for large lists</li>
-<li><strong>Configuration System</strong> - Centralized NITRO settings with fallbacks</li>
-</ul>
-<h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
-<p><a class="md-button md-button--primary" href="getting-started/installation/">Installation →</a>
-<a class="md-button" href="getting-started/quick-start/">Quick Start →</a>
-<a class="md-button" href="examples/counter/">Examples →</a></p>
-<h2 id="community">Community<a class="headerlink" href="#community" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong><a href="https://github.com/django-nitro/django-nitro">GitHub</a></strong> - Source code and issues</li>
-<li><strong><a href="examples/counter/">Examples</a></strong> - Live demos and code samples</li>
-<li><strong><a href="contributing/">Contributing</a></strong> - Help improve Django Nitro</li>
+<li><strong>Zero JavaScript</strong> - Build reactive UIs with Python views and template tags</li>
+<li><strong>Standard Django</strong> - Uses Django views, forms, and templates (no custom runtime)</li>
+<li><strong>HTMX powered</strong> - Server-rendered HTML swaps for reactive interactions</li>
+<li><strong>Lightweight</strong> - HTMX (~14KB) + Alpine.js (~15KB) via CDN</li>
+<li><strong>Batteries included</strong> - Search, filters, pagination, modals, slideovers, toasts, file uploads, wizards</li>
+<li><strong>Multi-tenant ready</strong> - Generic <code>OrganizationMixin</code> for multi-tenant apps</li>
 </ul>
 <hr />
-<p><strong>Built with ❤️ for the Django community</strong></p>
+<h2 id="quick-start">Quick Start</h2>
+<h3 id="1-install">1. Install</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>django-nitro
+</code></pre></div>
+<h3 id="2-add-to-settings">2. Add to settings</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="c1"># ...</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="s1">&#39;nitro&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">]</span>
+</code></pre></div>
+<h3 id="3-include-scripts-in-base-template">3. Include scripts in base template</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>{% load nitro_tags %}
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    {% nitro_scripts %}
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">defer</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">&lt;</span><span class="nt">body</span> <span class="na">hx-headers</span><span class="o">=</span><span class="s">&#39;{&quot;X-CSRFToken&quot;: &quot;{{ csrf_token }}&quot;}&#39;</span><span class="p">&gt;</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    {% block content %}{% endblock %}
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    {% nitro_toast %}
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</code></pre></div>
+<h3 id="4-create-a-view">4. Create a view</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">NitroListView</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.mixins</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrganizationMixin</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyListView</span><span class="p">(</span><span class="n">OrganizationMixin</span><span class="p">,</span> <span class="n">NitroListView</span><span class="p">):</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;properties/list.html&#39;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">partial_template</span> <span class="o">=</span> <span class="s1">&#39;properties/partials/list_content.html&#39;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;address&#39;</span><span class="p">]</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">filter_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">paginate_by</span> <span class="o">=</span> <span class="mi">20</span>
+</code></pre></div>
+<h3 id="5-create-template">5. Create template</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>{% extends &quot;base.html&quot; %}
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>{% load nitro_tags %}
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>{% block content %}
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;flex gap-4 mb-4&quot;</span><span class="p">&gt;</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    {% nitro_search target=&#39;#list-content&#39; %}
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    {% nitro_filter field=&#39;status&#39; options=filter_options.status %}
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;list-content&quot;</span><span class="p">&gt;</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    {% include &quot;properties/partials/list_content.html&quot; %}
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>{% endblock %}
+</code></pre></div>
+<p>Search, filters, and pagination work via HTMX - no JavaScript needed.</p>
+<hr />
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Python 3.12+</li>
+<li>Django 5.2+</li>
+<li>HTMX and Alpine.js (loaded via CDN)</li>
+</ul>
+<hr />
+<h2 id="license">License</h2>
+<p>MIT License</p>
 
 
 
@@ -1971,38 +1545,6 @@
 
 
 
-  
-    
-  
-  
-    
-  
-
-
-  <aside class="md-source-file">
-    
-      
-  <span class="md-source-file__fact">
-    <span class="md-icon" title="Last update">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
-    </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 19, 2026 17:13:51 UTC">January 19, 2026</span>
-  </span>
-
-    
-    
-      
-  <span class="md-source-file__fact">
-    <span class="md-icon" title="Created">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
-    </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="December 28, 2025 10:59:22 UTC">December 28, 2025</span>
-  </span>
-
-    
-    
-    
-  </aside>
 
 
 
@@ -2034,22 +1576,6 @@
     Made with
     <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
       Material for MkDocs
-    </a>
-  
-</div>
-      
-        
-<div class="md-social">
-  
-    
-    
-    
-    
-      
-      
-    
-    <a href="https://github.com/django-nitro/django-nitro" target="_blank" rel="noopener" title="github.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
     </a>
   
 </div>

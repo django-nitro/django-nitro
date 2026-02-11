@@ -12,13 +12,13 @@
         <meta name="author" content="Jearel Alcantara">
       
       
-        <link rel="canonical" href="https://django-nitro.github.io/django-nitro/getting-started/installation/">
+        <link rel="canonical" href="https://django-nitro.github.io/django-nitro/core-concepts/views/">
       
       
-        <link rel="prev" href="../..">
+        <link rel="prev" href="../../getting-started/quick-start/">
       
       
-        <link rel="next" href="../quick-start/">
+        <link rel="next" href="../template-tags/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Installation - Django Nitro</title>
+        <title>Views - Django Nitro</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#installation" class="md-skip">
+        <a href="#views" class="md-skip">
           Skip to content
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Installation
+              Views
             
           </span>
         </div>
@@ -248,13 +248,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
           
   
   
@@ -270,11 +268,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../core-concepts/views/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -441,31 +441,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   
@@ -483,7 +480,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -498,37 +495,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Installation
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -544,159 +514,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Requirements
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-via-pip" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install via pip
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Configuration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-add-to-installed_apps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Add to INSTALLED_APPS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-optional-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Optional settings
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-include-static-files-in-base-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Include static files in base template
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#whats-included" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What's Included
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="What&#39;s Included">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#views" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Views
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#template-tags" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Template Tags
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#components" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Components
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#utilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Utilities
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -709,7 +526,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../quick-start/" class="md-nav__link">
+      <a href="../../getting-started/quick-start/" class="md-nav__link">
         
   
   
@@ -741,28 +558,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -780,7 +600,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -795,10 +615,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../core-concepts/views/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Views
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -814,6 +661,159 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#view-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View Hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitroview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroView
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="NitroView">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitrolistview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroListView
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="NitroListView">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#context-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitromodelview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroModelView
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitroformview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroFormView
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitrocreateview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroCreateView
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitroupdateview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroUpdateView
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitrodeleteview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroDeleteView
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -826,7 +826,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core-concepts/template-tags/" class="md-nav__link">
+      <a href="../template-tags/" class="md-nav__link">
         
   
   
@@ -854,7 +854,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core-concepts/forms-wizards/" class="md-nav__link">
+      <a href="../forms-wizards/" class="md-nav__link">
         
   
   
@@ -882,7 +882,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core-concepts/tables-filters/" class="md-nav__link">
+      <a href="../tables-filters/" class="md-nav__link">
         
   
   
@@ -910,7 +910,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core-concepts/multi-tenancy/" class="md-nav__link">
+      <a href="../multi-tenancy/" class="md-nav__link">
         
   
   
@@ -1371,10 +1371,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
+  <a href="#view-hierarchy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Requirements
+        View Hierarchy
       
     </span>
   </a>
@@ -1382,33 +1382,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#install-via-pip" class="md-nav__link">
+  <a href="#nitroview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Install via pip
+        NitroView
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Configuration">
+    <nav class="md-nav" aria-label="NitroView">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-add-to-installed_apps" class="md-nav__link">
+  <a href="#properties" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Add to INSTALLED_APPS
+        Properties
       
     </span>
   </a>
@@ -1416,21 +1405,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-optional-settings" class="md-nav__link">
+  <a href="#methods" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Optional settings
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-include-static-files-in-base-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Include static files in base template
+        Methods
       
     </span>
   </a>
@@ -1443,55 +1421,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#whats-included" class="md-nav__link">
+  <a href="#nitrolistview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What's Included
+        NitroListView
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="What&#39;s Included">
+    <nav class="md-nav" aria-label="NitroListView">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#views" class="md-nav__link">
+  <a href="#context-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Views
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#template-tags" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Template Tags
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#components" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Components
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#utilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Utilities
+        Context Variables
       
     </span>
   </a>
@@ -1500,6 +1445,61 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitromodelview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroModelView
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitroformview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroFormView
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitrocreateview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroCreateView
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitroupdateview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroUpdateView
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nitrodeleteview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NitroDeleteView
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1523,79 +1523,204 @@
   
 
 
-<h1 id="installation">Installation</h1>
-<h2 id="requirements">Requirements</h2>
-<ul>
-<li>Python 3.12+</li>
-<li>Django 5.2+</li>
-</ul>
-<h2 id="install-via-pip">Install via pip</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>django-nitro
+<h1 id="views">Views</h1>
+<p>Nitro provides Django class-based views with HTMX integration.</p>
+<h2 id="view-hierarchy">View Hierarchy</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>NitroView              → Base with HTMX helpers, toasts
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── NitroListView      → Search, filter, sort, pagination
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── NitroModelView     → Single object detail
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── NitroFormView      → Form handling
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   ├── NitroCreateView → Create with auto company/user
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   └── NitroUpdateView → Edit existing
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>└── NitroDeleteView    → Delete with soft-delete support
 </code></pre></div>
-<h2 id="configuration">Configuration</h2>
-<h3 id="1-add-to-installed_apps">1. Add to INSTALLED_APPS</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># settings.py</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="c1"># ...</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="s1">&#39;nitro&#39;</span><span class="p">,</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">]</span>
+<hr />
+<h2 id="nitroview">NitroView</h2>
+<p>Base view for all Nitro views.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">NitroView</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">DashboardView</span><span class="p">(</span><span class="n">NitroView</span><span class="p">):</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;dashboard.html&#39;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">partial_template</span> <span class="o">=</span> <span class="s1">&#39;partials/dashboard_content.html&#39;</span>
 </code></pre></div>
-<h3 id="2-optional-settings">2. Optional settings</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># settings.py</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">NITRO</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="s1">&#39;DEFAULT_PAGINATION&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="s1">&#39;TOAST_DURATION&#39;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="s1">&#39;TOAST_POSITION&#39;</span><span class="p">:</span> <span class="s1">&#39;top-right&#39;</span><span class="p">,</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">}</span>
+<h3 id="properties">Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>template_name</code></td>
+<td>Full page template</td>
+</tr>
+<tr>
+<td><code>partial_template</code></td>
+<td>Template for HTMX requests</td>
+</tr>
+<tr>
+<td><code>is_htmx</code></td>
+<td><code>True</code> if request is HTMX</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods">Methods</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># HTMX detection</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_htmx</span><span class="p">:</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_partial</span><span class="p">()</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Toast notifications</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="bp">self</span><span class="o">.</span><span class="n">toast</span><span class="p">(</span><span class="s1">&#39;Mensaje&#39;</span><span class="p">,</span> <span class="s1">&#39;success&#39;</span><span class="p">)</span>  <span class="c1"># success, error, warning, info</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="bp">self</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s1">&#39;Guardado&#39;</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Error al guardar&#39;</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="c1"># HTMX responses</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="bp">self</span><span class="o">.</span><span class="n">htmx_redirect</span><span class="p">(</span><span class="s1">&#39;/url/&#39;</span><span class="p">)</span>      <span class="c1"># Client-side redirect</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="bp">self</span><span class="o">.</span><span class="n">htmx_refresh</span><span class="p">()</span>              <span class="c1"># Refresh page</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="bp">self</span><span class="o">.</span><span class="n">htmx_trigger</span><span class="p">(</span><span class="s1">&#39;event-name&#39;</span><span class="p">)</span>  <span class="c1"># Trigger JS event</span>
 </code></pre></div>
-<h3 id="3-include-static-files-in-base-template">3. Include static files in base template</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>{% load nitro_tags %}
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="cp">&lt;!DOCTYPE html&gt;</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    {% nitro_scripts %}
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">defer</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">&lt;</span><span class="nt">body</span> <span class="na">hx-headers</span><span class="o">=</span><span class="s">&#39;{&quot;X-CSRFToken&quot;: &quot;{{ csrf_token }}&quot;}&#39;</span><span class="p">&gt;</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    {% block content %}{% endblock %}
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    {% nitro_toast %}
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+<hr />
+<h2 id="nitrolistview">NitroListView</h2>
+<p>List view with built-in search, filters, sorting, and pagination.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">NitroListView</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">TenantListView</span><span class="p">(</span><span class="n">NitroListView</span><span class="p">):</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Tenant</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;tenants/list.html&#39;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">partial_template</span> <span class="o">=</span> <span class="s1">&#39;tenants/partials/list_content.html&#39;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="c1"># Search</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;phone&#39;</span><span class="p">]</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="c1"># Filters</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="n">filter_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">]</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="c1"># Sorting</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">sortable_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;rent_amount&#39;</span><span class="p">]</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="n">default_sort</span> <span class="o">=</span> <span class="s1">&#39;-created_at&#39;</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    <span class="c1"># Pagination</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    <span class="n">paginate_by</span> <span class="o">=</span> <span class="mi">25</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="c1"># Query optimization</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span class="n">select_related</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;property&#39;</span><span class="p">,</span> <span class="s1">&#39;company&#39;</span><span class="p">]</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>    <span class="n">prefetch_related</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;leases&#39;</span><span class="p">]</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_filter_options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>        <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>            <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;active&#39;</span><span class="p">,</span> <span class="s1">&#39;Activo&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;inactive&#39;</span><span class="p">,</span> <span class="s1">&#39;Inactivo&#39;</span><span class="p">)],</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>            <span class="s1">&#39;property&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="n">p</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">Property</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()],</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>        <span class="p">}</span>
 </code></pre></div>
-<p><code>{% nitro_scripts %}</code> includes:</p>
+<h3 id="context-variables">Context Variables</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_list</code></td>
+<td>Paginated queryset</td>
+</tr>
+<tr>
+<td><code>page_obj</code></td>
+<td>Paginator page object</td>
+</tr>
+<tr>
+<td><code>filter_options</code></td>
+<td>From <code>get_filter_options()</code></td>
+</tr>
+<tr>
+<td><code>current_filters</code></td>
+<td>Current filter values</td>
+</tr>
+<tr>
+<td><code>current_search</code></td>
+<td>Current search query</td>
+</tr>
+<tr>
+<td><code>current_sort</code></td>
+<td>Current sort field</td>
+</tr>
+<tr>
+<td><code>total_count</code></td>
+<td>Total objects count</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="nitromodelview">NitroModelView</h2>
+<p>Detail view for a single model instance.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">NitroModelView</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyDetailView</span><span class="p">(</span><span class="n">NitroModelView</span><span class="p">):</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;properties/detail.html&#39;</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;property&#39;</span>
+</code></pre></div>
+<p>Access the object via <code>{{ object }}</code> or <code>{{ property }}</code> in template.</p>
+<hr />
+<h2 id="nitroformview">NitroFormView</h2>
+<p>Form handling with HTMX support.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">NitroFormView</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">ContactFormView</span><span class="p">(</span><span class="n">NitroFormView</span><span class="p">):</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">form_class</span> <span class="o">=</span> <span class="n">ContactForm</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;contact/form.html&#39;</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">success_url</span> <span class="o">=</span> <span class="s1">&#39;/contact/thanks/&#39;</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">success_message</span> <span class="o">=</span> <span class="s1">&#39;Mensaje enviado&#39;</span>
+</code></pre></div>
+<p>On HTMX submit, returns toast notification. On regular submit, redirects.</p>
+<hr />
+<h2 id="nitrocreateview">NitroCreateView</h2>
+<p>Create view with automatic company/user assignment.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">NitroCreateView</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.mixins</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrganizationMixin</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyCreateView</span><span class="p">(</span><span class="n">OrganizationMixin</span><span class="p">,</span> <span class="n">NitroCreateView</span><span class="p">):</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">form_class</span> <span class="o">=</span> <span class="n">PropertyForm</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;properties/form.html&#39;</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="n">success_message</span> <span class="o">=</span> <span class="s1">&#39;Propiedad creada&#39;</span>
+</code></pre></div>
+<p>Automatically sets:</p>
 <ul>
-<li>HTMX from CDN</li>
-<li><code>nitro.js</code> - HTMX configuration and toast handling</li>
-<li><code>alpine-components.js</code> - Reusable Alpine.js components</li>
+<li><code>obj.company = self.organization</code> (if using OrganizationMixin)</li>
+<li><code>obj.created_by = request.user</code> (if model has field)</li>
 </ul>
-<h2 id="whats-included">What's Included</h2>
-<h3 id="views">Views</h3>
-<ul>
-<li><code>NitroView</code> - Base view with HTMX detection and toast helpers</li>
-<li><code>NitroListView</code> - List with search, filter, sort, pagination</li>
-<li><code>NitroModelView</code> - Single object detail</li>
-<li><code>NitroFormView</code> - Form handling</li>
-<li><code>NitroCreateView</code> / <code>NitroUpdateView</code> / <code>NitroDeleteView</code> - CRUD operations</li>
-<li><code>NitroWizard</code> - Multi-step forms</li>
-</ul>
-<h3 id="template-tags">Template Tags</h3>
-<ul>
-<li>HTMX action tags: <code>{% nitro_search %}</code>, <code>{% nitro_filter %}</code>, <code>{% nitro_pagination %}</code></li>
-<li>Form tags: <code>{% nitro_field %}</code>, <code>{% nitro_select %}</code></li>
-<li>Component tags: <code>{% nitro_modal %}</code>, <code>{% nitro_slideover %}</code>, <code>{% nitro_tabs %}</code></li>
-<li>Display filters: <code>{{ amount|currency }}</code>, <code>{{ status|status_badge }}</code></li>
-</ul>
-<h3 id="components">Components</h3>
-<ul>
-<li>20+ HTML components: toast, modal, slideover, tabs, empty_state, stats_card, etc.</li>
-<li>10+ Alpine.js components: fileUpload, clipboard, searchableSelect, etc.</li>
-</ul>
-<h3 id="utilities">Utilities</h3>
-<ul>
-<li>Currency formatting (multi-currency support)</li>
-<li>Date utilities and relative dates</li>
-<li>CSV/Excel export helpers</li>
-</ul>
+<hr />
+<h2 id="nitroupdateview">NitroUpdateView</h2>
+<p>Update existing instance.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">NitroUpdateView</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyUpdateView</span><span class="p">(</span><span class="n">OrganizationMixin</span><span class="p">,</span> <span class="n">NitroUpdateView</span><span class="p">):</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">form_class</span> <span class="o">=</span> <span class="n">PropertyForm</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;properties/form.html&#39;</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">success_message</span> <span class="o">=</span> <span class="s1">&#39;Propiedad actualizada&#39;</span>
+</code></pre></div>
+<hr />
+<h2 id="nitrodeleteview">NitroDeleteView</h2>
+<p>Delete with soft-delete support.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nitro.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">NitroDeleteView</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">PropertyDeleteView</span><span class="p">(</span><span class="n">OrganizationMixin</span><span class="p">,</span> <span class="n">NitroDeleteView</span><span class="p">):</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Property</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">success_url</span> <span class="o">=</span> <span class="s1">&#39;/properties/&#39;</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">success_message</span> <span class="o">=</span> <span class="s1">&#39;Propiedad eliminada&#39;</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">can_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Optional: check if deletion is allowed.&quot;&quot;&quot;</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">leases</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;active&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Tiene contratos activos&#39;</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">None</span>
+</code></pre></div>
+<p>If the model has <code>soft_delete()</code> method, it calls that instead of <code>delete()</code>.</p>
 
 
 
